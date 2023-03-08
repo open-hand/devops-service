@@ -9,18 +9,27 @@ package com.cdancy.jenkins.rest.domain.common;
  */
 public class AutoValue_Response extends Response {
     private String value;
-    private String errors;
 
-    AutoValue_Response(String value, String errors) {
+    private int statusCode;
+    private String error;
+
+    public AutoValue_Response(String value, int statusCode, String error) {
         this.value = value;
-        this.errors = errors;
+        this.statusCode = statusCode;
+        this.error = error;
     }
 
     public String value() {
         return this.value;
     }
 
-    public String errors() {
-        return this.errors;
+    @Override
+    public String error() {
+        return this.error;
+    }
+
+    @Override
+    public int statusCode() {
+        return statusCode;
     }
 }

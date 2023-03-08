@@ -13,10 +13,16 @@ import org.jclouds.json.SerializedNames;
  */
 @AutoValue
 public abstract class Response implements Value<String> {
-    @SerializedNames({"value", "errors"})
-    public static Response create(@Nullable final String value,
-                                  final String errors) {
 
-        return new AutoValue_Response(value, errors);
+    @SerializedNames({"value", "statusCode", "error"})
+    public static Response create(@Nullable final String value,
+                                  final int statusCode,
+                                  final String error) {
+
+        return new AutoValue_Response(value, statusCode, error);
     }
+
+    public abstract int statusCode();
+
+    public abstract String error();
 }

@@ -9,6 +9,8 @@ import com.cdancy.jenkins.rest.JenkinsClient;
 import com.cdancy.jenkins.rest.domain.common.IntegerResponse;
 import com.cdancy.jenkins.rest.domain.common.Response;
 import com.cdancy.jenkins.rest.domain.job.*;
+import com.cdancy.jenkins.rest.parsers.CustomResponseUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,8 +96,13 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         JobInfo jobInfo = jenkinsClient.api().jobsApi().jobInfo(folder, name);
         List<PropertyVO> propertyList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(jobInfo.property()) && !CollectionUtils.isEmpty(jobInfo.property().get(0).parameterDefinitions())) {
-            for (ParameterDefinition parameterDefinition : jobInfo.property().get(0).parameterDefinitions()) {
-                propertyList.add(new PropertyVO(parameterDefinition.name(), parameterDefinition.defaultParameterValue().get("value")));
+            for (ParametersDefinitionProperty parametersDefinitionProperty : jobInfo.property()) {
+                if ("hudson.model.ParametersDefinitionProperty".equals(parametersDefinitionProperty.clazz())) {
+                    for (ParameterDefinition parameterDefinition : parametersDefinitionProperty.parameterDefinitions()) {
+                        propertyList.add(new PropertyVO(parameterDefinition.name(),
+                                parameterDefinition.defaultParameterValue().get("value") == null ? "" : parameterDefinition.defaultParameterValue().get("value")));
+                    }
+                }
             }
         }
 
@@ -105,24 +112,9 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     @Override
     public List<JenkinsBuildInfo> listBuildHistory(Long projectId, Long serverId, String folder, String name) {
         JenkinsClient clientByServerId = jenkinsClientUtil.getClientByServerId(serverId);
-        Response c7nBuildInfos = clientByServerId.api().c7nJobsApi().buildHistory(folder, name);
-//        List<JenkinsBuildInfo> buildInfoList = JsonHelper.unmarshalByJackson(c7nBuildInfos, new TypeReference<List<JenkinsBuildInfo>>() {
-//        });
-        return new ArrayList<>();
-//        if (CollectionUtils.isEmpty(c7nBuildInfos)) {
-//            return new ArrayList<>();
-//        }
-//        return c7nBuildInfos.stream().map(c7nBuildInfo -> {
-//            if (c7nBuildInfo.nextPendingInputAction() != null) {
-//                JenkinsPendingInputAction jenkinsPendingInputAction = new JenkinsPendingInputAction();
-//            }
-//            return new JenkinsBuildInfo(c7nBuildInfo.id(),
-//                c7nBuildInfo.status(),
-//                c7nBuildInfo.startTimeMillis(),
-//                c7nBuildInfo.durationTimeMillis(),
-//                c7nBuildInfo.username(),
-//                c7nBuildInfo.triggerType(),
-//                c7nBuildInfo.branch())}).collect(Collectors.toList());
+        Response response = clientByServerId.api().c7nJobsApi().buildHistory(folder, name);
+        return CustomResponseUtil.parse(response, new TypeReference<List<JenkinsBuildInfo>>() {
+        });
     }
 
     @Override

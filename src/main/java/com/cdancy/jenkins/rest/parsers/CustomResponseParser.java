@@ -28,42 +28,40 @@ import com.google.common.base.Throwables;
 import com.google.common.io.CharStreams;
 import org.jclouds.http.HttpResponse;
 
-import io.choerodon.core.exception.CommonException;
-
 /**
  * Created by dancc on 3/11/16.
  */
 @Singleton
-public class ResponseParser implements Function<HttpResponse, Response> {
+public class CustomResponseParser implements Function<HttpResponse, Response> {
 
-   public Response apply(HttpResponse input) {
+    public Response apply(HttpResponse input) {
 
-      final int statusCode = input.getStatusCode();
-      if (statusCode >= 200 && statusCode < 400) {
-         return Response.create(getTextOutput(input), null);
-      } else {
-         throw new CommonException(input.getStatusLine());
-      }
+        final int statusCode = input.getStatusCode();
+        if (statusCode >= 200 && statusCode < 400) {
+            return Response.create(getTextOutput(input), input.getStatusCode(), null);
+        } else {
+            return Response.create(getTextOutput(input), input.getStatusCode(), input.getMessage());
+        }
 
-   }
+    }
 
-   public String getTextOutput(HttpResponse response) {
-      InputStream is = null;
-      try {
-         is = response.getPayload().openStream();
-         return CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8)).trim();
-      } catch (Exception e) {
-         Throwables.propagate(e);
-      } finally {
-         if (is != null) {
-            try {
-               is.close();
-            } catch (Exception e) {
-               Throwables.propagate(e);
+    public String getTextOutput(HttpResponse response) {
+        InputStream is = null;
+        try {
+            is = response.getPayload().openStream();
+            return CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8)).trim();
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (Exception e) {
+                    Throwables.propagate(e);
+                }
             }
-         }
-      }
+        }
 
-      return null;
-   }
+        return null;
+    }
 }

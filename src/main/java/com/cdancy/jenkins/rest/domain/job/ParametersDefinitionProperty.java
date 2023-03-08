@@ -3,6 +3,7 @@ package com.cdancy.jenkins.rest.domain.job;
 import java.util.List;
 
 import com.google.auto.value.AutoValue;
+import org.jclouds.javax.annotation.Nullable;
 import org.jclouds.json.SerializedNames;
 
 /**
@@ -14,10 +15,15 @@ import org.jclouds.json.SerializedNames;
  */
 @AutoValue
 public abstract class ParametersDefinitionProperty {
-    @SerializedNames({"parameterDefinitions"})
-    public static ParametersDefinitionProperty create(List<ParameterDefinition> parameterDefinitions) {
-        return new AutoValue_ParametersDefinitionProperty(parameterDefinitions);
+
+
+    @SerializedNames({"_class", "parameterDefinitions"})
+    public static ParametersDefinitionProperty create(String clazz, List<ParameterDefinition> parameterDefinitions) {
+        return new AutoValue_ParametersDefinitionProperty(clazz, parameterDefinitions);
     }
+
+    @Nullable
+    public abstract String clazz();
 
     public abstract List<ParameterDefinition> parameterDefinitions();
 }
