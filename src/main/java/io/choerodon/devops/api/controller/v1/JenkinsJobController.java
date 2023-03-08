@@ -10,10 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.jenkins.JenkinsBuildInfo;
-import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
-import io.choerodon.devops.api.vo.jenkins.JenkinsStageVO;
-import io.choerodon.devops.api.vo.jenkins.PropertyVO;
+import io.choerodon.devops.api.vo.jenkins.*;
 import io.choerodon.devops.app.service.JenkinsJobService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -122,8 +119,9 @@ public class JenkinsJobController {
             @Encrypt
             @RequestParam(value = "server_id") Long serverId,
             @RequestParam(value = "folder") String folder,
-            @RequestParam(value = "inputId") String inputId) {
-        jenkinsJobService.auditPass(projectId, serverId, folder, name, buildId, inputId);
+            @RequestParam(value = "inputId") String inputId,
+            @RequestBody List<PropertyVO> properties) {
+        jenkinsJobService.auditPass(projectId, serverId, folder, name, buildId, inputId, properties);
         return ResponseEntity.noContent().build();
     }
 
@@ -173,7 +171,7 @@ public class JenkinsJobController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查看流水线阶段列表")
-    @GetMapping("/{name}/build/{build_id}/log")
+    @GetMapping("/{name}/build/{build_id}/stages")
     public ResponseEntity<List<JenkinsStageVO>> listStage(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -183,6 +181,37 @@ public class JenkinsJobController {
             @RequestParam(value = "server_id") Long serverId,
             @RequestParam(value = "folder") String folder) {
         return ResponseEntity.ok(jenkinsJobService.listStage(projectId, serverId, folder, name, buildId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查看流水线阶段下的步骤列表")
+    @GetMapping("/{name}/build/{build_id}/stages/{stage_id}/nodes")
+    public ResponseEntity<List<JenkinsNodeVO>> listNode(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable String name,
+            @PathVariable(value = "build_id") Integer buildId,
+            @PathVariable(value = "stage_id") Integer stageId,
+            @Encrypt
+            @RequestParam(value = "server_id") Long serverId,
+            @RequestParam(value = "folder") String folder) {
+        return ResponseEntity.ok(jenkinsJobService.listNode(projectId, serverId, folder, name, buildId, stageId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查看流水线阶段下的步骤日志")
+    @GetMapping("/{name}/build/{build_id}/stages/{stage_id}/nodes/{node_id}/log")
+    public ResponseEntity<String> queryNodeLog(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable String name,
+            @PathVariable(value = "build_id") Integer buildId,
+            @PathVariable(value = "stage_id") Integer stageId,
+            @PathVariable(value = "node_id") Integer nodeId,
+            @Encrypt
+            @RequestParam(value = "server_id") Long serverId,
+            @RequestParam(value = "folder") String folder) {
+        return ResponseEntity.ok(jenkinsJobService.queryNodeLog(projectId, serverId, folder, name, buildId, stageId, nodeId));
     }
 
 }

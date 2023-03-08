@@ -2,10 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.jenkins.JenkinsBuildInfo;
-import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
-import io.choerodon.devops.api.vo.jenkins.JenkinsStageVO;
-import io.choerodon.devops.api.vo.jenkins.PropertyVO;
+import io.choerodon.devops.api.vo.jenkins.*;
 
 /**
  * 〈功能简述〉
@@ -31,7 +28,7 @@ public interface JenkinsJobService {
 
     void retryBuild(Long projectId, Long serverId, String folder, String name, Integer buildId);
 
-    void auditPass(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId);
+    void auditPass(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId, List<PropertyVO> properties);
 
     void auditRefuse(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId);
 
@@ -40,4 +37,8 @@ public interface JenkinsJobService {
     String queryLog(Long projectId, Long serverId, String folder, String name, Integer buildId);
 
     List<JenkinsStageVO> listStage(Long projectId, Long serverId, String folder, String name, Integer buildId);
+
+    List<JenkinsNodeVO> listNode(Long projectId, Long serverId, String folder, String name, Integer buildId, Integer stageId);
+
+    String queryNodeLog(Long projectId, Long serverId, String folder, String name, Integer buildId, Integer stageId, Integer nodeId);
 }

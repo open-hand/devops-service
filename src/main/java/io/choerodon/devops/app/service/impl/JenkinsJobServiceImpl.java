@@ -145,8 +145,20 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     }
 
     @Override
-    public void auditPass(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId) {
+    public void auditPass(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId, List<PropertyVO> properties) {
         JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+//        if (CollectionUtils.isEmpty(properties)) {
+//            jenkinsClient.api().jobsApi().build(folder, name);
+//        } else {
+//            Map<String, List<String>> paramMap = new HashMap<>();
+//            properties.forEach(property -> {
+//                List<String> valueList = new ArrayList<>();
+//                valueList.add(property.getValue());
+//                paramMap.put(property.getKey(), valueList);
+//            });
+//            jenkinsClient.api().jobsApi().buildWithParameters(folder, name, paramMap);
+//        }
+
         jenkinsClient.api().c7nJobsApi().inputSubmit(folder, name, buildId, inputId);
     }
 
@@ -177,7 +189,42 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         if (workflow == null) {
             return new ArrayList<>();
         }
-        return workflow.stages().stream().map(stage -> new JenkinsStageVO(stage.id(), stage.name(), stage.status(), stage.startTimeMillis(), stage.durationMillis())).collect(Collectors.toList());
+        return workflow
+                .stages()
+                .stream()
+                .map(stage -> new JenkinsStageVO(stage.id(),
+                        stage.name(),
+                        stage.status(),
+                        stage.startTimeMillis(),
+                        stage.durationMillis()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<JenkinsNodeVO> listNode(Long projectId, Long serverId, String folder, String name, Integer buildId, Integer stageId) {
+        JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+        PipelineNode pipelineNode = jenkinsClient.api().jobsApi().pipelineNode(folder, name, buildId, stageId);
+        if (pipelineNode == null) {
+            return new ArrayList<>();
+        }
+        return pipelineNode
+                .stageFlowNodes()
+                .stream()
+                .map(node -> new JenkinsNodeVO(node.id(),
+                        node.name(),
+                        node.status(),
+                        node.parameterDescription()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String queryNodeLog(Long projectId, Long serverId, String folder, String name, Integer buildId, Integer stageId, Integer nodeId) {
+        JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+        PipelineNodeLog pipelineNodeLog = jenkinsClient.api().jobsApi().pipelineNodeLog(folder, name, buildId, nodeId);
+        if (pipelineNodeLog == null) {
+            return "";
+        }
+        return pipelineNodeLog.text();
     }
 
     private void listFolderJobs(JenkinsClient jenkinsClient, Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {
@@ -216,8 +263,6 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
                     jenkinsJobVO.setTriggerType(buildInfo.triggerType());
                     jenkinsJobVO.setStatus(buildInfo.status());
                 }
-
-
                 jenkinsJobVOList.add(jenkinsJobVO);
             }
         }
