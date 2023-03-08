@@ -1,9 +1,9 @@
 package io.choerodon.devops.api.vo.pipeline;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import java.util.List;
 
 import io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigVariableDTO;
 
@@ -12,11 +12,9 @@ public class DevopsCiPipelineTriggerConfigVO {
     private Long id;
 
     @ApiModelProperty("流水线id")
-    @Encrypt
     private Long pipelineId;
 
     @ApiModelProperty("触发的流水线id")
-    @Encrypt
     private Long triggeredPipelineId;
 
     @ApiModelProperty("触发的其它流水线所属项目id")
