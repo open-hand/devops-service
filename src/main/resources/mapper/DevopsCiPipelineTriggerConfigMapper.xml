@@ -4,6 +4,9 @@
   <resultMap id="devopsCiPipelineTriggerConfigVO"
              type="io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO">
     <result property="id" column="id"/>
+    <result property="triggeredPipelineId" column="triggered_pipeline_id"/>
+    <result property="triggeredPipelineProjectId" column="triggered_pipeline_project_id"/>
+    <result property="refName" column="ref_name"/>
     <collection property="devopsCiPipelineVariables"
                 ofType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigVariableDTO">
       <result property="id" column="id"/>
