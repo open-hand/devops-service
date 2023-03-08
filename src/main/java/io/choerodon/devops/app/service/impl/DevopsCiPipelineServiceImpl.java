@@ -1,18 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.*;
-import static io.choerodon.devops.infra.constant.PipelineConstants.*;
-import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
-import static io.choerodon.devops.infra.enums.CiJobTypeEnum.API_TEST;
-
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -27,6 +14,19 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.*;
+import static io.choerodon.devops.infra.constant.PipelineConstants.*;
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
+import static io.choerodon.devops.infra.enums.CiJobTypeEnum.API_TEST;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;

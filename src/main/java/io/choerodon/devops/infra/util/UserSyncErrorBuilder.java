@@ -1,16 +1,16 @@
 package io.choerodon.devops.infra.util;
 
-import static io.choerodon.devops.infra.constant.GitOpsConstants.NEW_LINE;
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import static io.choerodon.devops.infra.constant.GitOpsConstants.NEW_LINE;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -143,6 +143,7 @@ public class UserSyncErrorBuilder {
         private static final String AUDIT = "audit";
         private static final String DEPLOYMENT = "deployment";
         private static final String HOST = "host";
+        private static final String PIPELINE_TRIGGER = "pipeline_trigger";
         public static Map<String, String> stringStringMap = new HashMap<>(5);
 
         static {
@@ -151,6 +152,7 @@ public class UserSyncErrorBuilder {
             stringStringMap.put(CiJobTypeEnum.AUDIT.value(), AUDIT);
             stringStringMap.put(CiJobTypeEnum.DEPLOYMENT_DEPLOY.value(), DEPLOYMENT);
             stringStringMap.put(CiJobTypeEnum.HOST_DEPLOY.value(), HOST);
+            stringStringMap.put(CiJobTypeEnum.PIPELINE_TRIGGER.value(), PIPELINE_TRIGGER);
         }
     }
 }
