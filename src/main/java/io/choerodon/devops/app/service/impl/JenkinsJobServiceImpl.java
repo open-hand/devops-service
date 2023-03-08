@@ -228,6 +228,16 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         return pipelineNodeLog.text();
     }
 
+    @Override
+    public List<String> listBranch(Long projectId, Long serverId, String folder, String name) {
+        JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+        JobList jobList = jenkinsClient.api().jobsApi().jobList(folder + name + "/");
+        if (jobList == null || CollectionUtils.isEmpty(jobList.jobs())) {
+            return new ArrayList<>();
+        }
+        return jobList.jobs().stream().map(Job::name).collect(Collectors.toList());
+    }
+
     private void listFolderJobs(JenkinsClient jenkinsClient, Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {
 
         JobList jobList = jenkinsClient.api().jobsApi().jobList(folder);

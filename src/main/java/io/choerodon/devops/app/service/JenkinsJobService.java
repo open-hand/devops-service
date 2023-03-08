@@ -41,4 +41,6 @@ public interface JenkinsJobService {
     List<JenkinsNodeVO> listNode(Long projectId, Long serverId, String folder, String name, Integer buildId, Integer stageId);
 
     String queryNodeLog(Long projectId, Long serverId, String folder, String name, Integer buildId, Integer stageId, Integer nodeId);
+
+    List<String> listBranch(Long projectId, Long serverId, String folder, String name);
 }

@@ -51,6 +51,19 @@ public class JenkinsJobController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询多分支流水线中的分支")
+    @PostMapping("/{name}/branchs")
+    public ResponseEntity<List<String>> listBranch(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable String name,
+            @Encrypt
+            @RequestParam(value = "server_id") Long serverId,
+            @RequestParam(value = "folder") String folder) {
+        return ResponseEntity.ok(jenkinsJobService.listBranch(projectId, serverId, folder, name));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "全新执行")
     @PostMapping("/{name}/build")
     public ResponseEntity<Void> build(
