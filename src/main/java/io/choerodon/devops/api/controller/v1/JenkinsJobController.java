@@ -108,7 +108,7 @@ public class JenkinsJobController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "重新执行")
-    @GetMapping("/{name}/build/{build_id}/retry")
+    @GetMapping("/{name}/build/{build_id}/restart")
     public ResponseEntity<Void> retryBuild(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
