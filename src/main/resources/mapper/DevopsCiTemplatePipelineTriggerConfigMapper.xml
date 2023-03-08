@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiTemplatePipelineTriggerConfigMapper">
+    <resultMap id="devopsCiTemplatePipelineTriggerConfigVO"
+               type="io.choerodon.devops.api.vo.pipeline.DevopsCiTemplatePipelineTriggerConfigVO">
+        <result property="id" column="id"/>
+        <result property="triggeredPipelineId" column="triggered_pipeline_id"/>
+        <result property="triggeredPipelineProjectId" column="triggered_pipeline_project_id"/>
+        <result property="refName" column="ref_name"/>
+        <collection property="devopsCiPipelineVariables"
+                    ofType="io.choerodon.devops.infra.dto.DevopsCiTemplatePipelineTriggerConfigVariableDTO">
+            <result property="id" column="id"/>
+            <result property="variableKey" column="variable_key"/>
+            <result property="variableValue" column="variable_value"/>
+        </collection>
+    </resultMap>
+
+    <select id="queryConfigVoById"
+            resultMap="devopsCiTemplatePipelineTriggerConfigVO">
+        SELECT *
+        FROM devops_ci_tpl_pipeline_trigger_config dcptc
+        LEFT JOIN devops_ci_tpl_pipeline_trigger_config_variable dcptcv ON dcptcv.pipeline_trigger_template_config_id =
+        dcptc.id
+        WHERE dcptc.id = #{configId}
+    </select>
+</mapper>
