@@ -57,6 +57,16 @@ public interface C7nJobsApi {
     Response buildHistory(@Nullable @PathParam("optionalFolderPath") @ParamParser(OptionalFolderPathParser.class) String optionalFolderPath,
                           @PathParam("name") String jobName);
 
+    @Named("jobs:buildHisttory")
+    @Path("{optionalFolderPath}job/{name}/{number}/choerodon/buildInfo")
+    @Fallback(CustomFallback.class)
+    @ResponseParser(CustomResponseParser.class)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @GET
+    Response buildInfo(@Nullable @PathParam("optionalFolderPath") @ParamParser(OptionalFolderPathParser.class) String optionalFolderPath,
+                       @PathParam("name") String jobName,
+                       @PathParam("number") int buildNumber);
+
 
     @Named("jobs:inputSubmit")
     @Path("{optionalFolderPath}job/{name}/{number}/wfapi/inputSubmit")

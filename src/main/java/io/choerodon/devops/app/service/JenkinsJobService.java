@@ -33,4 +33,6 @@ public interface JenkinsJobService {
     void auditPass(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId);
 
     void auditRefuse(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId);
+
+    JenkinsBuildInfo queryBuildInfo(Long projectId, Long serverId, String folder, String name, Integer buildId);
 }

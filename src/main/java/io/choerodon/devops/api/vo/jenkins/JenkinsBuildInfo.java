@@ -22,6 +22,8 @@ public class JenkinsBuildInfo {
 
     private String branch;
 
+    private String remoteUrl;
+
     private JenkinsPendingInputAction nextPendingInputAction;
 
     public JenkinsBuildInfo() {
@@ -35,6 +37,14 @@ public class JenkinsBuildInfo {
         this.username = username;
         this.triggerType = triggerType;
         this.branch = branch;
+    }
+
+    public String getRemoteUrl() {
+        return remoteUrl;
+    }
+
+    public void setRemoteUrl(String remoteUrl) {
+        this.remoteUrl = remoteUrl;
     }
 
     public JenkinsPendingInputAction getNextPendingInputAction() {

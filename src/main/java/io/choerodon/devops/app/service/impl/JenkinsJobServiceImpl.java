@@ -156,6 +156,13 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         jenkinsClient.api().c7nJobsApi().abort(folder, name, buildId, inputId);
     }
 
+    @Override
+    public JenkinsBuildInfo queryBuildInfo(Long projectId, Long serverId, String folder, String name, Integer buildId) {
+        JenkinsClient clientByServerId = jenkinsClientUtil.getClientByServerId(serverId);
+        Response response = clientByServerId.api().c7nJobsApi().buildInfo(folder, name, buildId);
+        return CustomResponseUtil.parse(response, JenkinsBuildInfo.class);
+    }
+
     private void listFolderJobs(JenkinsClient jenkinsClient, Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {
 
         JobList jobList = jenkinsClient.api().jobsApi().jobList(folder);
