@@ -2646,7 +2646,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.list(projectId, isActive, hasVersion, type,
                                 searchVO.getSearchParam(),
-                                searchVO.getParams().stream().map(o -> (String) o).collect(toList()),
+                                searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                                 PageRequestUtil.checkSortIsEmpty(pageable),
                                 includeExternal,
                                 excludeFailed)
@@ -2654,7 +2654,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             } else {
                 list = appServiceMapper.list(projectId, isActive, hasVersion, type,
                         searchVO.getSearchParam(),
-                        searchVO.getParams().stream().map(o -> (String) o).collect(toList()),
+                        searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                         PageRequestUtil.checkSortIsEmpty(pageable),
                         includeExternal,
                         excludeFailed);
@@ -2677,7 +2677,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
                                 searchVO.getSearchParam(),
-                                searchVO.getParams().stream().map(o -> (String) o).collect(toList()),
+                                searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                                 pageable.getSort() == null,
                                 userId,
                                 includeExternal,
@@ -2685,7 +2685,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             } else {
                 list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
                         searchVO.getSearchParam(),
-                        searchVO.getParams().stream().map(o -> (String) o).collect(toList()),
+                        searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                         pageable.getSort() == null,
                         userId,
                         includeExternal,
@@ -3182,7 +3182,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 如果没指定应用服务id，按照普通分页处理
         if (CollectionUtils.isEmpty(ids)) {
             SearchVO searchVO = new SearchVO();
-            searchVO.setParams(ObjectUtils.isEmpty(params) ? null : Collections.singletonList(params));
+            searchVO.setParams(ObjectUtils.isEmpty(params) ? new ArrayList<>() : Collections.singletonList(params));
             return ConvertUtils.convertPage(basePageByOptions(projectId, null, null, null, doPage, pageable, searchVO, false, true, null), AppServiceVO.class);
         } else {
             // 指定应用服务id，从这些id中根据参数决定是否分页
