@@ -1,9 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.AssertUtils;
@@ -13,6 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
@@ -271,12 +271,12 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     }
 
     private void extracted(String sourceType, Long templateJobId, DeleteCheckResultVO deleteCheckResultVO) {
-        Integer integer = ciTemplateJobBusMapper.existRecord(sourceType, templateJobId);
-        if (integer != null) {
-            deleteCheckResultVO.setResult(false);
+        Boolean existRecord = ciTemplateJobBusMapper.existRecord(sourceType, templateJobId);
+        if (Boolean.TRUE.equals(existRecord)) {
+            deleteCheckResultVO.setResult(true);
             deleteCheckResultVO.setSourceType(sourceType);
         } else {
-            deleteCheckResultVO.setResult(true);
+            deleteCheckResultVO.setResult(false);
             deleteCheckResultVO.setSourceType(sourceType);
         }
     }
