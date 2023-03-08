@@ -15,7 +15,7 @@ import io.choerodon.devops.infra.dto.DevopsCiTemplatePipelineTriggerConfigDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiTemplatePipelineTriggerConfigMapper;
 
-@Service
+@Service(value = "pipeline_triggerTemplateJobConfigService")
 public class PipelineTriggerTemplateJobConfigService extends TemplateJobConfigService {
 
     @Autowired
