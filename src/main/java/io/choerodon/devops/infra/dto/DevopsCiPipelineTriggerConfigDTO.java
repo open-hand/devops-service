@@ -19,8 +19,8 @@ public class DevopsCiPipelineTriggerConfigDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ApiModelProperty("流水线job id")
-    private Long jobId;
+    @ApiModelProperty("流水线id")
+    private Long pipelineId;
 
     @ApiModelProperty("触发的流水线id")
     private Long triggeredPipelineId;
@@ -56,12 +56,12 @@ public class DevopsCiPipelineTriggerConfigDTO extends AuditDomain {
         this.id = id;
     }
 
-    public Long getJobId() {
-        return jobId;
+    public Long getPipelineId() {
+        return pipelineId;
     }
 
-    public void setJobId(Long jobId) {
-        this.jobId = jobId;
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
     }
 
     public Long getTriggeredPipelineId() {

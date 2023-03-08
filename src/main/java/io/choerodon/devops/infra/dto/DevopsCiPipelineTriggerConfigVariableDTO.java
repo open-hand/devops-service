@@ -38,10 +38,10 @@ public class DevopsCiPipelineTriggerConfigVariableDTO extends AuditDomain {
     @Encrypt
     private Long id;
 
-    @ApiModelProperty(value = "流水线id", required = true)
+    @ApiModelProperty(value = "pipelineTriggerConfigId id", required = true)
     @NotNull
     @Encrypt
-    private Long devopsPipelineId;
+    private Long pipelineTriggerConfigId;
 
     @ApiModelProperty(value = "变量名", required = true)
     @NotBlank
@@ -60,12 +60,12 @@ public class DevopsCiPipelineTriggerConfigVariableDTO extends AuditDomain {
         this.id = id;
     }
 
-    public Long getDevopsPipelineId() {
-        return devopsPipelineId;
+    public Long getPipelineTriggerConfigId() {
+        return pipelineTriggerConfigId;
     }
 
-    public void setDevopsPipelineId(Long devopsPipelineId) {
-        this.devopsPipelineId = devopsPipelineId;
+    public void setPipelineTriggerConfigId(Long pipelineTriggerConfigId) {
+        this.pipelineTriggerConfigId = pipelineTriggerConfigId;
     }
 
     public String getVariableKey() {

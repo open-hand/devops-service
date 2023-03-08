@@ -25,6 +25,7 @@ public class PipelineCheckConstant {
     public static final String DEVOPS_PIPELINE_ID_INVALID = "devops.pipeline.id.invalid";
     public static final String DEVOPS_GITLAB_PIPELINE_ID_IS_NULL = "devops.gitlab.pipeline.id.is.null";
     public static final String DEVOPS_PIPELINE_RECORD_ID_IS_NULL = "devops.pipeline.record.id.is.null";
+    public static final String DEVOPS_PIPELINE_TRIGGER_CONFIG_ID_IS_NULL = "devops.pipeline.trigger.config.id.is.null";
 
     // stage
     public static final String DEVOPS_STAGE_RECORD_ID_IS_NULL = "devops.stage.record.id.is.null";

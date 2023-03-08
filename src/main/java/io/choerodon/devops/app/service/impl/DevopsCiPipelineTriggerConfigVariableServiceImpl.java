@@ -1,12 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigVariableService;
-import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigVariableDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineTriggerConfigVariableMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -29,11 +30,10 @@ public class DevopsCiPipelineTriggerConfigVariableServiceImpl implements DevopsC
 
     @Override
     @Transactional
-    public void deleteByPipelineId(Long pipelineId) {
-        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
-
-        DevopsCiPipelineTriggerConfigVariableDTO devopsCiPipelineVariableDTO = new DevopsCiPipelineTriggerConfigVariableDTO();
-        devopsCiPipelineVariableDTO.setDevopsPipelineId(pipelineId);
-        devopsCiPipelineTriggerConfigVariableMapper.delete(devopsCiPipelineVariableDTO);
+    public void deleteByPipelineTriggerConfigIds(List<Long> triggerConfigIds) {
+        if (ObjectUtils.isEmpty(triggerConfigIds)) {
+            return;
+        }
+        devopsCiPipelineTriggerConfigVariableMapper.deleteByConfigIds(triggerConfigIds);
     }
 }
