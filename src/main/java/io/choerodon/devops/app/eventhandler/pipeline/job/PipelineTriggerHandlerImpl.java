@@ -1,13 +1,13 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
-import static io.choerodon.devops.app.service.impl.DevopsCiPipelineTriggerConfigServiceImpl.PIPELINE_TRIGGER_NAME_TEMPLATE;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
+import static io.choerodon.devops.app.service.impl.DevopsCiPipelineTriggerConfigServiceImpl.PIPELINE_TRIGGER_NAME_TEMPLATE;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -55,7 +55,6 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
      */
     @Override
     protected void checkConfigInfo(Long projectId, DevopsCiJobVO devopsCiJobVO) {
-        // 检查用户拥有被触发流水线的权限
     }
 
     @Override
@@ -108,7 +107,6 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
 
     @Override
     public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        // todo 任务模板查询
         devopsCiJobVO.setDevopsCiPipelineTriggerConfigVO(devopsCiPipelineTriggerService.queryConfigVoById(devopsCiJobVO.getConfigId()));
     }
 
