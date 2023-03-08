@@ -33,7 +33,7 @@
   </delete>
 
   <select id="queryConfigVoByIdWithVariables"
-          resultType="io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO">
+          resultMap="devopsCiPipelineTriggerConfigVO">
     SELECT *
     FROM devops_ci_pipeline_trigger_config dcptc
     LEFT JOIN devops_ci_pipeline_trigger_config_variable dcptcv ON dcptcv.pipeline_trigger_config_id = dcptc.id
