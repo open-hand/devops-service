@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Ingress;
@@ -78,7 +79,6 @@ import io.choerodon.devops.infra.enums.deploy.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -198,15 +198,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     @Lazy
-    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
-    @Autowired
-    @Lazy
-    private DevopsHzeroDeployConfigService devopsHzeroDeployConfigService;
-    @Autowired
-    @Lazy
-    private WorkFlowServiceOperator workFlowServiceOperator;
-    @Autowired
-    @Lazy
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Autowired
@@ -222,11 +213,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
     @Autowired
-    @Lazy
-    private DevopsCiJobService devopsCiJobService;
-
-    @Autowired
-    private DevopsProjectMapper devopsProjectMapper;
+    private DevopsDeploymentMapper devopsDeploymentMapper;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -613,12 +600,34 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
         //不能减少到0
-        if (!workload && count == 0) {
-            return;
+        if (!workload) {
+            if (count == 0) {
+                return;
+            }
+            // 保存操作记录
+            AppServiceInstanceDTO appServiceInstanceDTOToSearch = new AppServiceInstanceDTO();
+            appServiceInstanceDTOToSearch.setEnvId(envId);
+            appServiceInstanceDTOToSearch.setCode(name);
+            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTOToSearch);
+            if (appServiceInstanceDTO != null) {
+                devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
+            } else {
+                DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO();
+                devopsDeploymentDTO.setSourceType("deploy_group");
+                devopsDeploymentDTO.setName(name);
+                devopsDeploymentDTO.setEnvId(envId);
+                devopsDeploymentDTO = devopsDeploymentMapper.selectOne(devopsDeploymentDTO);
+                devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.DEPLOYMENT.getType(), devopsDeploymentDTO.getId());
+            }
+            devopsEnvCommandDTO.setCommandType("scale_pod_count");
+            devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+            devopsEnvCommandDTO.setId(null);
+            devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
         }
 
-        agentCommandService.operatePodCount(kind, name, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), count);
+        agentCommandService.operatePodCount(kind, name, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), count, devopsEnvCommandDTO.getId() == null ? null : devopsEnvCommandDTO.getId().toString());
     }
 
 
@@ -711,7 +720,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @return 部署后实例信息
      */
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE,
             description = "Devops创建实例", inputSchemaClass = InstanceSagaPayload.class)
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public AppServiceInstanceVO createOrUpdate(@Nullable Long projectId,
@@ -867,7 +876,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return instanceVO;
     }
 
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE,
             description = "Devops创建市场实例", inputSchemaClass = MarketInstanceSagaPayload.class)
     @Override
     public AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO appServiceDeployVO, Boolean saveRecord) {
@@ -1688,11 +1697,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsEnvironmentDTO.getId(), appServiceInstanceDTO.getId(), RdupmTypeEnum.CHART.value());
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
-                gitlabServiceClientOperator.deleteFile(
-                        TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX,
-                        "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), MASTER);
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX, String.format("【DELETE】%s", RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), MASTER);
             }
             return;
         } else {
@@ -1714,11 +1719,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (devopsEnvFileResourceES.size() == 1) {
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
-                gitlabServiceClientOperator.deleteFile(
-                        TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        devopsEnvFileResourceDTO.getFilePath(),
-                        "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), devopsEnvFileResourceDTO.getFilePath(), String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
@@ -2065,7 +2066,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return instanceSagaPayload;
     }
 
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT, inputSchemaClass = BatchDeploymentPayload.class, description = "批量部署实例")
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT, inputSchemaClass = BatchDeploymentPayload.class, description = "批量部署实例")
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public List<AppServiceInstanceVO> batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS) {
@@ -2148,6 +2149,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         Map<String, String> pathContentMap = new HashMap<>();
+        List<String> fileNames = new ArrayList<>();
 
         List<InstanceSagaPayload> instanceSagaPayloads = batchDeploymentPayload.getInstanceSagaPayloads();
         for (InstanceSagaPayload instanceSagaPayload : instanceSagaPayloads) {
@@ -2168,6 +2170,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
             String instanceContent = resourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
             String fileName = GitOpsConstants.RELEASE_PREFIX + instanceSagaPayload.getAppServiceDeployVO().getInstanceName() + GitOpsConstants.YAML_FILE_SUFFIX;
+            fileNames.add(fileName);
             pathContentMap.put(fileName, instanceContent);
         }
 
@@ -2196,12 +2199,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         }
 
-        gitlabServiceClientOperator.createGitlabFiles(
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                batchDeploymentPayload.getGitlabUserId(),
-                GitOpsConstants.MASTER,
-                pathContentMap,
-                GitOpsConstants.BATCH_DEPLOYMENT_COMMIT_MESSAGE);
+        gitlabServiceClientOperator.createGitlabFiles(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), batchDeploymentPayload.getGitlabUserId(), GitOpsConstants.MASTER, pathContentMap, "BATCH DEPLOY:" + String.join(",", fileNames));
     }
 
 
@@ -2885,8 +2883,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             deploymentName) {
         return devopsEnvPodVOS.stream().filter(devopsEnvPodVO -> {
                     if (ResourceType.REPLICASET.getType().equals(devopsEnvPodVO.getOwnerKind())) {
-                        String controllerNameFromPod = devopsEnvPodVO.getName().substring(0,
-                                devopsEnvPodVO.getName().lastIndexOf('-', devopsEnvPodVO.getName().lastIndexOf('-') - 1));
+                        String controllerNameFromPod;
+                        int lastIndex = devopsEnvPodVO.getName().lastIndexOf('-');
+                        if (devopsEnvPodVO.getName().lastIndexOf('-', lastIndex - 1) == -1) {
+                            controllerNameFromPod = devopsEnvPodVO.getName().substring(0, lastIndex);
+                        } else {
+                            controllerNameFromPod = devopsEnvPodVO.getName().substring(0, devopsEnvPodVO.getName().lastIndexOf('-', lastIndex - 1));
+                        }
                         return deploymentName.equals(controllerNameFromPod);
                     } else {
                         return false;

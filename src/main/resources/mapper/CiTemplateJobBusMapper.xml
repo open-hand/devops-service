@@ -192,16 +192,15 @@
         </foreach>
     </select>
 
-    <select id="existRecord" resultType="java.lang.Integer">
+    <select id="existRecord" resultType="java.lang.Boolean">
         SELECT
-            1
+        count(dctp.id) > 0
         FROM
-            devops_ci_template_pipeline dctp
-                JOIN devops_ci_template_stage dcts ON dctp.id = dcts.pipeline_template_id
-                JOIN devops_ci_template_stage_job_rel dctsjr ON dctsjr.ci_template_stage_id = dcts.id
+        devops_ci_template_pipeline dctp
+        JOIN devops_ci_template_stage dcts ON dctp.id = dcts.pipeline_template_id
+        JOIN devops_ci_template_stage_job_rel dctsjr ON dctsjr.ci_template_stage_id = dcts.id
         WHERE
-            dctsjr.ci_template_job_id = #{templateJobId,jdbcType=BIGINT}
-          AND dctp.source_type = #{sourceType,jdbcType=VARCHAR}
-
+        dctsjr.ci_template_job_id = #{templateJobId,jdbcType=BIGINT}
+        AND dctp.source_type = #{sourceType,jdbcType=VARCHAR}
     </select>
 </mapper>

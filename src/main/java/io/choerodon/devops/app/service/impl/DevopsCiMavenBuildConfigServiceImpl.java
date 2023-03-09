@@ -111,6 +111,7 @@ public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildCo
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void baseCreate(Long stepId, DevopsCiMavenBuildConfigVO mavenBuildConfig) {
         DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = voToDto(mavenBuildConfig);
         devopsCiMavenBuildConfigDTO.setId(null);

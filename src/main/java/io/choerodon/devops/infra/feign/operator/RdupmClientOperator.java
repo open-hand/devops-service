@@ -114,7 +114,7 @@ public class RdupmClientOperator {
      * @param repositoryId
      * @param groupId
      * @param artifactId
-     * @param versionRegular
+     * @param version
      * @return
      */
     public List<C7nNexusComponentDTO> listMavenComponents(@Nullable Long organizationId,
@@ -122,8 +122,9 @@ public class RdupmClientOperator {
                                                           @Nullable Long repositoryId,
                                                           String groupId,
                                                           String artifactId,
+                                                          String version,
                                                           String versionRegular) {
-        ResponseEntity<List<C7nNexusComponentDTO>> response = rdupmClient.listMavenComponents(organizationId, projectId, repositoryId, groupId, artifactId, versionRegular);
+        ResponseEntity<List<C7nNexusComponentDTO>> response = rdupmClient.listMavenComponents(organizationId, projectId, repositoryId, groupId, artifactId, version, versionRegular);
         if (response == null || response.getBody() == null) {
             throw new CommonException("devops.query.nexus.maven.list");
         }
@@ -136,6 +137,10 @@ public class RdupmClientOperator {
             throw new CommonException("devops.query.harbor.repo");
         }
         return response.getBody();
+    }
+
+    public HarborRepoDTO queryHarborRepoConfigByCode(Long projectId, String repoType, String repoCode) {
+        return ResponseUtils.getResponse(rdupmClient.queryHarborRepoConfigByCode(projectId, repoType, repoCode), HarborRepoDTO.class);
     }
 
     public C7nNexusRepoDTO getMavenRepo(Long organizationId, Long projectId, Long repositoryId) {

@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.List;
+import java.util.Set;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -7,17 +9,14 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * devops_ci_template_maven_publish(CiTemplateMavenPublish)实体类
@@ -77,6 +76,65 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
     @Transient
     private MavenRepoVO targetRepo;
 
+    @ApiModelProperty("坐标来源类型")
+    private String gavSourceType;
+
+    private String pomLocation;
+
+    private String groupId;
+
+    private String artifactId;
+
+    private String version;
+    private String packaging;
+
+    public String getGavSourceType() {
+        return gavSourceType;
+    }
+
+    public void setGavSourceType(String gavSourceType) {
+        this.gavSourceType = gavSourceType;
+    }
+
+    public String getPomLocation() {
+        return pomLocation;
+    }
+
+    public void setPomLocation(String pomLocation) {
+        this.pomLocation = pomLocation;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getPackaging() {
+        return packaging;
+    }
+
+    public void setPackaging(String packaging) {
+        this.packaging = packaging;
+    }
 
     public Long getId() {
         return id;

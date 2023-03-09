@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import com.google.gson.Gson;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
@@ -87,7 +88,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_PERSISTENTVOLUMECLAIM,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_PERSISTENTVOLUMECLAIM,
             description = "Devops创建PVC", inputSchema = "{}")
     public DevopsPvcRespVO create(Long projectId, DevopsPvcReqVO devopsPvcReqVO) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsPvcReqVO.getEnvId());
@@ -153,7 +154,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         PERSISTENTVOLUMECLAIM_PREFIX + devopsPvcDTO.getName() + YAML_SUFFIX,
-                        "DELETE FILE",
+                        String.format("【DELETE】%s", PERSISTENTVOLUMECLAIM_PREFIX + devopsPvcDTO.getName() + YAML_SUFFIX),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return true;
@@ -173,7 +174,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        devopsEnvFileResourceDTO.getFilePath(), "DELETE FILE",
+                        devopsEnvFileResourceDTO.getFilePath(), String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {

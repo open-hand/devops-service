@@ -32,8 +32,8 @@
         SELECT d.*
         FROM devops_env_command d
         WHERE d.object_id = #{objectId}
-          AND d.object = #{objectType}
-          AND d.command_type IN ('update', 'create', 'delete')
+        AND d.object = #{objectType}
+        AND d.command_type IN ('update', 'create', 'delete','stop','restart','scale_pod_count')
         ORDER BY d.id DESC
         limit 30
     </select>

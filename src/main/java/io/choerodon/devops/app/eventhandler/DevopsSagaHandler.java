@@ -24,7 +24,9 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.AppServiceTransferVO;
+import io.choerodon.devops.api.vo.PipelineWebHookVO;
+import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.api.vo.cd.AppVersionTriggerVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobFinishVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
@@ -33,22 +35,18 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
-import io.choerodon.devops.infra.constant.MiscConstants;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsClusterOperationRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.asgard.QuartzTaskDTO;
 import io.choerodon.devops.infra.dto.asgard.ScheduleTaskDTO;
-import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
 import io.choerodon.devops.infra.enums.ClusterOperationTypeEnum;
-import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
 import io.choerodon.devops.infra.enums.UseRecordType;
 import io.choerodon.devops.infra.enums.cd.ScheduleTaskOperationTypeEnum;
-import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
-import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -106,16 +104,14 @@ public class DevopsSagaHandler {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private MarketUseRecordService marketUseRecordService;
-    @Autowired
-    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
-    @Autowired
-    private DevopsEnvPodService devopsEnvPodService;
-    @Autowired
-    private WorkFlowServiceOperator workFlowServiceOperator;
-    @Autowired
-    private DevopsDeployRecordService devopsDeployRecordService;
-    @Autowired
-    private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    //    @Autowired
+//    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
+//    @Autowired
+//    private DevopsEnvPodService devopsEnvPodService;
+//    @Autowired
+//    private DevopsDeployRecordService devopsDeployRecordService;
+//    @Autowired
+//    private DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
@@ -645,87 +641,87 @@ public class DevopsSagaHandler {
         devopsClusterNodeOperatorService.addNode(devopsAddNodePayload.getProjectId(), devopsAddNodePayload.getClusterId(), devopsAddNodePayload.getOperatingId(), devopsAddNodePayload.getNodeVO());
     }
 
-    /**
-     * 接收实例下pod ready的消息，用于通知hzero部署是否需要进行下一个流程
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_POD_READY_HANDLER_FOR_HZERO_DEPLOY,
-            description = "处理pod ready消息",
-            sagaCode = DEVOPS_POD_READY,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 0,
-            seq = 1)
-    public void handlePodReadyEvent(String data) {
-        PodReadyEventVO podReadyEventVO = JsonHelper.unmarshalByJackson(data, PodReadyEventVO.class);
-//        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, podReadyEventVO.getInstanceId());
-//        if (devopsDeployAppCenterEnvDTO == null) {
-//            LOGGER.info(">>>>>>>>>>>>>>>App not found, skip. instanceId : {}<<<<<<<<<<<<<<<<<", podReadyEventVO.getInstanceId());
-//            return;
+//    /**
+//     * 接收实例下pod ready的消息，用于通知hzero部署是否需要进行下一个流程
+//     */
+//    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_POD_READY_HANDLER_FOR_HZERO_DEPLOY,
+//            description = "处理pod ready消息",
+//            sagaCode = DEVOPS_POD_READY,
+//            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+//            maxRetryCount = 0,
+//            seq = 1)
+//    public void handlePodReadyEvent(String data) {
+//        PodReadyEventVO podReadyEventVO = JsonHelper.unmarshalByJackson(data, PodReadyEventVO.class);
+////        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, podReadyEventVO.getInstanceId());
+////        if (devopsDeployAppCenterEnvDTO == null) {
+////            LOGGER.info(">>>>>>>>>>>>>>>App not found, skip. instanceId : {}<<<<<<<<<<<<<<<<<", podReadyEventVO.getInstanceId());
+////            return;
+////        }
+////
+//        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = podReadyEventVO.getDevopsHzeroDeployDetailsDTO();
+//        if (devopsHzeroDeployDetailsDTO != null) {
+//            // pod的操作记录不是最新的则丢弃
+//            if (podReadyEventVO.getCommandId() < devopsHzeroDeployDetailsDTO.getCommandId()) {
+//                LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
+//                return;
+//            }
+//            if (Boolean.FALSE.equals(devopsEnvPodService.checkInstancePodStatusAllReadyWithCommandId(devopsHzeroDeployDetailsDTO.getEnvId(),
+//                    devopsHzeroDeployDetailsDTO.getAppId(),
+//                    devopsHzeroDeployDetailsDTO.getCommandId()))) {
+//                return;
+//            }
+//
+//            DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
+//
+//            devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.SUCCESS);
+//            if (!DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
+//                // 1. 后续还有任务则通知下一任务执行
+//                // 2. 后续没有任务了，则更新部署记录状态为成功
+//                if (Boolean.TRUE.equals(devopsHzeroDeployDetailsService.completed(devopsHzeroDeployDetailsDTO.getDeployRecordId()))) {
+//                    devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.SUCCESS);
+//                } else {
+//                    workFlowServiceOperator.approveUserTask(devopsDeployRecordDTO.getProjectId(),
+//                            devopsDeployRecordDTO.getBusinessKey(),
+//                            MiscConstants.WORKFLOW_ADMIN_NAME,
+//                            MiscConstants.WORKFLOW_ADMIN_ID,
+//                            MiscConstants.WORKFLOW_ADMIN_ORG_ID);
+//                }
+//
+//
+//            }
 //        }
 //
-        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = podReadyEventVO.getDevopsHzeroDeployDetailsDTO();
-        if (devopsHzeroDeployDetailsDTO != null) {
-            // pod的操作记录不是最新的则丢弃
-            if (podReadyEventVO.getCommandId() < devopsHzeroDeployDetailsDTO.getCommandId()) {
-                LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
-                return;
-            }
-            if (Boolean.FALSE.equals(devopsEnvPodService.checkInstancePodStatusAllReadyWithCommandId(devopsHzeroDeployDetailsDTO.getEnvId(),
-                    devopsHzeroDeployDetailsDTO.getAppId(),
-                    devopsHzeroDeployDetailsDTO.getCommandId()))) {
-                return;
-            }
+//    }
 
-            DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
-
-            devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.SUCCESS);
-            if (!DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
-                // 1. 后续还有任务则通知下一任务执行
-                // 2. 后续没有任务了，则更新部署记录状态为成功
-                if (Boolean.TRUE.equals(devopsHzeroDeployDetailsService.completed(devopsHzeroDeployDetailsDTO.getDeployRecordId()))) {
-                    devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.SUCCESS);
-                } else {
-                    workFlowServiceOperator.approveUserTask(devopsDeployRecordDTO.getProjectId(),
-                            devopsDeployRecordDTO.getBusinessKey(),
-                            MiscConstants.WORKFLOW_ADMIN_NAME,
-                            MiscConstants.WORKFLOW_ADMIN_ID,
-                            MiscConstants.WORKFLOW_ADMIN_ORG_ID);
-                }
-
-
-            }
-        }
-
-    }
-
-    /**
-     * hzero实例部署失败
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_HZERO_DEPLOY_FAILED,
-            description = "处理hzero实例部署失败",
-            sagaCode = DEVOPS_DEPLOY_FAILED,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 0,
-            seq = 1)
-    public void handleHzeroDeployFailedEvent(String data) {
-        DevopsDeployFailedVO devopsDeployFailedVO = JsonHelper.unmarshalByJackson(data, DevopsDeployFailedVO.class);
-        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, devopsDeployFailedVO.getInstanceId());
-        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryByAppId(devopsDeployAppCenterEnvDTO.getId());
-        if (devopsHzeroDeployDetailsDTO != null) {
-            // pod的操作记录不是最新的则丢弃
-            if (!devopsDeployFailedVO.getCommandId().equals(devopsHzeroDeployDetailsDTO.getCommandId())) {
-                LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
-                return;
-            }
-
-            DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
-            if (!DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
-                workFlowServiceOperator.stopInstance(devopsDeployRecordDTO.getProjectId(), devopsDeployRecordDTO.getBusinessKey());
-                devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.FAILED);
-                devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.FAILED);
-            }
-        }
-
-    }
+//    /**
+//     * hzero实例部署失败
+//     */
+//    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_HZERO_DEPLOY_FAILED,
+//            description = "处理hzero实例部署失败",
+//            sagaCode = DEVOPS_DEPLOY_FAILED,
+//            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+//            maxRetryCount = 0,
+//            seq = 1)
+//    public void handleHzeroDeployFailedEvent(String data) {
+//        DevopsDeployFailedVO devopsDeployFailedVO = JsonHelper.unmarshalByJackson(data, DevopsDeployFailedVO.class);
+//        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, devopsDeployFailedVO.getInstanceId());
+//        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryByAppId(devopsDeployAppCenterEnvDTO.getId());
+//        if (devopsHzeroDeployDetailsDTO != null) {
+//            // pod的操作记录不是最新的则丢弃
+//            if (!devopsDeployFailedVO.getCommandId().equals(devopsHzeroDeployDetailsDTO.getCommandId())) {
+//                LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
+//                return;
+//            }
+//
+//            DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
+//            if (!DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
+//                workFlowServiceOperator.stopInstance(devopsDeployRecordDTO.getProjectId(), devopsDeployRecordDTO.getBusinessKey());
+//                devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.FAILED);
+//                devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.FAILED);
+//            }
+//        }
+//
+//    }
 
 
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,

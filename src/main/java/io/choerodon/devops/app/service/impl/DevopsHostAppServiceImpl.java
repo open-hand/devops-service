@@ -762,6 +762,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         String deployObjectName = null;
         String deployVersion = null;
+        String packaging = "jar";
 
         // 获取并记录信息
         List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
@@ -815,10 +816,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
             artifactId = jarDeployVO.getProdJarInfoVO().getArtifactId();
             version = jarDeployVO.getProdJarInfoVO().getVersion();
-            nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
+            nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, null, version);
             mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             deployObjectName = nexusComponentDTOList.get(0).getName();
             deployVersion = nexusComponentDTOList.get(0).getVersion();
+            packaging = nexusComponentDTOList.get(0).getExtension();
         }
 
         if (devopsHostAppDTO == null) {
@@ -889,7 +891,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     appFile);
         } else {
             appFileName = nexusComponentDTOList.get(0).getName();
-            appFileName = appFileName.endsWith(".jar") ? appFileName : appFileName + ".jar";
+            appFileName = appFileName + "." + packaging;
             appFile = workDir + SLASH + appFileName;
             downloadCommand = HostDeployUtil.getDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
@@ -971,7 +973,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     String groupId = prodJarInfoVO.getGroupId();
                     String artifactId = prodJarInfoVO.getArtifactId();
                     String jarVersion = prodJarInfoVO.getVersion();
-                    nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, jarVersion);
+                    nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, null, jarVersion);
                     if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
                         appFileName = devopsHostAppInstanceDTO.getCode();
                     } else {

@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.DeployValueCode.DEVOPS_DEPLOY_VALUE_ID_NULL;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.DeployValueCode.DEVOPS_DEPLOY_VALUE_ID_NULL;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
@@ -111,7 +111,10 @@ public class ChartDeployJobHandlerImpl extends AbstractAppDeployJobHandlerImpl {
 
     @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        devopsCiJobVO.setCiChartDeployConfig(ciChartDeployConfigService.queryConfigVoById(devopsCiJobVO.getConfigId()));
+        CiChartDeployConfigVO ciChartDeployConfigVO = ciChartDeployConfigService.queryConfigVoById(devopsCiJobVO.getConfigId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(ciChartDeployConfigVO.getEnvId());
+        ciChartDeployConfigVO.setEnvName(devopsEnvironmentDTO.getName());
+        devopsCiJobVO.setCiChartDeployConfig(ciChartDeployConfigVO);
     }
 
     @Override

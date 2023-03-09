@@ -10,8 +10,6 @@ import io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
-import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployRecordVO;
-import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
@@ -132,22 +130,22 @@ public interface DevopsDeployRecordService {
 
     DevopsDeployRecordDTO baseQueryById(Long deployRecordId);
 
-    /**
-     * 停止hzero部署
-     * @param projectId
-     * @param recordId
-     */
-    void stop(Long projectId, Long recordId);
+//    /**
+//     * 停止hzero部署
+//     * @param projectId
+//     * @param recordId
+//     */
+//    void stop(Long projectId, Long recordId);
 
-    /**
-     * 重试hzero部署
-     * @param projectId
-     * @param recordId
-     * @param hzeroDeployVO
-     */
-    void retry(Long projectId, Long recordId, HzeroDeployVO hzeroDeployVO);
+//    /**
+//     * 重试hzero部署
+//     * @param projectId
+//     * @param recordId
+//     * @param hzeroDeployVO
+//     */
+//    void retry(Long projectId, Long recordId, HzeroDeployVO hzeroDeployVO);
 
     void baseUpdate(DevopsDeployRecordDTO devopsDeployRecordDTO);
-
-    HzeroDeployRecordVO queryHzeroDetailsById(Long projectId, Long recordId);
+//
+//    HzeroDeployRecordVO queryHzeroDetailsById(Long projectId, Long recordId);
 }

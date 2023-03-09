@@ -16,6 +16,8 @@ public class AppDeployConfigVO {
     @ApiModelProperty(value = "环境Id,devops_env.id", required = true)
     @Encrypt
     private Long envId;
+    @ApiModelProperty(value = "envName")
+    private String envName;
     @ApiModelProperty(value = "部署类型：create 新建实例， update 替换实例", required = true)
     private String deployType;
     @ApiModelProperty(value = "是否校验环境权限", required = true)
@@ -27,6 +29,14 @@ public class AppDeployConfigVO {
     private String appName;
     @ApiModelProperty(value = "应用编码,devops_deploy_app_center_env.code", required = true)
     private String appCode;
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
 
     public Long getId() {
         return id;

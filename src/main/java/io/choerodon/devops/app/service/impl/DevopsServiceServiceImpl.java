@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.netflix.servo.util.Strings;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.*;
@@ -189,7 +190,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_SERVICE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_SERVICE,
             description = "Devops创建网络", inputSchema = "{}")
     public Boolean create(Long projectId, DevopsServiceReqVO devopsServiceReqVO) {
         //校验部署方式是否唯一
@@ -408,7 +409,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         GitOpsConstants.SERVICE_PREFIX + devopsServiceDTO.getName() + GitOpsConstants.YAML_FILE_SUFFIX,
-                        "DELETE FILE",
+                        String.format("【DELETE】%s", GitOpsConstants.SERVICE_PREFIX + devopsServiceDTO.getName() + GitOpsConstants.YAML_FILE_SUFFIX),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return;
@@ -431,7 +432,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(),
-                        "DELETE FILE",
+                        String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {

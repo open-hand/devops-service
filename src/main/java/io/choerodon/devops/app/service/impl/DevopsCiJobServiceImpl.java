@@ -22,7 +22,6 @@ import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
@@ -80,22 +79,12 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
 
     @Autowired
-    private JobOperator jobOperator;
+    private DevopsCiPipelineTriggerConfigService devopsCiPipelineTriggerConfigService;
 
+    @Autowired
+    private CiJobConfigFileRelService ciJobConfigFileRelService;
 
-    public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
-                                  GitlabServiceClientOperator gitlabServiceClientOperator,
-                                  UserAttrService userAttrService,
-                                  AppServiceService appServiceService,
-                                  DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
-                                  DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
-                                  @Lazy DevopsCiPipelineService devopsCiPipelineService,
-                                  @Lazy
-                                          DevopsCiJobRecordService devopsCiJobRecordService,
-                                  AppServiceMapper appServiceMapper,
-                                  CheckGitlabAccessLevelService checkGitlabAccessLevelService,
-                                  DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
-                                  DevopsCiJobRecordMapper devopsCiJobRecordMapper) {
+    public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper, GitlabServiceClientOperator gitlabServiceClientOperator, UserAttrService userAttrService, AppServiceService appServiceService, DevopsCiCdPipelineMapper devopsCiCdPipelineMapper, DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper, @Lazy DevopsCiPipelineService devopsCiPipelineService, @Lazy DevopsCiJobRecordService devopsCiJobRecordService, AppServiceMapper appServiceMapper, CheckGitlabAccessLevelService checkGitlabAccessLevelService, DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper, DevopsCiJobRecordMapper devopsCiJobRecordMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
@@ -143,6 +132,13 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         if (!jobIds.isEmpty()) {
             // 删除任务下的步骤
             devopsCiStepService.deleteByJobIds(jobIds);
+
+            // 删除任务和配置文件关系
+            ciJobConfigFileRelService.deleteByJobIds(jobIds);
+
+            // 删除pipeline trigger
+            devopsCiPipelineTriggerConfigService.deleteByJobIds(jobIds);
+
             DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
             devopsCiJobDTO.setCiStageId(stageId);
             devopsCiJobMapper.delete(devopsCiJobDTO);
@@ -274,6 +270,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         List<Long> jobIds = devopsCiJobDTOS.stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
         // 删除maven settings
         deleteMavenSettingsRecordByJobIds(jobIds);
+
+        // 删除pipeline trigger
+        devopsCiPipelineTriggerConfigService.deleteByJobIds(jobIds);
 
         // 删除步骤
         devopsCiStepService.deleteByJobIds(jobIds);

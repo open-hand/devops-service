@@ -1,10 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -15,6 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -282,7 +282,7 @@ public class AppServiceController {
      * @param projectId 项目id
      * @param isActive  项目是否启用
      * @param pageable  分页参数
-     * @param params    参数
+     * @param searchVO  参数
      * @return Page
      */
     @Permission(level = ResourceLevel.ORGANIZATION,
@@ -297,19 +297,8 @@ public class AppServiceController {
             @RequestParam(value = "active", required = false) Boolean isActive,
             @ApiParam(value = "服务是否存在版本")
             @RequestParam(value = "has_version", required = false) Boolean hasVersion,
-            @ApiParam(value = "是否包含外部应用服务")
-            @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal,
-            @ApiParam(value = "服务类型")
-            @RequestParam(value = "type", required = false) String type,
-            @ApiParam(value = "是否校验团队成员权限")
-            @RequestParam(value = "checkMember", required = false, defaultValue = "false") Boolean checkMember,
-            @ApiParam(value = "是否分页")
-            @RequestParam(value = "doPage", required = false) Boolean doPage,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageable,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return ResponseEntity.ok(applicationServiceService.pageByOptions(projectId, isActive, hasVersion, type, doPage, pageable, params, checkMember, includeExternal, null));
+            @ApiParam(value = "是否包含外部应用服务") @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal, @ApiParam(value = "服务类型") @RequestParam(value = "type", required = false) String type, @ApiParam(value = "是否校验团队成员权限") @RequestParam(value = "checkMember", required = false, defaultValue = "false") Boolean checkMember, @ApiParam(value = "是否分页") @RequestParam(value = "doPage", required = false) Boolean doPage, @ApiParam(value = "分页参数") @ApiIgnore PageRequest pageable, @ApiParam(value = "查询参数") @RequestBody(required = false) SearchVO searchVO) {
+        return ResponseEntity.ok(applicationServiceService.pageByOptions(projectId, isActive, hasVersion, type, doPage, pageable, searchVO, checkMember, includeExternal, null));
     }
 
     /**
@@ -317,7 +306,7 @@ public class AppServiceController {
      *
      * @param projectId 项目id
      * @param pageable  分页参数
-     * @param params    参数
+     * @param searchVO  参数
      * @return Page
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -330,8 +319,8 @@ public class AppServiceController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return ResponseEntity.ok(applicationServiceService.pageInternalByOptionsWithAccessLevel(projectId, pageable, params));
+            @RequestBody(required = false) SearchVO searchVO) {
+        return ResponseEntity.ok(applicationServiceService.pageInternalByOptionsWithAccessLevel(projectId, pageable, searchVO));
     }
 
     /**
@@ -735,10 +724,11 @@ public class AppServiceController {
             @RequestParam(value = "doPage", required = false, defaultValue = "true") Boolean doPage,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
+            @RequestParam(value = "params", required = false) String params,
             @ApiParam(value = "应用服务Ids")
             @Encrypt
             @RequestBody(required = false) Set<Long> ids) {
-        return ResponseEntity.ok(applicationServiceService.listByIdsOrPage(projectId, ids, doPage, pageable));
+        return ResponseEntity.ok(applicationServiceService.listByIdsOrPage(projectId, ids, doPage, pageable, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -913,6 +903,18 @@ public class AppServiceController {
             @ApiParam(value = "应用服务Id")
             @Encrypt @PathVariable(value = "app_service_id") Long appServiceId) {
         return ResponseEntity.ok(applicationServiceService.queryRepoConfigById(projectId, appServiceId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询应用服务关联的镜像仓库")
+    @GetMapping("/docker_repo_config")
+    public ResponseEntity<ImageRepoInfoVO> queryRepoConfigByCode(
+            @ApiParam(value = "项目Id")
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "code") String code,
+            @RequestParam(value = "repoType") String repoType,
+            @RequestParam(value = "repoCode", required = false) String repoCode) {
+        return ResponseEntity.ok(applicationServiceService.queryRepoConfigByCode(projectId, code, repoType, repoCode));
     }
 
 

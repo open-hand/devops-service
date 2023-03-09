@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiPipelineTriggerConfigMapper">
+  <resultMap id="devopsCiPipelineTriggerConfigVO"
+             type="io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO">
+    <result property="id" column="id"/>
+    <result property="triggeredPipelineId" column="triggered_pipeline_id"/>
+    <result property="triggeredPipelineProjectId" column="triggered_pipeline_project_id"/>
+    <result property="refName" column="ref_name"/>
+    <result property="token" column="token"/>
+    <collection property="devopsCiPipelineVariables"
+                ofType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigVariableDTO">
+      <result property="id" column="id"/>
+      <result property="variableKey" column="variable_key"/>
+      <result property="variableValue" column="variable_value"/>
+    </collection>
+  </resultMap>
+
+  <select id="listByJobIds" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigDTO">
+    SELECT dcptc.id,
+    dcptc.triggered_pipeline_gitlab_project_id,
+    dcptc.pipeline_trigger_id
+    FROM devops_ci_pipeline_trigger_config dcptc
+    JOIN devops_ci_job dcj ON dcj.config_id = dcptc.id AND dcj.type = 'pipeline_trigger'
+    WHERE dcj.id IN
+    <foreach collection="jobIds" separator="," open="(" close=")" item="jobId">
+      #{jobId}
+    </foreach>
+  </select>
+
+  <delete id="deleteByIds">
+    DELETE FROM devops_ci_pipeline_trigger_config
+    WHERE id IN
+    <foreach collection="ids" separator="," open="(" close=")" item="id">
+      #{id}
+    </foreach>
+  </delete>
+
+  <select id="queryConfigVoByIdWithVariables"
+          resultMap="devopsCiPipelineTriggerConfigVO">
+    SELECT *
+    FROM devops_ci_pipeline_trigger_config dcptc
+    LEFT JOIN devops_ci_pipeline_trigger_config_variable dcptcv ON dcptcv.pipeline_trigger_config_id = dcptc.id
+    WHERE dcptc.id = #{configId}
+  </select>
+</mapper>

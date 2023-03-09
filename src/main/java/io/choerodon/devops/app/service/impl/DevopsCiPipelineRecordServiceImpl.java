@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
@@ -66,7 +67,10 @@ import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.RdupmClient;
-import io.choerodon.devops.infra.feign.operator.*;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
+import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.handler.CiPipelineSyncHandler;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
@@ -169,25 +173,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Autowired
     protected DevopsDeploymentService devopsDeploymentService;
 
-
-//    @Autowired
-//    protected DevopsCdAuditRecordService devopsCdAuditRecordService;
-
-//    @Autowired
-//    protected DevopsCdJobRecordService devopsCdJobRecordService;
-
-//    @Autowired
-//    protected DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
-//
-//    @Autowired
-//    protected DevopsCdJobRecordMapper devopsCdJobRecordMapper;
-
-//    @Autowired
-//    protected DevopsCdStageRecordService devopsCdStageRecordService;
-
-//    @Autowired
-//    protected DevopsCdStageRecordMapper devopsCdStageRecordMapper;
-
     @Autowired
     protected DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
@@ -212,8 +197,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Autowired
     protected KeySocketSendHelper webSocketHelper;
-    @Autowired
-    protected WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
     protected DevopsHostAppMapper devopsHostAppMapper;
 
@@ -281,7 +264,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     }
 
     @Override
-    @Saga(code = DEVOPS_GITLAB_CI_PIPELINE, description = "gitlab ci pipeline创建到数据库", inputSchemaClass = PipelineWebHookVO.class)
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = DEVOPS_GITLAB_CI_PIPELINE, description = "gitlab ci pipeline创建到数据库", inputSchemaClass = PipelineWebHookVO.class)
     public void create(PipelineWebHookVO pipelineWebHookVO, String token) {
         AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
         CiCdPipelineDTO devopsCiPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
@@ -410,6 +393,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordDTO.setCreatedDate(pipelineWebHookVO.getObjectAttributes().getCreatedAt());
             devopsCiPipelineRecordDTO.setFinishedDate(pipelineWebHookVO.getObjectAttributes().getFinishedAt());
             devopsCiPipelineRecordDTO.setDurationSeconds(pipelineWebHookVO.getObjectAttributes().getDuration());
+            devopsCiPipelineRecordDTO.setQueuedDuration(pipelineWebHookVO.getObjectAttributes().getQueuedDuration());
             devopsCiPipelineRecordDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
             devopsCiPipelineRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
             devopsCiPipelineRecordDTO.setSource(pipelineWebHookVO.getObjectAttributes().getSource());
@@ -437,6 +421,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordDTO.setCreatedDate(pipelineWebHookVO.getObjectAttributes().getCreatedAt());
             devopsCiPipelineRecordDTO.setFinishedDate(pipelineWebHookVO.getObjectAttributes().getFinishedAt());
             devopsCiPipelineRecordDTO.setDurationSeconds(pipelineWebHookVO.getObjectAttributes().getDuration());
+            devopsCiPipelineRecordDTO.setQueuedDuration(pipelineWebHookVO.getObjectAttributes().getQueuedDuration());
             devopsCiPipelineRecordDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
             devopsCiPipelineRecordDTO.setSource(pipelineWebHookVO.getObjectAttributes().getSource());
             devopsCiPipelineRecordMapper.updateByPrimaryKeySelective(devopsCiPipelineRecordDTO);
@@ -1436,7 +1421,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             updatePipelineStatus(gitlabPipelineId, pipeline.getStatus());
             // 更新job status
 
-            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(),
+            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId,
                     gitlabPipelineId.intValue(),
                     userAttrDTO.getGitlabUserId().intValue(),
                     appExternalConfigDTO);
@@ -1723,65 +1708,55 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Long nexusRepoId;
         String groupId;
         String artifactId;
-        String versionRegular;
+//        String versionRegular;
         String version = null;
+        String repoUrl;
+        String artifactType;
         String downloadUrl = null;
         String username = null;
         String password = null;
-        if (jarDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
-            nexusRepoId = jarDeploy.getRepositoryId();
-            groupId = jarDeploy.getGroupId();
-            artifactId = jarDeploy.getArtifactId();
-            versionRegular = jarDeploy.getVersionRegular();
-        } else {
 
-            CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(appServiceDTO.getId(),
-                    gitlabPipelineId,
-                    jarDeploy.getPipelineTask());
-            nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
-            groupId = ciPipelineMavenDTO.getGroupId();
-            artifactId = ciPipelineMavenDTO.getArtifactId();
+        CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(appServiceDTO.getId(),
+                gitlabPipelineId,
+                jarDeploy.getPipelineTask());
+        nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
+        groupId = ciPipelineMavenDTO.getGroupId();
+        artifactId = ciPipelineMavenDTO.getArtifactId();
+        artifactType = ciPipelineMavenDTO.getArtifactType();
 
-            //0.0.1-SNAPSHOT/springbbot-0.0.1-20210506.081037-4
-            versionRegular = "^" + getMavenVersion(ciPipelineMavenDTO.getVersion()) + "$";
-            if (nexusRepoId == null) {
-                downloadUrl = ciPipelineMavenDTO.calculateDownloadUrl();
-                username = DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername());
-                password = DESEncryptUtil.decode(ciPipelineMavenDTO.getPassword());
-                version = ciPipelineMavenDTO.getVersion();
-            }
-            log.append("根据坐标获取jar包信息：").append(System.lineSeparator());
-            log.append("groupId：").append(groupId).append(System.lineSeparator());
-            log.append("artifactId：").append(artifactId).append(System.lineSeparator());
-            log.append("version：").append(getMavenVersion(ciPipelineMavenDTO.getVersion())).append(System.lineSeparator());
-        }
+        log.append("根据坐标获取jar包信息：").append(System.lineSeparator());
+        log.append("groupId：").append(groupId).append(System.lineSeparator());
+        log.append("artifactId：").append(artifactId).append(System.lineSeparator());
+        log.append("version：").append(getMavenVersion(ciPipelineMavenDTO.getVersion())).append(System.lineSeparator());
+        log.append("packaging：").append(artifactType).append(System.lineSeparator());
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO(username, password, downloadUrl);
         JarDeployVO jarDeployVO = null;
         if (nexusRepoId != null) {
             // 0.3 获取并记录信息
-            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, versionRegular);
-            if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
-                log.append("获取部署jar包信息失败，请检查关联的构建任务是否执行成功、发布的jar包坐标是否和pom文件一致").append(System.lineSeparator());
-                throw new CommonException(DEVOPS_DEPLOY_FAILED);
-            }
+//            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, ciPipelineMavenDTO.getVersion());
+//            if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
+//                log.append("获取部署jar包信息失败，请检查关联的构建任务是否执行成功、发布的jar包坐标是否和pom文件一致").append(System.lineSeparator());
+//                throw new CommonException(DEVOPS_DEPLOY_FAILED);
+//            }
             List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
                 log.append("获取制品仓库信息失败，请检查关联制品库是否正常").append(System.lineSeparator());
                 throw new CommonException(DEVOPS_DEPLOY_FAILED);
             }
 
-            C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
+//            C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
             C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), projectId, nexusRepoId);
 
             ProdJarInfoVO prodJarInfoVO = new ProdJarInfoVO(c7nNexusRepoDTO.getConfigId(),
                     nexusRepoId,
                     groupId,
                     artifactId,
-                    c7nNexusComponentDTO.getVersion());
-            downloadUrl = nexusComponentDTOList.get(0).getDownloadUrl();
+                    ciPipelineMavenDTO.getVersion());
+            repoUrl = mavenRepoDTOList.get(0).getUrl();
+//            downloadUrl = nexusComponentDTOList.get(0).getDownloadUrl();
             username = mavenRepoDTOList.get(0).getNePullUserId();
             password = mavenRepoDTOList.get(0).getNePullUserPassword();
-            version = c7nNexusComponentDTO.getVersion();
+//            version = c7nNexusComponentDTO.getVersion();
 
             jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
                     devopsCiHostDeployInfoDTO.getAppName(),
@@ -1804,7 +1779,17 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     devopsCiHostDeployInfoDTO.getHealthProb(),
                     jarPullInfoDTO,
                     devopsCiHostDeployInfoDTO.getDeployType());
+            repoUrl = ciPipelineMavenDTO.getMavenRepoUrl();
+            username = DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername());
+            password = DESEncryptUtil.decode(ciPipelineMavenDTO.getPassword());
+
         }
+        version = ciPipelineMavenDTO.getVersion();
+        downloadUrl = MavenUtil.calculateDownloadUrl(repoUrl,
+                ciPipelineMavenDTO.getGroupId(),
+                ciPipelineMavenDTO.getArtifactId(),
+                ciPipelineMavenDTO.getVersion(),
+                ciPipelineMavenDTO.getArtifactType());
 
         // 2.保存记录
         log.append("3. 开始部署...").append(System.lineSeparator());
@@ -1866,7 +1851,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         Map<String, String> params = new HashMap<>();
         String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
-        String appFileName = artifactId.endsWith(".jar") ? artifactId : artifactId + ".jar";
+        String appFileName = artifactId + "." + artifactType;
         String appFile = workDir + SLASH + appFileName;
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", appFileName);

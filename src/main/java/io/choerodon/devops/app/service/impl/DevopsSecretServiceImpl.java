@@ -278,7 +278,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         "sct-" + devopsSecretDTO.getName() + ".yaml",
-                        "DELETE FILE",
+                        String.format("【DELETE】%s", "sct-" + devopsSecretDTO.getName() + ".yaml"),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), MASTER);
             }
             return true;
@@ -298,7 +298,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        devopsEnvFileResourceDTO.getFilePath(), "DELETE FILE",
+                        devopsEnvFileResourceDTO.getFilePath(), String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {

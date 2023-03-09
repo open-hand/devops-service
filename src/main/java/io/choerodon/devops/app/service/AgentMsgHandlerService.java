@@ -22,6 +22,8 @@ public interface AgentMsgHandlerService {
 
     void updateInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String commandMsg);
 
+    void updateStartOrStopInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String payload);
+
     void handlerDomainCreateMessage(String key, String msg, Long clusterId);
 
     void helmUpgradeJobInfo(String key, String msg, Long clusterId);
@@ -87,9 +89,10 @@ public interface AgentMsgHandlerService {
 
     /**
      * 处理工作负载产生的pod事件
-     *
      */
     void workloadPodEvent(String key, String msg, Long clusterId);
 
     void handleDeletePod(Long clusterId, String payload);
+
+    void operatePodCount(String key, String payload, Long clusterId, boolean success);
 }

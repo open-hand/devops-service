@@ -6,6 +6,24 @@ public class OperationPodPayload {
     private String kind;
     private String name;
     private Long count;
+    private String commandId;
+    private String msg;
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public String getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(String commandId) {
+        this.commandId = commandId;
+    }
 
     public String getNamespace() {
         return namespace;

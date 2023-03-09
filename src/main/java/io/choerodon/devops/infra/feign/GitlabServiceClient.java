@@ -1,16 +1,16 @@
 package io.choerodon.devops.infra.feign;
 
-import java.io.InputStream;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import javax.validation.Valid;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.InputStream;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import javax.validation.Valid;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiVariableVO;
@@ -141,9 +141,9 @@ public interface GitlabServiceClient {
                                                         @RequestParam(value = "perPage", required = false) Integer perPage);
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
-    ResponseEntity<ImpersonationTokenDTO> createProjectToken(@PathVariable("userId") Integer userId,
-                                                             @RequestParam(value = "tokenName", required = false) String tokenName,
-                                                             @RequestParam(value = "date", required = false) Date date);
+    ResponseEntity<String> createProjectToken(@PathVariable("userId") Integer userId,
+                                              @RequestParam(value = "tokenName", required = false) String tokenName,
+                                              @RequestParam(value = "date", required = false) Date date);
 
     @DeleteMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<Void> revokeImpersonationToken(@PathVariable("userId") Integer userId,
@@ -1089,4 +1089,83 @@ public interface GitlabServiceClient {
             @PathVariable Integer projectId,
             @RequestParam("state") String state
     );
+
+    /**
+     * 创建流水线自动触发trigger
+     *
+     * @param projectId 项目id
+     * @param userId    用户id
+     * @return Pipeline
+     */
+    @ApiOperation(value = "Create a pipelines")
+    @PostMapping("/v1/projects/{projectId}/pipelines_triggers")
+    ResponseEntity<PipelineTrigger> createPipelineTrigger(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "userId")
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "trigger name")
+            @RequestParam String description);
+
+    /**
+     * 删除流水线自动触发trigger
+     *
+     * @param projectId 项目id
+     * @param userId    用户id
+     * @return Pipeline
+     */
+    @ApiOperation(value = "Create a pipelines")
+    @DeleteMapping("/v1/projects/{projectId}/pipelines_triggers")
+    ResponseEntity<Void> deletePipelineTrigger(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "userId")
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "trigger id")
+            @RequestParam Integer triggerId);
+
+    /**
+     * 查询流水线自动触发trigger
+     *
+     * @param projectId 项目id
+     * @param userId    用户id
+     * @return Pipeline
+     */
+    @ApiOperation(value = "Create a pipelines")
+    @GetMapping("/v1/projects/{projectId}/pipelines_triggers")
+    ResponseEntity<List<PipelineTrigger>> listPipelineTrigger(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "userId")
+            @RequestParam(value = "userId") Integer userId);
+
+    /**
+     * 归档项目
+     *
+     * @param projectId 项目id
+     * @param userId    用户Id
+     * @return Project
+     */
+    @ApiOperation(value = "归档项目")
+    @PostMapping("/v1/projects/{projectId}/archive")
+    ResponseEntity<String> archiveProject(
+            @ApiParam(value = "用户Id", required = true)
+            @RequestParam Integer userId,
+            @ApiParam(value = "项目id", required = true)
+            @RequestBody Integer projectId);
+
+    /**
+     * 解档项目
+     *
+     * @param projectId 项目id
+     * @param userId    用户Id
+     * @return Project
+     */
+    @ApiOperation(value = "归档项目")
+    @PostMapping("/v1/projects/{projectId}/unarchive")
+    ResponseEntity<String> unarchiveProject(
+            @ApiParam(value = "用户Id", required = true)
+            @RequestParam Integer userId,
+            @ApiParam(value = "项目id", required = true)
+            @RequestBody Integer projectId);
 }

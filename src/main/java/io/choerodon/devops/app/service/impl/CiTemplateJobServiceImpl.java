@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
@@ -18,9 +17,7 @@ import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHa
 import io.choerodon.devops.app.service.CiTemplateJobGroupService;
 import io.choerodon.devops.app.service.CiTemplateJobService;
 import io.choerodon.devops.app.service.CiTemplateStepService;
-import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiTemplateJobDTO;
-import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.CiTriggerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -113,6 +110,11 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
             devopsCiJobVOList.add(devopsCiJobVO);
         });
         return devopsCiJobVOList;
+    }
+
+    @Override
+    public List<CiTemplateJobVO> listConfigFileReferenceInfo(Long configFileId) {
+        return ciTemplateJobmapper.listConfigFileReferenceInfo(configFileId);
     }
 }
 

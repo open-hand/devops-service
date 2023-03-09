@@ -1,13 +1,14 @@
 package io.choerodon.devops.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 import java.util.Set;
-
-import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.PipelineHomeVO;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
+import io.choerodon.devops.api.vo.SearchVO;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -20,10 +21,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface PipelineMapper extends BaseMapper<PipelineDTO> {
 
     Page<PipelineHomeVO> pagingByProjectIdAndOptions(@Param("projectId") Long projectId,
-                                                     @Param("enable") Boolean enable,
-                                                     @Param("status") String status,
-                                                     @Param("triggerType") String triggerType,
-                                                     @Param("param") String param);
+                                                     @Param("searchVO") SearchVO searchVO);
 
     Boolean checkName(@Param("projectId") Long projectId,
                       @Param("id") Long id,

@@ -290,6 +290,26 @@ function downloadSettingsFileByUId() {
   fi
 }
 
+#################################### 下载配置文件 ####################################
+# $1 config_file_id
+# $2 config_file_path
+function downloadConfigFileByUId() {
+  http_status_code=$(curl -o result.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/config_file/?token=${Token}&config_file_id=${1}")
+  if [ "$http_status_code" != "200" ];
+    then
+      echo "Download Configfile failed."
+      exit 1
+  else
+    # 保存到其他目录，需要提前创建目录
+    if [[ "$2" =~ "/" ]]; then
+      mkdir -p $(dirname "$2")
+    fi
+    # 输出配置文件到目标路径
+    mv result.json "$2"
+  fi
+}
+
+
 ############################### 存储镜像元数据, 用于CD阶段主机部署-镜像部署 ################################
 # 无参数
 # 此函数上传镜像构建元数据, 只有任务(job)通过这个函数上传了镜像元数据,
@@ -321,84 +341,41 @@ function saveImageMetadata() {
 
 ############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
 # $1 maven制品库id
-# $2 ciJobId    猪齿鱼的CI的JOB纪录的id
-# $3 sequence   猪齿鱼的CI流水线的步骤的序列号
-function saveJarMetadata() {
-  result_upload_to_devops=$(curl -X POST \
-    -H 'Expect:' \
-    -F "token=${Token}" \
-    -F "nexus_repo_id=$1" \
-    -F "job_id=$2" \
-    -F "sequence=$3" \
-    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
-    -F "job_name=${CI_JOB_NAME}" \
-    -F "version=${CI_COMMIT_TAG}" \
-    -F "file=@pom.xml" \
-    "${CHOERODON_URL}/devops/ci/save_jar_metadata" \
-    -o "${CI_COMMIT_SHA}-ci.response" \
-    -w %{http_code})
-  # 判断本次上传到devops是否出错
-  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
-    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-    rm "${CI_COMMIT_SHA}-ci.response"
-    if [ "$result_upload_to_devops" != "200" ]; then
-      echo $response_upload_to_devops
-      echo "upload to devops error"
-      exit 1
-    fi
-  fi
-}
-
-############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
-# $1 maven制品库id
 # $2 mvn_settings_id    mvn_settings_id
 # $3 sequence   猪齿鱼的CI流水线的步骤的序列号
 function saveJarInfo() {
-  result_upload_to_devops=$(curl -X POST \
-    -H 'Expect:' \
-    -F "token=${Token}" \
-    -F "nexus_repo_id=$1" \
-    -F "mvn_settings_id=$2" \
-    -F "sequence=$3" \
-    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
-    -F "job_name=${CI_JOB_NAME}" \
-    -F "version=${CI_COMMIT_TAG}" \
-    -F "file=@pom.xml" \
-    "${CHOERODON_URL}/devops/ci/save_jar_info" \
-    -o "${CI_COMMIT_SHA}-ci.response" \
-    -w %{http_code})
-  # 判断本次上传到devops是否出错
-  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
-    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-    rm "${CI_COMMIT_SHA}-ci.response"
-    if [ "$result_upload_to_devops" != "200" ]; then
-      echo $response_upload_to_devops
-      echo "upload to devops error"
-      exit 1
-    fi
+  result_upload_to_devops=""
+  if [ -n "${CHOERODON_MAVEN_POM_LOCATION}" ]; then
+      result_upload_to_devops=$(curl -X POST \
+          -H 'Expect:' \
+          -F "token=${Token}" \
+          -F "nexus_repo_id=$1" \
+          -F "sequence=$2" \
+          -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+          -F "job_name=${CI_JOB_NAME}" \
+          -F "version=${CI_COMMIT_TAG}" \
+          -F "file=@pom.xml" \
+          "${CHOERODON_URL}/devops/ci/save_jar_info" \
+          -o "${CI_COMMIT_SHA}-ci.response" \
+          -w %{http_code})
+    else
+      result_upload_to_devops=$(curl -X POST \
+                -H 'Expect:' \
+                -F "token=${Token}" \
+                -F "nexus_repo_id=$1" \
+                -F "sequence=$2" \
+                -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+                -F "job_name=${CI_JOB_NAME}" \
+                -F "version=${CI_COMMIT_TAG}" \
+                -F "group_id=${CHOERODON_MAVEN_GROUP_ID}" \
+                -F "artifact_id=${CHOERODON_MAVEN_ARTIFACT_ID}" \
+                -F "jar_version=${CHOERODON_MAVEN_VERSION}" \
+                -F "packaging=${CHOERODON_MAVEN_PACKAGING}" \
+                "${CHOERODON_URL}/devops/ci/save_jar_info" \
+                -o "${CI_COMMIT_SHA}-ci.response" \
+                -w %{http_code})
   fi
-}
-############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
-# $1 ciJobId    猪齿鱼的CI的JOB纪录的id
-# $2 sequence   猪齿鱼的CI流水线的步骤的序列号
-# $3 maven_repo_url   目标仓库地址
-# $4 username   目标仓库用户名
-# $5 password   目标仓库用户密码
-function saveCustomJarMetadata() {
-  result_upload_to_devops=$(curl -X POST \
-    -H 'Expect:' \
-    -F "token=${Token}" \
-    -F "job_id=$1" \
-    -F "sequence=$2" \
-    -F "maven_repo_url=$3" \
-    -F "username='$4'" \
-    -F "password='$5'" \
-    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
-    -F "job_name=${CI_JOB_NAME}" \
-    -F "file=@pom.xml" \
-    "${CHOERODON_URL}/devops/ci/save_jar_metadata" \
-    -o "${CI_COMMIT_SHA}-ci.response" \
-    -w %{http_code})
+
   # 判断本次上传到devops是否出错
   if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
     response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
@@ -417,21 +394,42 @@ function saveCustomJarMetadata() {
 # $4 username   目标仓库用户名
 # $5 password   目标仓库用户密码
 function saveCustomJarInfo() {
-  result_upload_to_devops=$(curl -X POST \
-    -H 'Expect:' \
-    -F "token=${Token}" \
-    -F "mvn_settings_id=$1" \
-    -F "sequence=$2" \
-    -F "maven_repo_url=$3" \
-    -F "username='$4'" \
-    -F "password='$5'" \
-    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
-    -F "job_name=${CI_JOB_NAME}" \
-    -F "version=${CI_COMMIT_TAG}" \
-    -F "file=@pom.xml" \
-    "${CHOERODON_URL}/devops/ci/save_jar_info" \
-    -o "${CI_COMMIT_SHA}-ci.response" \
-    -w %{http_code})
+  result_upload_to_devops=""
+  if [ -n "${CHOERODON_MAVEN_POM_LOCATION}" ]; then
+    result_upload_to_devops=$(curl -X POST \
+        -H 'Expect:' \
+        -F "token=${Token}" \
+        -F "sequence=$1" \
+        -F "maven_repo_url=$2" \
+        -F "username='$3'" \
+        -F "password='$4'" \
+        -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+        -F "job_name=${CI_JOB_NAME}" \
+        -F "version=${CI_COMMIT_TAG}" \
+        -F "file=@pom.xml" \
+        "${CHOERODON_URL}/devops/ci/save_jar_info" \
+        -o "${CI_COMMIT_SHA}-ci.response" \
+        -w %{http_code})
+  else
+    result_upload_to_devops=$(curl -X POST \
+            -H 'Expect:' \
+            -F "token=${Token}" \
+            -F "sequence=$1" \
+            -F "maven_repo_url=$2" \
+            -F "username='$3'" \
+            -F "password='$4'" \
+            -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+            -F "job_name=${CI_JOB_NAME}" \
+            -F "version=${CI_COMMIT_TAG}" \
+            -F "groupId${CHOERODON_MAVEN_GROUP_ID}" \
+            -F "artifactId=${CHOERODON_MAVEN_ARTIFACT_ID}" \
+            -F "jarVersion=${CHOERODON_MAVEN_VERSION}" \
+            -F "packaging=${CHOERODON_MAVEN_PACKAGING}" \
+            "${CHOERODON_URL}/devops/ci/save_jar_info" \
+            -o "${CI_COMMIT_SHA}-ci.response" \
+            -w %{http_code})
+  fi
+
   # 判断本次上传到devops是否出错
   if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
     response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
@@ -822,5 +820,16 @@ echo "Query npm repo info"
       export NPM_PASSWORD=$(jq -r .password npm_repo_info.json)
       export NPM_EMAIL=$(jq -r .email npm_repo_info.json)
     fi
+  fi
+}
+
+# $1 pipeline_trigger_config_id $2 ref_name $3 gitlab_project_id
+function pipeline_trigger(){
+  # 请求gitlab触发流水线
+  http_status_code=$(curl -o trigger_result.json -s -m 10 --connect-timeout 10 -w %{http_code}  -X POST "${CI_SERVER_URL}/api/v4/projects/$3/trigger/pipeline?ref=$2&token=$4&$5")
+  if [ "$http_status_code" != "200" ];then
+    echo "failed to trigger pipeline"
+    cat trigger_result.json
+    exit 1
   fi
 }

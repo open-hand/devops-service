@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import io.kubernetes.client.openapi.models.V1Endpoints;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
@@ -254,7 +255,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH, description = "devops创建分支", inputSchema = "{}")
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH, description = "devops创建分支", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public void createBranch(Long projectId, Long appServiceId, DevopsBranchVO devopsBranchVO) {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_CREATE);
@@ -609,7 +610,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS, description = "devops同步gitops库相关操作", inputSchemaClass = PushWebHookVO.class)
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS, description = "devops同步gitops库相关操作", inputSchemaClass = PushWebHookVO.class)
     public void fileResourceSyncSaga(PushWebHookVO pushWebHookVO, String token) {
         LOGGER.info("````````````````````````````` {}", pushWebHookVO.getCheckoutSha());
 

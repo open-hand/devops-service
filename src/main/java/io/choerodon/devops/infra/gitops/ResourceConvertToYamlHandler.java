@@ -116,7 +116,7 @@ public class ResourceConvertToYamlHandler<T> {
         if (operationType.equals("create")) {
             String path = fileCode + ".yaml";
             gitlabServiceClientOperator.createFile(gitlabEnvProjectId, path, content,
-                    "ADD FILE", TypeUtil.objToInteger(userId));
+                    String.format("【CREATE】%s", path), TypeUtil.objToInteger(userId));
 
         } else {
             DevopsEnvFileResourceService devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
@@ -125,8 +125,8 @@ public class ResourceConvertToYamlHandler<T> {
                 throw new CommonException(DEVOPS_FILE_RESOURCE_NOT_EXIST);
             }
             gitlabServiceClientOperator.updateFile(gitlabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), getUpdateContent(type, deleteCert,
-                    endpointContent, devopsEnvFileResourceDTO.getFilePath(), objectType, filePath, operationType),
-                    "UPDATE FILE", TypeUtil.objToInteger(userId), "master");
+                            endpointContent, devopsEnvFileResourceDTO.getFilePath(), objectType, filePath, operationType),
+                    String.format("【UPDATE】 %s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userId), "master");
         }
     }
 

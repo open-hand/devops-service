@@ -1,18 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.*;
-import static io.choerodon.devops.infra.constant.PipelineConstants.*;
-import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
-import static io.choerodon.devops.infra.enums.CiJobTypeEnum.API_TEST;
-
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -27,6 +14,19 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.*;
+import static io.choerodon.devops.infra.constant.PipelineConstants.*;
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
+import static io.choerodon.devops.infra.enums.CiJobTypeEnum.API_TEST;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -63,6 +63,7 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * 〈功能简述〉
@@ -116,7 +117,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final AppServiceMapper appServiceMapper;
     private final CiCdPipelineMapper ciCdPipelineMapper;
     private final DevopsCdStageService devopsCdStageService;
-    private final DevopsCdAuditService devopsCdAuditService;
+    //    private final DevopsCdAuditService devopsCdAuditService;
     private final DevopsCdJobService devopsCdJobService;
     private final DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     private final DevopsEnvironmentMapper devopsEnvironmentMapper;
@@ -130,8 +131,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 //    @Autowired
 //    private DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
 
-    @Autowired
-    private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
+//    @Autowired
+//    private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
 
 //    @Autowired
 //    private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
@@ -142,17 +143,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     //    @Autowired
 //    @Lazy
 //    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-    @Autowired
-    private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
+//    @Autowired
+//    private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
     @Autowired
     private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
-    @Autowired
-    private DevopsDeployAppCenterService devopsDeployAppCenterService;
-    @Autowired
-    private DevopsHostAppService devopsHostAppService;
-    @Autowired
-    @Lazy
-    private DevopsHostUserPermissionService devopsHostUserPermissionService;
+    //    @Autowired
+//    private DevopsDeployAppCenterService devopsDeployAppCenterService;
+//    @Autowired
+//    private DevopsHostAppService devopsHostAppService;
+//    @Autowired
+//    @Lazy
+//    private DevopsHostUserPermissionService devopsHostUserPermissionService;
     @Autowired
     private AppExternalConfigService appExternalConfigService;
     @Autowired
@@ -182,8 +183,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Autowired
     private CiPipelineAppVersionService ciPipelineAppVersionService;
     @Autowired
-    private DevopsHostService devopsHostService;
-    @Autowired
     private JobOperator jobOperator;
     @Autowired
     @Lazy
@@ -209,6 +208,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCdAuditMapper devopsCdAuditMapper;
     @Autowired
     private PipelineService pipelineService;
+    @Autowired
+    private CiJobConfigFileRelService ciJobConfigFileRelService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -230,13 +231,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             AppServiceMapper appServiceMapper,
             CiCdPipelineMapper ciCdPipelineMapper,
             DevopsCdStageService devopsCdStageService,
-            DevopsCdAuditService devopsCdAuditService,
             DevopsCdJobService devopsCdJobService,
             DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService,
             DevopsEnvironmentMapper devopsEnvironmentMapper
-//            @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService
-//            @Lazy DevopsCdPipelineService devopsCdPipelineService,
-//            DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper
     ) {
         this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
@@ -254,7 +251,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.appServiceMapper = appServiceMapper;
         this.ciCdPipelineMapper = ciCdPipelineMapper;
         this.devopsCdStageService = devopsCdStageService;
-        this.devopsCdAuditService = devopsCdAuditService;
         this.devopsCdJobService = devopsCdJobService;
         this.devopsCdEnvDeployInfoService = devopsCdEnvDeployInfoService;
         this.devopsEnvironmentMapper = devopsEnvironmentMapper;
@@ -633,11 +629,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         fillEditPipelinePermission(projectId, ciCdPipelineVO, appServiceDTO);
         //查询CI相关的阶段以及JOB
         List<DevopsCiStageVO> devopsCiStageVOS = handleCiStage(pipelineId, deleteCdInfo);
-//        //查询CD相关的阶段以及JOB
-//        List<DevopsCdStageVO> devopsCdStageVOS = handleCdStage(pipelineId);
+
         //封装流水线
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOS);
-//        ciCdPipelineVO.setDevopsCdStageVOS(devopsCdStageVOS);
 
         // 添加是否开启执行计划
         List<CiPipelineScheduleVO> ciPipelineScheduleVOS = ciPipelineScheduleService.listByAppServiceId(projectId, appServiceDTO.getId());
@@ -700,6 +694,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (Boolean.TRUE.equals(deleteCdInfo)) {
                 jobHandler.deleteCdInfo(devopsCiJobVO);
             }
+            devopsCiJobVO.setConfigFileRelList(ciJobConfigFileRelService.listVOByJobId(devopsCiJobVO.getId()));
 
             List<DevopsCiStepDTO> ciStepDTOS = jobStepMap.get(devopsCiJobVO.getId());
             if (!CollectionUtils.isEmpty(ciStepDTOS)) {
@@ -775,12 +770,25 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 return new Page<>();
             }
         }
-
-        // 查询流水线
-        Page<CiCdPipelineVO> pipelinePage = PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam, enableFlag, status));
-
-        return pipelinePage;
+        String sortStr = getSortStr(pageRequest);
+        return PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam, enableFlag, status, sortStr));
     }
+
+    private String getSortStr(PageRequest pageRequest) {
+        String sortStr;
+        Sort sort = pageRequest.getSort();
+        if (sort == null) {
+            sortStr = " ORDER BY dcp.id DESC";
+        } else if (sort.getOrderFor("status") != null) {
+            sortStr = " ORDER BY latest_execute_status1 asc, dcpr.creation_date DESC";
+        } else if (sort.getOrderFor("creationDate") != null) {
+            sortStr = " ORDER BY dcpr.creation_date DESC";
+        } else {
+            sortStr = " ORDER BY dcp.id DESC";
+        }
+        return sortStr;
+    }
+
     /**
      * 校验应用服务之前并不存在流水线
      *
@@ -1242,6 +1250,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     public List<PipelineInstanceReferenceVO> listChartEnvReferencePipelineInfo(Long projectId, Long envId) {
         return devopsCiCdPipelineMapper.listChartEnvReferencePipelineInfo(projectId, envId);
+    }
+
+    @Override
+    public List<PipelineInstanceReferenceVO> listConfigFileReferencePipelineInfo(Long projectId, Long configFileId) {
+        return devopsCiCdPipelineMapper.listConfigFileReferencePipelineInfo(projectId, configFileId);
     }
 
     @Override
@@ -1758,13 +1771,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 //                        devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
 //                        devopsCiJobService.create(devopsCiJobDTO);
 
-                        // 保存任务信息
-                        AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
-                        DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), savedDevopsCiStageDTO.getId(), devopsCiJobVO);
+                    // 保存任务信息
+                    AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
+                    DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), savedDevopsCiStageDTO.getId(), devopsCiJobVO);
 
-                        batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
-                    });
-                }
+                    batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
+                });
+            }
 //            }
         });
 
@@ -1887,8 +1900,18 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
                     AbstractJobHandler handler = jobOperator.getHandler(job.getType());
                     handler.setCiJobConfig(job, ciJob);
-                    ciJob.setScript(handler.buildScript(Objects.requireNonNull(organizationId), projectId, job));
+                    List<String> script = new ArrayList<>();
+                    // 下载配置文件
+                    List<CiJobConfigFileRelDTO> ciJobConfigFileRelDTOS = ciJobConfigFileRelService.listByJobId(job.getId());
+                    if (!CollectionUtils.isEmpty(ciJobConfigFileRelDTOS)) {
+                        ciJobConfigFileRelDTOS.forEach(ciJobConfigFileRelDTO -> {
+                            script.add(String.format("downloadConfigFileByUId %s %s", ciJobConfigFileRelDTO.getConfigFileId(), ciJobConfigFileRelDTO.getConfigFilePath()));
+                        });
 
+                    }
+                    script.addAll(handler.buildScript(Objects.requireNonNull(organizationId), projectId, job));
+
+                    ciJob.setScript(script);
                     gitlabCi.addJob(job.getName(), ciJob);
                 });
             }

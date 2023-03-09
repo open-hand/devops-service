@@ -1,34 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_GITLAB_OWNER;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_CODE_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_NAME_EXIST;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.Nullable;
-
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
@@ -56,6 +31,32 @@ import org.springframework.util.StringUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
+
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_GITLAB_OWNER;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_CODE_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_NAME_EXIST;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.*;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -269,6 +270,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     @Lazy
     private PipelineService pipelineService;
+    @Autowired
+    private RdupmClientOperator rdupmClientOperator;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -280,7 +283,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
             description = "Devops创建应用服务", inputSchema = "{}")
     @Transactional
     public AppServiceRepVO create(Long projectId, AppServiceReqVO appServiceReqVO) {
@@ -408,7 +411,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
 
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
             description = "Devops删除应用服务", inputSchemaClass = DevOpsAppServicePayload.class)
     @Transactional
     @Override
@@ -615,7 +618,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     @Transactional
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_SYNC_STATUS,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_APP_SYNC_STATUS,
             description = "同步应用服务状态", inputSchemaClass = DevOpsAppServicePayload.class)
     public Boolean updateActive(Long projectId, Long appServiceId, final Boolean active) {
         AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
@@ -640,6 +643,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         appServiceDTO.setActive(toUpdateValue);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
+        gitlabServiceClientOperator.archiveProject(appServiceDTO.getGitlabProjectId(), userAttrDTO.getGitlabUserId().intValue(), !toUpdateValue);
         baseUpdate(appServiceDTO);
 
         // 发送启停用消息
@@ -650,7 +655,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         //创建saga payload
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         // 查询创建应用服务所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
@@ -716,12 +720,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     public Page<AppServiceRepVO> pageByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
                                                String type, Boolean doPage,
                                                PageRequest pageable,
-                                               String params,
+                                               SearchVO searchVO,
                                                Boolean checkMember,
                                                Boolean includeExternal,
                                                Boolean excludeFailed) {
 
-        Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, type, doPage, pageable, params, checkMember, includeExternal, excludeFailed);
+        Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, type, doPage, pageable, searchVO, checkMember, includeExternal, excludeFailed);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectId, applicationServiceDTOS.getContent(), urlSlash);
 
@@ -761,8 +765,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Page<AppServiceRepVO> pageInternalByOptionsWithAccessLevel(Long projectId,
                                                                       PageRequest pageable,
-                                                                      String params) {
-        Page<AppServiceRepVO> appServiceRepVOS = pageByOptions(projectId, true, null, null, true, pageable, params, true, false, true);
+                                                                      SearchVO searchVO) {
+        Page<AppServiceRepVO> appServiceRepVOS = pageByOptions(projectId, true, null, null, true, pageable, searchVO, true, false, true);
         Set<Long> appServiceIds = appServiceRepVOS.getContent().stream().map(AppServiceRepVO::getId).collect(toSet());
         Map<Long, MemberPrivilegeViewDTO> memberPrivilegeViewDTOMap = hrdsCodeRepoClientOperator.selfPrivilege(null, projectId, appServiceIds).stream().collect(toMap(MemberPrivilegeViewDTO::getRepositoryId, Function.identity()));
         appServiceRepVOS.getContent().forEach(appServiceRepVO -> {
@@ -1219,7 +1223,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
             description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
     public void setAppErrStatus(String input, Long projectId, Long appServiceId) {
         producer.applyAndReturn(
@@ -1340,7 +1344,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate) {
@@ -1348,7 +1352,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importFromGeneralGit(Long projectId, AppServiceImportVO appServiceImportVO) {
@@ -1869,7 +1873,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
 
-
     public String getTimestampTimeV17(String str) {
         if (org.apache.commons.lang3.StringUtils.isEmpty(str)) {
             return "";
@@ -2121,7 +2124,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE,
             description = "Devops创建应用服务", inputSchema = "{}")
     public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
         List<AppServiceImportPayload> importPayloadList = createAppService(projectId, importInternalVOS);
@@ -2629,12 +2632,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                                                  String type,
                                                  Boolean doPage,
                                                  PageRequest pageable,
-                                                 String params,
+                                                 SearchVO searchVO,
                                                  Boolean checkMember,
                                                  Boolean includeExternal,
                                                  Boolean excludeFailed) {
 
-        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Long userId = DetailsHelper.getUserDetails().getUserId();
 
         boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
@@ -2644,16 +2646,16 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (doPage == null || doPage) {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.list(projectId, isActive, hasVersion, type,
-                                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                                searchVO.getSearchParam(),
+                                searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                                 PageRequestUtil.checkSortIsEmpty(pageable),
                                 includeExternal,
                                 excludeFailed)
                 );
             } else {
                 list = appServiceMapper.list(projectId, isActive, hasVersion, type,
-                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                        searchVO.getSearchParam(),
+                        searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                         PageRequestUtil.checkSortIsEmpty(pageable),
                         includeExternal,
                         excludeFailed);
@@ -2675,16 +2677,16 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (doPage == null || doPage) {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
-                                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                                searchVO.getSearchParam(),
+                                searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                                 pageable.getSort() == null,
                                 userId,
                                 includeExternal,
                                 excludeFailed));
             } else {
                 list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
-                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                        searchVO.getSearchParam(),
+                        searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                         pageable.getSort() == null,
                         userId,
                         includeExternal,
@@ -3177,18 +3179,20 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Page<AppServiceVO> listByIdsOrPage(Long projectId, @Nullable Set<Long> ids, @Nullable Boolean doPage, PageRequest pageable) {
+    public Page<AppServiceVO> listByIdsOrPage(Long projectId, @Nullable Set<Long> ids, @Nullable Boolean doPage, PageRequest pageable, String params) {
         // 如果没指定应用服务id，按照普通分页处理
         if (CollectionUtils.isEmpty(ids)) {
-            return ConvertUtils.convertPage(basePageByOptions(projectId, null, null, null, doPage, pageable, null, false, true, null), AppServiceVO.class);
+            SearchVO searchVO = new SearchVO();
+            searchVO.setParams(ObjectUtils.isEmpty(params) ? new ArrayList<>() : Collections.singletonList(params));
+            return ConvertUtils.convertPage(basePageByOptions(projectId, null, null, null, doPage, pageable, searchVO, false, true, null), AppServiceVO.class);
         } else {
             // 指定应用服务id，从这些id中根据参数决定是否分页
             // 如果不分页
             if (Boolean.FALSE.equals(doPage)) {
-                return PageInfoUtil.listAsPage(ConvertUtils.convertList(appServiceMapper.listAppServiceByIds(ids, null, null), AppServiceVO.class));
+                return PageInfoUtil.listAsPage(ConvertUtils.convertList(appServiceMapper.listAppServiceByIds(ids, null, ObjectUtils.isEmpty(params) ? null : Collections.singletonList(params)), AppServiceVO.class));
             } else {
                 // 如果分页
-                return ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listAppServiceByIds(ids, null, null)), AppServiceVO.class);
+                return ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listAppServiceByIds(ids, null, ObjectUtils.isEmpty(params) ? null : Collections.singletonList(params))), AppServiceVO.class);
             }
         }
     }
@@ -3599,7 +3603,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         return ConvertUtils.convertObject(baseQueryByCode(appServiceDTO.getCode(), appServiceDTO.getProjectId()), OpenAppServiceReqVO.class);
     }
 
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
             description = "迁移应用服务",
             inputSchemaClass = AppServiceTransferVO.class)
     public void transferAppService(Long projectId, Long gitlabGroupId, AppServiceTransferVO appServiceTransferVO) {
@@ -4002,4 +4006,21 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         return appServiceMapper.listProjectIdsByAppIds(appIds);
     }
+
+    @Override
+    public ImageRepoInfoVO queryRepoConfigByCode(Long projectId, String code, String repoType, String repoCode) {
+        AppServiceRepVO appServiceRepVO = queryByCode(projectId, code);
+        if (appServiceRepVO == null) {
+            throw new CommonException(DEVOPS_APP_SERVICE_NOT_EXIST);
+        }
+        CommonExAssertUtil.assertTrue((projectId.equals(appServiceRepVO.getProjectId())), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigByCode(projectId, repoType, repoCode);
+        return HarborRepoUtil.getHarborRepoInfo(repoType, repoCode, harborRepoDTO);
+    }
+
+    @Override
+    public AppServiceDTO queryByPipelineId(Long pipelineId) {
+        return appServiceMapper.queryByPipelineId(pipelineId);
+    }
+
 }

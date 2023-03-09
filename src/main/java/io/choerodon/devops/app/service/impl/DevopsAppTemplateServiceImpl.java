@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
@@ -114,7 +115,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
 
     @Override
     @Transactional
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_TEMPLATE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_TEMPLATE,
             description = "Devops创建应用模板", inputSchema = "{}")
     public void createTemplate(Long sourceId, String sourceType, DevopsAppTemplateCreateVO appTemplateCreateVO) {
         DevopsAppTemplateDTO devopsAppTemplateDTO = new DevopsAppTemplateDTO();
@@ -308,7 +309,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
 
     @Override
     @Transactional
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_APP_TEMPLATE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_DELETE_APP_TEMPLATE,
             description = "Devops删除应用模板", inputSchema = "{}")
     public void deleteAppTemplate(Long sourceId, String sourceType, Long appTemplateId) {
         DevopsAppTemplateDTO devopsAppTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);

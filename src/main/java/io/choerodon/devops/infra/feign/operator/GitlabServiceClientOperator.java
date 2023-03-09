@@ -1,14 +1,5 @@
 package io.choerodon.devops.infra.feign.operator;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_CREATE;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_UPDATE;
-import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
-import static io.choerodon.devops.infra.util.GitUserNameUtil.getAdminId;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Functions;
 import feign.RetryableException;
@@ -23,6 +14,15 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_CREATE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_UPDATE;
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
+import static io.choerodon.devops.infra.util.GitUserNameUtil.getAdminId;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -282,18 +282,13 @@ public class GitlabServiceClientOperator {
     }
 
     public String createProjectToken(Integer gitlabProjectId, Integer userId, String name) {
-        ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
-            impersonationToken = gitlabServiceClient.createProjectToken(userId, null, null);
+            return createImpersonationToken(userId, null);
         } catch (Exception e) {
             gitUtil.deleteWorkingDirectory(name);
             gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
             throw new CommonException(e);
         }
-        if (impersonationToken.getBody() == null) {
-            throw new CommonException("devops.create.project.token");
-        }
-        return impersonationToken.getBody().getToken();
     }
 
     /**
@@ -304,11 +299,11 @@ public class GitlabServiceClientOperator {
      * @return
      */
     public String createImpersonationToken(Integer userId, String name) {
-        ResponseEntity<ImpersonationTokenDTO> impersonationToken = gitlabServiceClient.createProjectToken(userId, name, null);
-        if (impersonationToken.getBody() == null) {
-            throw new CommonException("devops.create.project.token");
+        ImpersonationTokenDTO response = createPrivateToken(userId, name, null);
+        if (response != null) {
+            return response.getToken();
         }
-        return impersonationToken.getBody().getToken();
+        return null;
     }
 
     /**
@@ -319,13 +314,8 @@ public class GitlabServiceClientOperator {
      */
     @Nullable
     public ImpersonationTokenDTO createPrivateToken(Integer userId, String tokenName, Date date) {
-        ResponseEntity<ImpersonationTokenDTO> impersonationToken;
-        try {
-            impersonationToken = gitlabServiceClient.createProjectToken(userId, tokenName, date);
-        } catch (Exception e) {
-            return null;
-        }
-        return impersonationToken.getBody();
+        ResponseEntity<String> projectToken = gitlabServiceClient.createProjectToken(userId, tokenName, date);
+        return ResponseUtils.getResponse(projectToken, ImpersonationTokenDTO.class);
     }
 
     public void revokeImpersonationToken(Integer userId, Integer tokenId) {
@@ -1662,6 +1652,14 @@ public class GitlabServiceClientOperator {
         ResponseUtils.getResponse(gitlabServiceClient.updateProject(userId, project), Project.class);
     }
 
+    public Project archiveProject(Integer gitlabProjectId, Integer userId, boolean enable) {
+        if (enable) {
+            return ResponseUtils.getResponse(gitlabServiceClient.archiveProject(userId, gitlabProjectId), Project.class);
+        } else {
+            return ResponseUtils.getResponse(gitlabServiceClient.unarchiveProject(userId, gitlabProjectId), Project.class);
+        }
+    }
+
     /**
      * 查询mr下的评论
      */
@@ -1979,4 +1977,15 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public PipelineTrigger createPipelineTrigger(Integer triggeredPipelineGitlabProjectId, Long lastUpdatedBy, String triggerName) {
+        return gitlabServiceClient.createPipelineTrigger(triggeredPipelineGitlabProjectId, lastUpdatedBy.intValue(), triggerName).getBody();
+    }
+
+    public List<PipelineTrigger> listPipelineTrigger(Integer triggeredPipelineGitlabProjectId, Long userId) {
+        return gitlabServiceClient.listPipelineTrigger(triggeredPipelineGitlabProjectId, userId.intValue()).getBody();
+    }
+
+    public void deletePipelineTrigger(Integer triggeredPipelineGitlabProjectId, Long userId, Long triggerId) {
+        gitlabServiceClient.deletePipelineTrigger(triggeredPipelineGitlabProjectId, userId.intValue(), triggerId.intValue());
+    }
 }

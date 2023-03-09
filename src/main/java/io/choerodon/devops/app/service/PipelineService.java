@@ -7,6 +7,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.PipelineHomeVO;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.PipelineVO;
+import io.choerodon.devops.api.vo.SearchVO;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
@@ -54,7 +55,7 @@ public interface PipelineService {
 
     PipelineVO query(Long projectId, Long id);
 
-    Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, Boolean enable, String status, String triggerType, String param);
+    Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, SearchVO searchVO);
 
     Boolean checkName(Long projectId, Long id, String name);
 

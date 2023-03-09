@@ -1,8 +1,8 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.util.*;
-
 import org.apache.ibatis.annotations.Param;
+
+import java.util.*;
 
 import io.choerodon.devops.api.vo.AppServiceRepVO;
 import io.choerodon.devops.api.vo.AppServiceSimpleVO;
@@ -219,5 +219,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     Set<Long> listAllIdsByProjectId(@Param("projectId") Long projectId);
 
     List<Long> listProjectIdsByAppIds(@Param("appIds") List<Long> appIds);
+
+    AppServiceDTO queryByPipelineId(@Param("pipelineId") Long pipelineId);
 }
 

@@ -10,6 +10,8 @@ package io.choerodon.devops.api.vo;
 public class ImageRepoInfoVO {
     private String harborRepoId;
     private String repoType;
+
+    private String repoCode;
     private String dockerRegistry;
     private String groupName;
 
@@ -73,5 +75,13 @@ public class ImageRepoInfoVO {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public String getRepoCode() {
+        return repoCode;
+    }
+
+    public void setRepoCode(String repoCode) {
+        this.repoCode = repoCode;
     }
 }

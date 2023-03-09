@@ -83,6 +83,8 @@ public enum HelmType {
      */
     POLARIS_SCAN_CLUSTER("polaris_scan_cluster"),
     POD_METRICS_SYNC("pod_metrics_sync"),
+    OPERATE_POD_COUNT_FAILED("operate_pod_count_failed"),
+    OPERATE_POD_COUNT_SUCCEED("operate_pod_count_succeed"),
     NODE_SYNC("node_sync");
 
     private static HashMap<String, HelmType> valuesMap = new HashMap<>(6);
