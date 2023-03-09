@@ -51,11 +51,14 @@
                     #{appServiceId}
                 </foreach>
             </if>
-            <if test="enableFlag!=null">
+            <if test="enableFlag != null">
                 and dcp.is_enabled = #{enableFlag}
             </if>
             <if test="status != null">
                 and dcpr.status = #{status}
+            </if>
+            <if test="excludedPipelineId != null">
+                and dcp.id != #{excludedPipelineId}
             </if>
         </where>
         ${sortStr}
