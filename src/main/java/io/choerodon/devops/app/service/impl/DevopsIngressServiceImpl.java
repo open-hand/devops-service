@@ -1,10 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
@@ -25,6 +20,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -1204,7 +1205,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
     @Override
     public boolean operateForOldTypeIngressJudgeByClusterVersion(Long clusterId) {
-        ClusterSummaryInfoVO clusterSummaryInfoVO = JsonHelper.unmarshalByJackson(redisTemplate.opsForValue().get(DevopsClusterServiceImpl.renderClusterInfoRedisKey(clusterId)), ClusterSummaryInfoVO.class);
+        String clusterInfo = redisTemplate.opsForValue().get(DevopsClusterServiceImpl.renderClusterInfoRedisKey(clusterId));
+        // redis中没有集群信息，默认返回true
+        if (ObjectUtils.isEmpty(clusterInfo)) {
+            return true;
+        }
+
+        ClusterSummaryInfoVO clusterSummaryInfoVO = JsonHelper.unmarshalByJackson(clusterInfo, ClusterSummaryInfoVO.class);
         String[] split = clusterSummaryInfoVO.getVersion().split("\\.");
         int minorVersion = Integer.parseInt(split[1]);
         if (minorVersion <= 21) {
