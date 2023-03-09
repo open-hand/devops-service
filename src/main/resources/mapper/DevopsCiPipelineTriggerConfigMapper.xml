@@ -8,6 +8,7 @@
     <result property="triggeredPipelineProjectId" column="triggered_pipeline_project_id"/>
     <result property="refName" column="ref_name"/>
     <result property="token" column="token"/>
+    <result property="triggeredPipelineGitlabProjectId" column="triggered_pipeline_gitlab_project_id"/>
     <collection property="devopsCiPipelineVariables"
                 ofType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigVariableDTO">
       <result property="id" column="id"/>
