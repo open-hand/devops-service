@@ -643,6 +643,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         appServiceDTO.setActive(toUpdateValue);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
+        gitlabServiceClientOperator.archiveProject(appServiceDTO.getGitlabProjectId(), userAttrDTO.getGitlabUserId().intValue(), !toUpdateValue);
         baseUpdate(appServiceDTO);
 
         // 发送启停用消息
@@ -653,7 +655,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         //创建saga payload
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         // 查询创建应用服务所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);

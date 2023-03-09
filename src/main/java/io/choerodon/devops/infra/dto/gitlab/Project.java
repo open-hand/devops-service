@@ -8,6 +8,17 @@ public class Project {
     @ApiModelProperty("ci文件位置")
     private String ciConfigPath;
 
+    @ApiModelProperty("是否归档")
+    private Boolean archived;
+
+    public Boolean getArchived() {
+        return archived;
+    }
+
+    public void setArchived(Boolean archived) {
+        this.archived = archived;
+    }
+
     public Integer getId() {
         return id;
     }

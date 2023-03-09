@@ -1,16 +1,16 @@
 package io.choerodon.devops.infra.feign;
 
-import java.io.InputStream;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import javax.validation.Valid;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.InputStream;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import javax.validation.Valid;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiVariableVO;
@@ -1138,4 +1138,34 @@ public interface GitlabServiceClient {
             @PathVariable(value = "projectId") Integer projectId,
             @ApiParam(value = "userId")
             @RequestParam(value = "userId") Integer userId);
+
+    /**
+     * 归档项目
+     *
+     * @param projectId 项目id
+     * @param userId    用户Id
+     * @return Project
+     */
+    @ApiOperation(value = "归档项目")
+    @PostMapping("/v1/projects/{projectId}/archive")
+    ResponseEntity<String> archiveProject(
+            @ApiParam(value = "用户Id", required = true)
+            @RequestParam Integer userId,
+            @ApiParam(value = "项目id", required = true)
+            @RequestBody Integer projectId);
+
+    /**
+     * 解档项目
+     *
+     * @param projectId 项目id
+     * @param userId    用户Id
+     * @return Project
+     */
+    @ApiOperation(value = "归档项目")
+    @PostMapping("/v1/projects/{projectId}/unarchive")
+    ResponseEntity<String> unarchiveProject(
+            @ApiParam(value = "用户Id", required = true)
+            @RequestParam Integer userId,
+            @ApiParam(value = "项目id", required = true)
+            @RequestBody Integer projectId);
 }
