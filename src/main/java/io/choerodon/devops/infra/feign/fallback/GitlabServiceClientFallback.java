@@ -1,8 +1,8 @@
 package io.choerodon.devops.infra.feign.fallback;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_CREATE;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_UPDATE;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.Date;
@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_CREATE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_UPDATE;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -696,5 +696,15 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<List<PipelineTrigger>> listPipelineTrigger(Integer projectId, Integer userId) {
         throw new CommonException("devops.gitlab.pipeline.trigger.list");
+    }
+
+    @Override
+    public ResponseEntity<String> archiveProject(Integer userId, Integer projectId) {
+        throw new CommonException("devops.gitlab.project.archive");
+    }
+
+    @Override
+    public ResponseEntity<String> unarchiveProject(Integer userId, Integer projectId) {
+        throw new CommonException("devops.gitlab.project.unarchive");
     }
 }
