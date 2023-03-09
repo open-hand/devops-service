@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +38,8 @@ import io.choerodon.devops.infra.util.ConvertUtils;
  */
 @Service
 public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
+
+    private static final String VARIABLE_TEMPLATE = "variables[%s]=%s";
     @Autowired
     private AppServiceService appServiceService;
     @Autowired
@@ -124,8 +128,24 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
     @Override
     public List<String> buildScript(Long organizationId, Long projectId, DevopsCiJobDTO devopsCiJobDTO) {
         DevopsCiPipelineTriggerConfigVO devopsCiPipelineTriggerConfigVO = devopsCiPipelineTriggerService.queryConfigVoById(devopsCiJobDTO.getConfigId());
+        String variable = "";
+        if (!ObjectUtils.isEmpty(devopsCiPipelineTriggerConfigVO.getDevopsCiPipelineVariables())) {
+            List<String> variables = new ArrayList<>();
+
+            devopsCiPipelineTriggerConfigVO.getDevopsCiPipelineVariables().forEach(v -> {
+                String urlEncodedValue;
+                try {
+                    urlEncodedValue = URLEncoder.encode(v.getVariableValue(), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
+                variables.add(String.format(VARIABLE_TEMPLATE, v.getVariableKey(), urlEncodedValue));
+            });
+            variable = String.join("&", variables);
+        }
+
         List<String> cmds = new ArrayList<>();
-        cmds.add(String.format("pipeline_trigger %s %s %s %s", devopsCiPipelineTriggerConfigVO.getId(), devopsCiPipelineTriggerConfigVO.getRefName(), devopsCiPipelineTriggerConfigVO.getTriggeredPipelineProjectId(), devopsCiPipelineTriggerConfigVO.getToken()));
+        cmds.add(String.format("pipeline_trigger %s %s %s %s %s", devopsCiPipelineTriggerConfigVO.getId(), devopsCiPipelineTriggerConfigVO.getRefName(), devopsCiPipelineTriggerConfigVO.getTriggeredPipelineProjectId(), devopsCiPipelineTriggerConfigVO.getToken(), variable));
         return cmds;
     }
 }
