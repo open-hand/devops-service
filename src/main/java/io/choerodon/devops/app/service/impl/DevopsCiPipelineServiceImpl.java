@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -625,8 +626,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         //查询流水线对应的应用服务
         AppServiceDTO appServiceDTO = getAppServiceDTO(ciCdPipelineVO);
-        //当前用户是否能修改流水线权限
-        fillEditPipelinePermission(projectId, ciCdPipelineVO, appServiceDTO);
+//        //当前用户是否能修改流水线权限
+//        fillEditPipelinePermission(projectId, ciCdPipelineVO, appServiceDTO);
         //查询CI相关的阶段以及JOB
         List<DevopsCiStageVO> devopsCiStageVOS = handleCiStage(pipelineId, deleteCdInfo);
 
@@ -749,7 +750,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest, Boolean enableFlag, String status) {
+    public Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest, Boolean enableFlag, String status, Long currentPipelineId, Long excludedPipelineId) {
         if (projectId == null) {
             throw new CommonException(DEVOPS_PROJECT_ID_IS_NULL);
         }
@@ -770,21 +771,21 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 return new Page<>();
             }
         }
-        String sortStr = getSortStr(pageRequest);
-        return PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam, enableFlag, status, sortStr));
+        String sortStr = getSortStr(pageRequest, currentPipelineId);
+        return PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam, enableFlag, status, excludedPipelineId, sortStr));
     }
 
-    private String getSortStr(PageRequest pageRequest) {
+    private String getSortStr(PageRequest pageRequest, Long currentPipelineId) {
         String sortStr;
         Sort sort = pageRequest.getSort();
         if (sort == null) {
-            sortStr = " ORDER BY dcp.id DESC";
+            sortStr = String.format(" ORDER BY %s dcp.id DESC", ObjectUtils.isEmpty(currentPipelineId) ? "" : "dcp.id=" + currentPipelineId + "DESC,");
         } else if (sort.getOrderFor("status") != null) {
-            sortStr = " ORDER BY latest_execute_status1 asc, dcpr.creation_date DESC";
+            sortStr = String.format(" ORDER BY %s latest_execute_status1 asc, dcpr.creation_date DESC", ObjectUtils.isEmpty(currentPipelineId) ? "" : "dcp.id=" + currentPipelineId + "DESC,");
         } else if (sort.getOrderFor("creationDate") != null) {
-            sortStr = " ORDER BY dcpr.creation_date DESC";
+            sortStr = String.format(" ORDER BY %s dcpr.creation_date DESC", ObjectUtils.isEmpty(currentPipelineId) ? "" : "dcp.id=" + currentPipelineId + "DESC,");
         } else {
-            sortStr = " ORDER BY dcp.id DESC";
+            sortStr = String.format(" ORDER BY %s dcp.id DESC", ObjectUtils.isEmpty(currentPipelineId) ? "" : "dcp.id=" + currentPipelineId + "DESC,");
         }
         return sortStr;
     }

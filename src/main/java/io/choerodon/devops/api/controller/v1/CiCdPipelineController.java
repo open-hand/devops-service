@@ -1,11 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.validation.Valid;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
@@ -14,6 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.validation.Valid;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -120,8 +120,12 @@ public class CiCdPipelineController {
             @ApiParam(value = "最近执行状态")
             @RequestParam(value = "status", required = false) String status,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest) {
-        return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, searchParam, pageRequest, enableFlag, status));
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "当前需要置顶的流水线id")
+            @RequestParam(value = "current_pipeline_id", required = false) Long currentPipelineId,
+            @ApiParam(value = "被排除的流水线id")
+            @RequestParam(value = "excluded_pipeline_id", required = false) Long excludedPipelineId) {
+        return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, searchParam, pageRequest, enableFlag, status, currentPipelineId, excludedPipelineId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
