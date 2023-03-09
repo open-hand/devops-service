@@ -17,7 +17,7 @@
         <foreach collection="stageIds" item="stageId" open="(" separator="," close=")">
             #{stageId}
         </foreach>
-        AND dctj.visibility=1
+--         AND dctj.visibility=1
     </select>
     <select id="listByTenantIdAndGroupId" resultType="io.choerodon.devops.infra.dto.CiTemplateJobDTO">
         select * from devops_ci_template_job dctj

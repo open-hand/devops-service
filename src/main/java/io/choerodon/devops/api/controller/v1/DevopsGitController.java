@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
-import java.util.Optional;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
@@ -500,5 +498,29 @@ public class DevopsGitController {
             @ApiParam(value = "服务ID")
             @PathVariable(value = "app_service_id") Long appServiceId) {
         return Results.success(devopsGitService.syncBranch(projectId, appServiceId, false));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "同步开放的合并请求")
+    @PostMapping("/sync_open_merge_request")
+    public ResponseEntity<Integer> syncOpenMergeRequest(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "服务ID")
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        return Results.success(devopsGitService.syncOpenMergeRequest(projectId, appServiceId, true));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验开放的合并请求同步")
+    @GetMapping("/check_sync_open_merge_request")
+    public ResponseEntity<Integer> checkSyncOpenMergeRequest(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "服务ID")
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        return Results.success(devopsGitService.syncOpenMergeRequest(projectId, appServiceId, false));
     }
 }

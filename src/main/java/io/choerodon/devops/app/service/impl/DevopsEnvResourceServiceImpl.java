@@ -171,7 +171,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             case INGRESS:
                 if (devopsEnvResourceDTO.getInstanceId() != null) {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-                    if (devopsIngressService.operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId())) {
+                    if (devopsIngressService.operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId())) {
                         V1beta1Ingress v1beta1Ingress = json.deserialize(
                                 devopsEnvResourceDetailDTO.getMessage(),
                                 V1beta1Ingress.class);
@@ -227,8 +227,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
         // 查出所有的 DevopsCommandEventDTO 并根据commandId分组
         Set<Long> commandIds = devopsEnvCommandDTOS.stream().map(DevopsEnvCommandDTO::getId).collect(Collectors.toSet());
-        List<DevopsCommandEventDTO> commandEventTypeJob = devopsCommandEventService.listByCommandIdsAndType(commandIds, ResourceType.JOB.getType());
-        List<DevopsCommandEventDTO> commandEventTypePod = devopsCommandEventService.listByCommandIdsAndType(commandIds, ResourceType.POD.getType());
+        List<DevopsCommandEventDTO> commandEventTypeJob = devopsCommandEventService.listLastByCommandIdsAndType(commandIds, ResourceType.JOB.getType());
+        List<DevopsCommandEventDTO> commandEventTypePod = devopsCommandEventService.listLastByCommandIdsAndType(commandIds, ResourceType.POD.getType());
         Map<Long, List<DevopsCommandEventDTO>> commandEventTypeJobMap = commandEventTypeJob.stream().collect(Collectors.groupingBy(DevopsCommandEventDTO::getCommandId));
         Map<Long, List<DevopsCommandEventDTO>> commandEventTypePodJobMap = commandEventTypePod.stream().collect(Collectors.groupingBy(DevopsCommandEventDTO::getCommandId));
 

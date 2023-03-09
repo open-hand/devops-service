@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.template.DeleteCheckResultVO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseController;
@@ -124,10 +125,10 @@ public class CiSiteTemplateJobController extends BaseController {
     @ApiOperation(value = "校验任务是否可以删除（是否关联流水线）")
     @Permission(level = ResourceLevel.SITE)
     @GetMapping("/{template_job_id}/check/delete")
-    public ResponseEntity<Boolean> checkJobTemplateByJobId(
+    public ResponseEntity<DeleteCheckResultVO> checkJobTemplateByJobId(
             @PathVariable(value = "source_id") Long sourceId,
             @Encrypt @PathVariable(value = "template_job_id") Long templateJobId) {
-        return ResponseEntity.ok(ciTemplateJobBusService.checkJobTemplateByJobId(sourceId, templateJobId));
+        return ResponseEntity.ok(ciTemplateJobBusService.checkJobTemplateByJobId(sourceId, ResourceLevel.SITE.value(), templateJobId));
     }
 
 }

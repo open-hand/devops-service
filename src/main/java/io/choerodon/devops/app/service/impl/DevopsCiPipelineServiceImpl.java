@@ -1502,6 +1502,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
+    @Override
+    public String queryGitlabCiYamlById(Long pipelineId) {
+        CiCdPipelineDTO ciCdPipelineDTO = baseQueryById(pipelineId);
+        return devopsCiContentService.queryLatestContent(ciCdPipelineDTO);
+    }
+
     private CiCdPipelineRecordVO dtoToVo(DevopsCiPipelineRecordDTO devopsPipelineRecordRelDTO) {
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
         ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
@@ -1707,46 +1713,46 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(ciCdPipelineDTO.getId());
         Set<Long> oldStageIds = devopsCiStageDTOS.stream().map(DevopsCiStageDTO::getId).collect(Collectors.toSet());
 
-        Set<Long> updateIds = ciCdPipelineVO.getDevopsCiStageVOS().stream()
-                .map(DevopsCiStageVO::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+//        Set<Long> updateIds = ciCdPipelineVO.getDevopsCiStageVOS().stream()
+//                .map(DevopsCiStageVO::getId)
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toSet());
         // 去掉要更新的记录，剩下的为要删除的记录
-        oldStageIds.removeAll(updateIds);
+//        oldStageIds.removeAll(updateIds);
         oldStageIds.forEach(stageId -> {
             devopsCiStageService.deleteById(stageId);
             devopsCiJobService.deleteByStageIdCascade(stageId);
         });
 
         ciCdPipelineVO.getDevopsCiStageVOS().forEach(devopsCiStageVO -> {
-            if (devopsCiStageVO.getId() != null) {
-                // 更新
-                devopsCiStageService.update(devopsCiStageVO);
-                devopsCiJobService.deleteByStageIdCascade(devopsCiStageVO.getId());
-                // 保存job信息
-                if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
-                    devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-//                        DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
-//                        devopsCiJobDTO.setId(null);
-//                        devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
-//                        devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
-//                        devopsCiJobService.create(devopsCiJobDTO);
-
-                        // 保存任务信息
-                        AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
-                        DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), devopsCiStageVO.getId(), devopsCiJobVO);
-
-                        batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
-                    });
-                }
-            } else {
-                // 新增
-                devopsCiStageVO.setCiPipelineId(ciCdPipelineDTO.getId());
-                DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
-                DevopsCiStageDTO savedDevopsCiStageDTO = devopsCiStageService.create(devopsCiStageDTO);
-                // 保存job信息
-                if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
-                    devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+//            if (devopsCiStageVO.getId() != null) {
+//                // 更新
+//                devopsCiStageService.update(devopsCiStageVO);
+//                devopsCiJobService.deleteByStageIdCascade(devopsCiStageVO.getId());
+//                // 保存job信息
+//                if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
+//                    devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+////                        DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
+////                        devopsCiJobDTO.setId(null);
+////                        devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
+////                        devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
+////                        devopsCiJobService.create(devopsCiJobDTO);
+//
+//                        // 保存任务信息
+//                        AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
+//                        DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), devopsCiStageVO.getId(), devopsCiJobVO);
+//
+//                        batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
+//                    });
+//                }
+//            } else {
+            // 新增
+            devopsCiStageVO.setCiPipelineId(ciCdPipelineDTO.getId());
+            DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
+            DevopsCiStageDTO savedDevopsCiStageDTO = devopsCiStageService.create(devopsCiStageDTO);
+            // 保存job信息
+            if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
+                devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
 //                        DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
 //                        devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
 //                        devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
@@ -1759,7 +1765,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
                     });
                 }
-            }
+//            }
         });
 
         // 新增ci阶段，需要初始化gitlab-ci.yaml

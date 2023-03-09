@@ -30,6 +30,8 @@ public interface AppServiceVersionService {
      * @param ref              分支名
      * @param gitlabPipelineId
      * @param jobName
+     * @param helmRepoId
+     * @param gitlabUserId
      */
     void create(String image,
                 String harborConfigId,
@@ -40,7 +42,9 @@ public interface AppServiceVersionService {
                 MultipartFile file,
                 String ref,
                 Long gitlabPipelineId,
-                String jobName);
+                String jobName,
+                Long helmRepoId,
+                Long gitlabUserId);
 
 
     /**

@@ -51,23 +51,24 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
 
     @Override
     public List<CiTemplateJobVO> listByStageIds(Set<Long> stageIds) {
+        //这个方法查询可见的不可见的任务
         return ciTemplateJobmapper.listByStageIds(stageIds);
     }
 
-    @Override
-    public List<CiTemplateJobVO> listByStageIdWithGroupInfo(Long stageId) {
-        Assert.notNull(stageId, PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL);
-
-        List<CiTemplateJobDTO> ciTemplateJobDTOList = ciTemplateJobmapper.listByStageId(stageId);
-
-        List<CiTemplateJobVO> ciTemplateJobVOS = ConvertUtils.convertList(ciTemplateJobDTOList, CiTemplateJobVO.class);
-        ciTemplateJobVOS.forEach(ciTemplateJobVO -> {
-            CiTemplateJobGroupDTO ciTemplateJobGroupDTO = ciTemplateJobGroupService.baseQuery(ciTemplateJobVO.getGroupId());
-            ciTemplateJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
-        });
-
-        return ciTemplateJobVOS;
-    }
+//    @Override
+//    public List<CiTemplateJobVO> listByStageIdWithGroupInfo(Long stageId) {
+//        Assert.notNull(stageId, PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL);
+//
+//        List<CiTemplateJobDTO> ciTemplateJobDTOList = ciTemplateJobmapper.listByStageId(stageId);
+//
+//        List<CiTemplateJobVO> ciTemplateJobVOS = ConvertUtils.convertList(ciTemplateJobDTOList, CiTemplateJobVO.class);
+//        ciTemplateJobVOS.forEach(ciTemplateJobVO -> {
+//            CiTemplateJobGroupDTO ciTemplateJobGroupDTO = ciTemplateJobGroupService.baseQuery(ciTemplateJobVO.getGroupId());
+//            ciTemplateJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
+//        });
+//
+//        return ciTemplateJobVOS;
+//    }
 
     @Override
     public List<DevopsCiJobVO> listJobsByGroupId(Long projectId, Long groupId) {

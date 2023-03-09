@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
 
 /**
@@ -17,6 +18,8 @@ public interface DevopsCiContentService {
      * @return ci内容
      */
     String queryLatestContent(String token);
+
+    String queryLatestContent(CiCdPipelineDTO devopsCiPipelineDTO);
 
     /**
      * 保存流水线配置

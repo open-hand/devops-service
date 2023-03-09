@@ -433,38 +433,44 @@ public class GitlabUserServiceImpl implements GitlabUserService {
             Long devopsClusterEnvGroupId = devopsProjectDTO.getDevopsClusterEnvGroupId();
 
             // 修复gitops、clusterops group owner权限
-            MemberDTO gitOpsMemberDTO = gitlabGroupMemberService.queryByUserId(
-                    TypeUtil.objToInteger(devopsEnvGroupId),
-                    TypeUtil.objToInteger(gitlabUserId));
-            boolean isGitOpsOwner = gitOpsMemberDTO != null && gitOpsMemberDTO.getAccessLevel().equals(AccessLevel.OWNER.value);
+            if (devopsEnvGroupId != null) {
+                MemberDTO gitOpsMemberDTO = gitlabGroupMemberService.queryByUserId(
+                        TypeUtil.objToInteger(devopsEnvGroupId),
+                        TypeUtil.objToInteger(gitlabUserId));
+                boolean isGitOpsOwner = gitOpsMemberDTO != null && gitOpsMemberDTO.getAccessLevel().equals(AccessLevel.OWNER.value);
+                if (Boolean.TRUE.equals(isProjectAdmin)) {
+                    if (!isGitOpsOwner) {
+                        LOGGER.info("【GitopsSync】user: {} is project owner, but has no project: {} gitops owner permission, addd it.", userDetails.getUsername(), projectDTO.getId());
+                        MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(gitlabUserId))
+                                , AccessLevel.OWNER.toValue(), "");
+                        gitlabGroupMemberService.create(TypeUtil.objToInteger(devopsEnvGroupId), memberDTO);
+                    }
 
-            MemberDTO clusterOpsMemberDTO = gitlabGroupMemberService.queryByUserId(
-                    TypeUtil.objToInteger(devopsClusterEnvGroupId),
-                    TypeUtil.objToInteger(gitlabUserId));
-            boolean isClusterOpsOwner = clusterOpsMemberDTO != null && clusterOpsMemberDTO.getAccessLevel().equals(AccessLevel.OWNER.value);
+                } else {
+                    if (isGitOpsOwner) {
+                        LOGGER.info("【GitopsSync】user: {} not project owner, but has project: {} gitops owner permission, remove it.", userDetails.getUsername(), projectDTO.getId());
+                        gitlabGroupMemberService.delete(TypeUtil.objToInteger(devopsEnvGroupId), TypeUtil.objToInteger(gitlabUserId));
+                    }
+                }
+            }
 
-
-            if (Boolean.TRUE.equals(isProjectAdmin)) {
-                if (!isGitOpsOwner) {
-                    LOGGER.info("【GitopsSync】user: {} is project owner, but has no project: {} gitops owner permission, addd it.", userDetails.getUsername(), projectDTO.getId());
-                    MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(gitlabUserId))
-                            , AccessLevel.OWNER.toValue(), "");
-                    gitlabGroupMemberService.create(TypeUtil.objToInteger(devopsEnvGroupId), memberDTO);
-                }
-                if (!isClusterOpsOwner) {
-                    LOGGER.info("【ClusteropsSync】user: {} is project owner, but has no project: {} clusterops owner permission, add it.", userDetails.getUsername(), projectDTO.getId());
-                    MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(gitlabUserId))
-                            , AccessLevel.OWNER.toValue(), "");
-                    gitlabGroupMemberService.create(TypeUtil.objToInteger(devopsClusterEnvGroupId), memberDTO);
-                }
-            } else {
-                if (isGitOpsOwner) {
-                    LOGGER.info("【GitopsSync】user: {} not project owner, but has project: {} gitops owner permission, remove it.", userDetails.getUsername(), projectDTO.getId());
-                    gitlabGroupMemberService.delete(TypeUtil.objToInteger(devopsEnvGroupId), TypeUtil.objToInteger(gitlabUserId));
-                }
-                if (isClusterOpsOwner) {
-                    LOGGER.info("【ClusteropsSync】user: {} not project owner, but has project: {} clusterops owner permission, remove it.", userDetails.getUsername(), projectDTO.getId());
-                    gitlabGroupMemberService.delete(TypeUtil.objToInteger(devopsClusterEnvGroupId), TypeUtil.objToInteger(gitlabUserId));
+            if (devopsClusterEnvGroupId != null) {
+                MemberDTO clusterOpsMemberDTO = gitlabGroupMemberService.queryByUserId(
+                        TypeUtil.objToInteger(devopsClusterEnvGroupId),
+                        TypeUtil.objToInteger(gitlabUserId));
+                boolean isClusterOpsOwner = clusterOpsMemberDTO != null && clusterOpsMemberDTO.getAccessLevel().equals(AccessLevel.OWNER.value);
+                if (Boolean.TRUE.equals(isProjectAdmin)) {
+                    if (!isClusterOpsOwner) {
+                        LOGGER.info("【ClusteropsSync】user: {} is project owner, but has no project: {} clusterops owner permission, add it.", userDetails.getUsername(), projectDTO.getId());
+                        MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(gitlabUserId))
+                                , AccessLevel.OWNER.toValue(), "");
+                        gitlabGroupMemberService.create(TypeUtil.objToInteger(devopsClusterEnvGroupId), memberDTO);
+                    }
+                } else {
+                    if (isClusterOpsOwner) {
+                        LOGGER.info("【ClusteropsSync】user: {} not project owner, but has project: {} clusterops owner permission, remove it.", userDetails.getUsername(), projectDTO.getId());
+                        gitlabGroupMemberService.delete(TypeUtil.objToInteger(devopsClusterEnvGroupId), TypeUtil.objToInteger(gitlabUserId));
+                    }
                 }
             }
         }

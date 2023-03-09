@@ -162,26 +162,14 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                        MultipartFile files,
                        String ref,
                        Long gitlabPipelineId,
-                       String jobName) {
+                       String jobName,
+                       Long helmRepoId,
+                       Long gitlabUserId) {
         try {
 
             AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
-
-            if (appServiceDTO.getExternalConfigId() == null) {
-                GitlabPipelineDTO gitlabPipelineDTO = gitlabServiceClientOperator.queryPipeline(appServiceDTO.getGitlabProjectId(),
-                        TypeUtil.objToInteger(gitlabPipelineId),
-                        null,
-                        null);
-                if (gitlabPipelineDTO != null && gitlabPipelineDTO.getUser() != null) {
-                    UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(gitlabPipelineDTO.getUser().getId()));
-                    if (userAttrDTO != null) {
-                        CustomContextUtil.setUserContext(userAttrDTO.getIamUserId());
-                    }
-                }
-            } else {
-                CustomContextUtil.setUserContext(appServiceDTO.getCreatedBy());
-            }
-
+            // 设置用户上下文
+            setUserContext(gitlabPipelineId, gitlabUserId, appServiceDTO);
 
             AppServiceVersionDTO appServiceVersionDTO = saveAppVersion(version, commit, ref, gitlabPipelineId, appServiceDTO.getId());
 
@@ -189,7 +177,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
             // 查询helm仓库配置id
-            DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceDTO.getId(), projectDTO.getId(), organization.getTenantId());
+            DevopsHelmConfigDTO devopsHelmConfigDTO;
+
+            if (helmRepoId == null) {
+                devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceDTO.getId(), projectDTO.getId(), organization.getTenantId());
+            } else {
+                devopsHelmConfigDTO = devopsHelmConfigService.queryById(helmRepoId);
+            }
 
             String repository;
             if (ResourceLevel.PROJECT.value().equals(devopsHelmConfigDTO.getResourceType())) {
@@ -269,6 +263,46 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             throw new DevopsCiInvalidException(e);
         }
 
+    }
+
+    private void setUserContext(Long gitlabPipelineId, Long gitlabUserId, AppServiceDTO appServiceDTO) {
+        if (appServiceDTO.getExternalConfigId() == null) {
+            GitlabPipelineDTO gitlabPipelineDTO = gitlabServiceClientOperator.queryPipeline(appServiceDTO.getGitlabProjectId(),
+                    TypeUtil.objToInteger(gitlabPipelineId),
+                    null,
+                    null);
+            Long gitlabUserIid;
+            if (gitlabPipelineDTO != null) {
+                if (gitlabPipelineDTO.getUser() != null) {
+                    gitlabUserIid = TypeUtil.objToLong(gitlabPipelineDTO.getUser().getId());
+                } else {
+                    if (LOGGER.isWarnEnabled()) {
+                        LOGGER.warn(">>>>>>>>>>>>>>>>>>Query pipeline user info from gitlab is null. gitlabProjectId: {}, gitlabPipelineDTO: {}<<<<<<<<<<<<<<<<<<<",
+                                appServiceDTO.getGitlabProjectId(),
+                                JsonHelper.marshalByJackson(gitlabPipelineDTO));
+                    }
+                    gitlabUserIid = gitlabUserId;
+                }
+            } else {
+                LOGGER.warn(">>>>>>>>>>>>>>>>>>Query pipeline info from gitlab is null. gitlabProjectId: {}, gitlabPipelineId: {}<<<<<<<<<<<<<<<<<<<",
+                        appServiceDTO.getGitlabProjectId(),
+                        gitlabPipelineId);
+                gitlabUserIid = gitlabUserId;
+            }
+
+            if (gitlabUserIid != null) {
+                UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(gitlabUserIid);
+                if (userAttrDTO != null) {
+                    CustomContextUtil.setUserContext(userAttrDTO.getIamUserId());
+                }
+            } else {
+                LOGGER.warn(">>>>>>>>>>>>>>>>>>GitlabUserIid is null,skip set user context. gitlabProjectId: {}, gitlabPipelineId: {}<<<<<<<<<<<<<<<<<<<",
+                        appServiceDTO.getGitlabProjectId(),
+                        gitlabPipelineId);
+            }
+        } else {
+            CustomContextUtil.setUserContext(appServiceDTO.getCreatedBy());
+        }
     }
 
     /**

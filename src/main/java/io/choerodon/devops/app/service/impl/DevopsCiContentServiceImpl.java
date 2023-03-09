@@ -94,6 +94,11 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     @Override
     public String queryLatestContent(String pipelineToken) {
         CiCdPipelineDTO devopsCiPipelineDTO = devopsCiCdPipelineMapper.queryByToken(pipelineToken);
+        return queryLatestContent(devopsCiPipelineDTO);
+    }
+
+    @Override
+    public String queryLatestContent(CiCdPipelineDTO devopsCiPipelineDTO) {
         if (devopsCiPipelineDTO == null) {
             throw new DevopsCiInvalidException(DEVOPS_PIPELINE_TOKEN_MISMATCH);
         }
@@ -119,6 +124,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
             // 缓存配置
             devopsCiContentDTO = new DevopsCiContentDTO();
             devopsCiContentDTO.setCiContentFile(ciContent);
+            devopsCiContentDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
             devopsCiContentDTO.setDevopsDefaultRuleNumber(defaultRuleNumber);
             devopsCiContentDTO.setPipelineVersionNumber(devopsCiPipelineDTO.getObjectVersionNumber());
             MapperUtil.resultJudgedInsertSelective(devopsCiContentMapper,

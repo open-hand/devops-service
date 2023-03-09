@@ -38,6 +38,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class WorkBenchServiceImpl implements WorkBenchService {
     private static final String MERGE_REQUEST_CONTENT_FORMAT = "%s (%s)在应用服务“%s”中提交了合并请求";
     private static final String PIPELINE_CONTENT_FORMAT = "流水线 “%s” 目前暂停于【%s】阶段，需要您进行审核";
+
+    private static final String CD_PIPELINE_CONTENT_FORMAT = "部署流程 “%s” 目前暂停于【%s】阶段，需要您进行审核";
     private static final String MERGE_REQUEST_URL = "%s/%s-%s/%s/merge_requests/%d";
     @Autowired
     DevopsGitService devopsGitService;
@@ -55,16 +57,13 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     private UserAttrService userAttrService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-    //    @Autowired
-//    private DevopsCdAuditRecordMapper devopsCdAuditRecordMapper;
-//    @Autowired
-//    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
     @Autowired
     private CiAuditRecordMapper ciAuditRecordMapper;
     @Autowired
-    private DevopsGitlabCommitService devopsGitlabCommitService;
+    private PipelineAuditRecordMapper pipelineAuditRecordMapper;
     @Autowired
-    private CiCdPipelineMapper ciCdPipelineMapper;
+    private DevopsGitlabCommitService devopsGitlabCommitService;
+
 
     private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
@@ -139,6 +138,9 @@ public class WorkBenchServiceImpl implements WorkBenchService {
 
         // 2.查出流水线请求
         approvalVOList.addAll(listPipelineApproval(projectMap, projectIds));
+
+        // 3. 查询出持续部署待审核列表
+        approvalVOList.addAll(listCdPipelineApproval(projectMap, projectIds));
         return approvalVOList;
     }
 
@@ -183,13 +185,10 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     }
 
     private List<ApprovalVO> listPipelineApproval(Map<Long, ProjectDTO> projectNameMap, List<Long> projectIds) {
-//        List<ApprovalVO> approvalVOList = new ArrayList<>();
-
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
         CommonExAssertUtil.assertNotNull(userId, DEVOPS_USER_GET);
 
         // 查处该用户待审批的流水线阶段(新流水线)
-//        List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordMapper.listByProjectIdsAndUserId(userId, projectIds);
         List<ApprovalVO> approvalVOList = ciAuditRecordMapper.listApprovalInfoByProjectIdsAndUserId(userId, projectIds);
         if (!CollectionUtils.isEmpty(approvalVOList)) {
             approvalVOList.forEach(approvalVO -> {
@@ -197,22 +196,22 @@ public class WorkBenchServiceImpl implements WorkBenchService {
                 approvalVO.setProjectName(projectNameMap.get(approvalVO.getProjectId()).getName());
                 approvalVO.setContent(String.format(PIPELINE_CONTENT_FORMAT, approvalVO.getPipelineName(), approvalVO.getStageName()));
             });
-//        List<Long> jobRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getJobRecordId() != null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toList());
-//        if (!CollectionUtils.isEmpty(jobRecordIds)) {
-//            List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
-//            //筛选一下删除了流水线的
-//            devopsCdJobRecordDTOS = devopsCdJobRecordDTOS.stream().filter(devopsCdJobRecordDTO -> !Objects.isNull(ciCdPipelineMapper.selectByPrimaryKey(devopsCdJobRecordDTO.getPipelineId()))).collect(Collectors.toList());
-//            devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
-//                ApprovalVO approvalVO = new ApprovalVO()
-//                        .setType(ApprovalTypeEnum.CI_PIPELINE.getType())
-//                        .setProjectId(devopsCdJobRecordDTO.getProjectId())
-//                        .setProjectName(projectNameMap.get(devopsCdJobRecordDTO.getProjectId()).getName())
-//                        .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdJobRecordDTO.getPipelineName(), devopsCdJobRecordDTO.getStageName()))
-//                        .setDevopsPipelineRecordRelId(devopsCdJobRecordDTO.getDevopsPipelineRecordRelId())
-//                        .setPipelineId(devopsCdJobRecordDTO.getPipelineId())
-//                        .setTaskRecordId(devopsCdJobRecordDTO.getId());
-//                approvalVOList.add(approvalVO);
-//            });
+        }
+        return approvalVOList;
+    }
+
+    private List<ApprovalVO> listCdPipelineApproval(Map<Long, ProjectDTO> projectNameMap, List<Long> projectIds) {
+        Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
+        CommonExAssertUtil.assertNotNull(userId, DEVOPS_USER_GET);
+
+        // 查处该用户待审批的流水线阶段(新流水线)
+        List<ApprovalVO> approvalVOList = pipelineAuditRecordMapper.listApprovalInfoByProjectIdsAndUserId(userId, projectIds);
+        if (!CollectionUtils.isEmpty(approvalVOList)) {
+            approvalVOList.forEach(approvalVO -> {
+                approvalVO.setType(ApprovalTypeEnum.CD_PIPELINE.getType());
+                approvalVO.setProjectName(projectNameMap.get(approvalVO.getProjectId()).getName());
+                approvalVO.setContent(String.format(CD_PIPELINE_CONTENT_FORMAT, approvalVO.getPipelineName(), approvalVO.getStageName()));
+            });
         }
         return approvalVOList;
     }

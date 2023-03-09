@@ -90,15 +90,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsDeploymentService devopsDeploymentService;
     @Autowired
     private PermissionHelper permissionHelper;
-    //    @Autowired
-//    @Lazy
-//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private AppExceptionRecordService appExceptionRecordService;
     @Autowired
     private DevopsCiJobService devopsCiJobService;
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
+    @Autowired
+    private PipelineService pipelineService;
 
     @Override
     public Boolean checkNameUnique(Long envId, String rdupmType, Long objectId, String name) {
@@ -473,13 +472,26 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId) {
+    public List<PipelineInstanceReferenceVO> queryPipelineReference(Long projectId, Long appId) {
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = selectByPrimaryKey(appId);
+        List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList = new ArrayList<>();
         if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
-            return devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId);
+            PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId);
+            if (pipelineInstanceReferenceVO != null) {
+                pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
+            }
         } else {
-            return devopsCiJobService.queryChartPipelineReference(projectId, appId);
+            PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryChartPipelineReference(projectId, appId);
+            if (pipelineInstanceReferenceVO != null) {
+                pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
+            }
+            List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList1 = pipelineService.listAppPipelineReference(projectId, appId);
+            if (!CollectionUtils.isEmpty(pipelineInstanceReferenceVOList1)) {
+                pipelineInstanceReferenceVOList.addAll(pipelineInstanceReferenceVOList1);
+            }
         }
+
+        return pipelineInstanceReferenceVOList;
 
     }
 

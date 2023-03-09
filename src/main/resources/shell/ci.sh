@@ -155,11 +155,11 @@ function kaniko_build() {
   if [ -z $KUBERNETES_SERVICE_HOST ];then
       ssh -o StrictHostKeyChecking=no root@kaniko DOCKER_CONFIG=${DOCKER_CONFIG} /kaniko/kaniko $1  --no-push \
       -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
-      --tarPath ${PWD}/${PROJECT_NAME}.tar
+      --tarPath ${PWD}/${PROJECT_NAME}.tar --force
   else
       ssh -o StrictHostKeyChecking=no root@127.0.0.1 DOCKER_CONFIG=${DOCKER_CONFIG} /kaniko/kaniko $1  --no-push \
       -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
-      --tarPath ${PWD}/${PROJECT_NAME}.tar
+      --tarPath ${PWD}/${PROJECT_NAME}.tar --force
   fi
 }
 
@@ -187,6 +187,7 @@ function clean_cache() {
 
 ################################ 上传生成的chart包到猪齿鱼平台的devops-service ##################################
 # 此项为上传构建并上传chart包到Choerodon中，只有通过此函数Choerodon才会有相应版本记录。
+# $1 helm 仓库id
 function chart_build() {
   # 8位sha值
   export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
@@ -228,6 +229,8 @@ function chart_build() {
     -F "gitlabPipelineId=${CI_PIPELINE_ID}" \
     -F "jobName=${CI_JOB_NAME}" \
     -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}" \
+    -F "helm_repo_id=$1" \
+    -F "gitlab_user_id=${GITLAB_USER_ID}" \
     "${CHOERODON_URL}/devops/ci" \
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
@@ -798,4 +801,26 @@ function process_audit() {
 function execute_api_test(){
   # apiTestInfoConfigId,这里的configId是测试任务关联的任务配置id
  java -jar /choerodon/app.jar
+}
+
+# $1 npm repo id
+function export_npm_push_variable() {
+echo "Query npm repo info"
+  http_status_code=$(curl -o npm_repo_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/npm_repo_info?token=${Token}&repo_id=$1")
+  echo "Query npm repo info status code is :"  $http_status_code
+  if [ "$http_status_code" != "200" ];
+  then
+    echo "Query npm repo info failed,skip export npm push variable"
+  else
+    is_failed=$(jq -r .failed npm_repo_info.json)
+    if [ "${is_failed}" == "true" ];
+    then
+      echo "Query npm repo info failed,skip export npm push variable"
+    else
+      export NPM_REGISTRY=$(jq -r .registry npm_repo_info.json)
+      export NPM_USERNAME=$(jq -r .username npm_repo_info.json)
+      export NPM_PASSWORD=$(jq -r .password npm_repo_info.json)
+      export NPM_EMAIL=$(jq -r .email npm_repo_info.json)
+    fi
+  fi
 }
