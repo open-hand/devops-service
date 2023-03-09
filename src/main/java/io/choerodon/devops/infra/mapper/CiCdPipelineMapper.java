@@ -1,9 +1,9 @@
 package io.choerodon.devops.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 import java.util.Set;
-
-import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
@@ -25,6 +25,7 @@ public interface CiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
                                                  @Param("searchParam") String searchParam,
                                                  @Param("enableFlag") Boolean enableFlag,
                                                  @Param("status") String status,
+                                                 @Param("excludedPipelineId") Long excludedPipelineId,
                                                  @Param("sortStr") String sortStr);
 
     List<String> listPipelineNameByTaskConfigId(@Param("taskConfigId") Long taskConfigId);
