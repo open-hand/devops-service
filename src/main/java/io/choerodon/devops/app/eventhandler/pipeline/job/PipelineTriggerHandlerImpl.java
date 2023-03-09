@@ -145,7 +145,7 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
         }
 
         List<String> cmds = new ArrayList<>();
-        cmds.add(String.format("pipeline_trigger %s %s %s %s %s", devopsCiPipelineTriggerConfigVO.getId(), devopsCiPipelineTriggerConfigVO.getRefName(), devopsCiPipelineTriggerConfigVO.getTriggeredPipelineProjectId(), devopsCiPipelineTriggerConfigVO.getToken(), variable));
+        cmds.add(String.format("pipeline_trigger %s %s %s %s %s", devopsCiPipelineTriggerConfigVO.getId(), devopsCiPipelineTriggerConfigVO.getRefName(), devopsCiPipelineTriggerConfigVO.getTriggeredPipelineGitlabProjectId(), devopsCiPipelineTriggerConfigVO.getToken(), variable));
         return cmds;
     }
 }
