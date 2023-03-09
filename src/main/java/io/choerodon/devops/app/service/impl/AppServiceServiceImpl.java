@@ -2647,7 +2647,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.list(projectId, isActive, hasVersion, type,
                                 searchVO.getSearchParam(),
-                                searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
+                                searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                                 PageRequestUtil.checkSortIsEmpty(pageable),
                                 includeExternal,
                                 excludeFailed)
@@ -2655,7 +2655,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             } else {
                 list = appServiceMapper.list(projectId, isActive, hasVersion, type,
                         searchVO.getSearchParam(),
-                        searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
+                        searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                         PageRequestUtil.checkSortIsEmpty(pageable),
                         includeExternal,
                         excludeFailed);
@@ -2678,7 +2678,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
                                 searchVO.getSearchParam(),
-                                searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
+                                searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                                 pageable.getSort() == null,
                                 userId,
                                 includeExternal,
@@ -2686,7 +2686,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             } else {
                 list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
                         searchVO.getSearchParam(),
-                        searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
+                        searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
                         pageable.getSort() == null,
                         userId,
                         includeExternal,
