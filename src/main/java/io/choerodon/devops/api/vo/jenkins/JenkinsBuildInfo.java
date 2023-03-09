@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.jenkins;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -8,22 +10,23 @@ package io.choerodon.devops.api.vo.jenkins;
  * @since 2023/3/7 10:06
  */
 public class JenkinsBuildInfo {
-
+    @ApiModelProperty("Jenkins Build Id")
     private String id;
-
+    @ApiModelProperty("执行状态")
     private String status;
-
+    @ApiModelProperty("执行开始时间")
     private Long startTimeMillis;
+    @ApiModelProperty("执行持续时长")
     private Long durationMillis;
-
+    @ApiModelProperty("执行用户")
     private String username;
-
+    @ApiModelProperty("触发方式")
     private String triggerType;
-
+    @ApiModelProperty("git branch")
     private String branch;
-
+    @ApiModelProperty("git url")
     private String remoteUrl;
-
+    @ApiModelProperty("当前input信息")
     private JenkinsPendingInputAction nextPendingInputAction;
 
     public JenkinsBuildInfo() {

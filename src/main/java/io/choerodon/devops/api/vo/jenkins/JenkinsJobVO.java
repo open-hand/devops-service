@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo.jenkins;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -13,28 +14,38 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class JenkinsJobVO {
 
+    @ApiModelProperty("Jenkins Server Id")
     @Encrypt
     private Long jenkinsServerId;
-
+    @ApiModelProperty("Jenkins Server 名称")
     private String jenkinsServerName;
-
+    @ApiModelProperty("Job类型：")
     private String type;
-
+    @ApiModelProperty("Job所属目录")
     private String folder;
+    @ApiModelProperty("Job名称")
     private String name;
+    @ApiModelProperty("Job全称，folder/name")
 
     private String fullName;
+    @ApiModelProperty("Jenkins地址")
 
     private String url;
+    @ApiModelProperty("最近执行状态")
 
     private String status;
+    @ApiModelProperty("最近执行开始时间")
 
     private Long startTimeMillis;
+    @ApiModelProperty("最近执行持续时长")
     private Long durationMillis;
+    @ApiModelProperty("最近执行用户")
 
     private String username;
+    @ApiModelProperty("触发方式")
 
     private String triggerType;
+    @ApiModelProperty("下级Job，多分支流水线时存在")
 
     private List<JenkinsJobVO> jobs;
 

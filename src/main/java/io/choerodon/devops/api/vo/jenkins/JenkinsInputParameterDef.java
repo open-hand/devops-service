@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo.jenkins;
 
 import java.util.Map;
 
+import io.swagger.annotations.ApiModelProperty;
+
 
 /**
  * 〈功能简述〉
@@ -11,9 +13,13 @@ import java.util.Map;
  * @since 2023/3/7 16:29
  */
 public class JenkinsInputParameterDef {
+    @ApiModelProperty("Jenkins input 参数类型")
     private String type;
+    @ApiModelProperty("Jenkins input 参数名称")
     private String name;
+    @ApiModelProperty("Jenkins input 参数描述")
     private String description;
+    @ApiModelProperty("Jenkins input 参数详情")
     private Map<String, Object> definition;
 
     public String getType() {

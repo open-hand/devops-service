@@ -50,12 +50,8 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     public List<JenkinsJobVO> listAll(Long projectId) {
         List<JenkinsJobVO> jenkinsJobVOList = new ArrayList<>();
         List<DevopsJenkinsServerDTO> devopsJenkinsServerDTOS = devopsJenkinsServerService.listByProjectId(projectId);
-//        DevopsJenkinsServerDTO devopsJenkinsServerDTO = devopsJenkinsServerService.queryById(serverId);
 
         for (DevopsJenkinsServerDTO devopsJenkinsServerDTO : devopsJenkinsServerDTOS) {
-//            if (DevopsJenkinsServerStatusEnum.DISABLE.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
-//                throw new CommonException("devops.jenkins.server.is.disable");
-//            }
             if (DevopsJenkinsServerStatusEnum.ENABLED.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
                 Long serverId = devopsJenkinsServerDTO.getId();
                 String serverName = devopsJenkinsServerDTO.getName();
@@ -125,9 +121,12 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
             JenkinsPendingInputAction nextPendingInputAction = jenkinsBuildInfo.getNextPendingInputAction();
             if (nextPendingInputAction != null && !CollectionUtils.isEmpty(nextPendingInputAction.getInputs())) {
                 List<JenkinsInputParameterDef> inputs = nextPendingInputAction.getInputs();
-                nextPendingInputAction.setPropertyList(inputs.stream().map(i -> new PropertyVO(i.getName(),
-                                i.getDefinition().get("defaultVal") == null ? "" : i.getDefinition().get("defaultVal").toString()))
-                        .collect(Collectors.toList()));
+                nextPendingInputAction
+                        .setPropertyList(inputs
+                                .stream()
+                                .map(i -> new PropertyVO(i.getName(),
+                                        i.getDefinition().get("defaultVal") == null ? "" : i.getDefinition().get("defaultVal").toString()))
+                                .collect(Collectors.toList()));
             }
 
         }
