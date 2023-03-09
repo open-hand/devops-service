@@ -823,7 +823,7 @@ echo "Query npm repo info"
   fi
 }
 
-# $1 pipeline_trigger_config_id $2 ref_name $3 gitlab_project_id
+# $1 pipeline_trigger_config_id $2 ref_name $3 gitlab_project_id $4 token $5 variables
 function pipeline_trigger(){
   # 请求gitlab触发流水线
   http_status_code=$(curl -o trigger_result.json -s -m 10 --connect-timeout 10 -w %{http_code}  -X POST "${CI_SERVER_URL}/api/v4/projects/$3/trigger/pipeline?ref=$2&token=$4&$5")
