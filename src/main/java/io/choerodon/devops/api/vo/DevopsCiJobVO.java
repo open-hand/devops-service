@@ -1,14 +1,14 @@
 package io.choerodon.devops.api.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotEmpty;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
@@ -41,7 +41,6 @@ public class DevopsCiJobVO {
     @ApiModelProperty("阶段id")
     private Long ciStageId;
 
-    @Encrypt
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
 
