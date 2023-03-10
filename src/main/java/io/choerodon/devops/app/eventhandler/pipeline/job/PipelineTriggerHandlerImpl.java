@@ -70,6 +70,7 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
     @Override
     protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         DevopsCiPipelineTriggerConfigDTO devopsCiPipelineTriggerConfigDTO = ConvertUtils.convertObject(devopsCiJobVO.getDevopsCiPipelineTriggerConfigVO(), DevopsCiPipelineTriggerConfigDTO.class);
+        devopsCiPipelineTriggerConfigDTO.setId(null);
 
         AppServiceDTO currentAppServiceDTO = appServiceService.queryByPipelineId(ciPipelineId);
 
@@ -145,7 +146,7 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
         }
 
         List<String> cmds = new ArrayList<>();
-        cmds.add(String.format("pipeline_trigger %s %s %s %s %s", devopsCiPipelineTriggerConfigVO.getId(), devopsCiPipelineTriggerConfigVO.getRefName(), devopsCiPipelineTriggerConfigVO.getTriggeredPipelineGitlabProjectId(), devopsCiPipelineTriggerConfigVO.getToken(), variable));
+        cmds.add(String.format("pipeline_trigger %s %s %s %s \"%s\"", devopsCiPipelineTriggerConfigVO.getId(), devopsCiPipelineTriggerConfigVO.getRefName(), devopsCiPipelineTriggerConfigVO.getTriggeredPipelineGitlabProjectId(), devopsCiPipelineTriggerConfigVO.getToken(), variable));
         return cmds;
     }
 }
