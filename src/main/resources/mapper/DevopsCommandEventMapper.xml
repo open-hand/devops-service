@@ -27,7 +27,7 @@
        <foreach collection="commandIds" item="commandId"  open="(" separator=" , " close=")">
            #{commandId}
        </foreach>
-        order by id desc
-        limit 200
+        order by command_id desc
+        limit 500
     </select>
 </mapper>
