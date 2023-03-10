@@ -1,15 +1,15 @@
 package io.choerodon.devops.api.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  *
@@ -27,7 +27,6 @@ public class DevopsCiStageVO {
     @NotEmpty(message = "{devops.stage.name.cannot.be.null}")
     private String name;
 
-    @Encrypt
     @ApiModelProperty("阶段所属流水线id")
     private Long ciPipelineId;
     @ApiModelProperty("阶段顺序")
