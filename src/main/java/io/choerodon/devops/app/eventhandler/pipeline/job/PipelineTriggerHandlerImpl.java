@@ -70,6 +70,7 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
     @Override
     protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         DevopsCiPipelineTriggerConfigDTO devopsCiPipelineTriggerConfigDTO = ConvertUtils.convertObject(devopsCiJobVO.getDevopsCiPipelineTriggerConfigVO(), DevopsCiPipelineTriggerConfigDTO.class);
+        devopsCiPipelineTriggerConfigDTO.setId(null);
 
         AppServiceDTO currentAppServiceDTO = appServiceService.queryByPipelineId(ciPipelineId);
 
