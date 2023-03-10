@@ -20,6 +20,7 @@ import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.api.vo.template.DeleteCheckResultVO;
+import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateJobBusService;
 import io.choerodon.devops.app.service.CiTemplateStepBusService;
@@ -76,6 +77,8 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     private Map<String, TemplateJobConfigService> stringTemplateJobConfigServiceMap;
     @Autowired
     private CiTplJobConfigFileRelService ciTplJobConfigFileRelService;
+    @Autowired
+    private JobOperator jobOperator;
 
 
     @Override
@@ -91,6 +94,12 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
                 .collect(Collectors.groupingBy(CiTemplateStepVO::getCiTemplateJobId));
 
         ciTemplateJobVOS.forEach(ciTemplateJobVO -> {
+            // 填充任务配置
+            if (!StringUtils.isEmpty(ciTemplateJobVO.getType())) {
+                if (stringTemplateJobConfigServiceMap.get(ciTemplateJobVO.getType() + TEMPLATE_JOB_CONFIG_SERVICE) != null) {
+                    stringTemplateJobConfigServiceMap.get(ciTemplateJobVO.getType() + TEMPLATE_JOB_CONFIG_SERVICE).fillCdJobConfig(ciTemplateJobVO);
+                }
+            }
             handTemplateJob(jobStepsMap, ciTemplateJobVO);
         });
         return ciTemplateJobVOS;
