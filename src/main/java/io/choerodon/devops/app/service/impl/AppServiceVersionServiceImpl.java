@@ -154,8 +154,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     private static final Gson GSON = new Gson();
 
-    private static String replaceAndGetValues(MultipartFile files, String tempFilePath, File chartFile, String repositoryName) {
+    private static String replaceAndGetValues(MultipartFile files, String tempFilePath, String chartFilePath, String repositoryName) {
         File tempFile = new File(tempFilePath);
+        File chartFile = new File(chartFilePath);
         try {
             if (!tempFile.exists()) {
                 tempFile.mkdirs();
@@ -369,7 +370,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             // 取commit的一部分作为文件路径
             String commitPart = commit == null ? "" : commit.substring(0, 8);
             tempFilePath = String.format(TEMP_PATH_TEMPLATE, appServiceId, version, commitPart);
-            File chartFile = new File(tempFilePath, files.getOriginalFilename());
+            String chartFilePath = tempFilePath + File.separator + files.getOriginalFilename();
+//            File chartFile = new File(tempFilePath, files.getOriginalFilename());
 
 //            String path = FileUtil.multipartFileToFile(tempFilePath, files);
 
@@ -379,7 +381,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 // 应用服务版本中存在镜像版本，则替换chart包中repository信息
                 String imageName = appServiceImageVersionDTO.getImage();
                 String repositoryName = imageName.split(":")[0];
-                values = replaceAndGetValues(files, tempFilePath, chartFile, repositoryName);
+                values = replaceAndGetValues(files, tempFilePath, chartFilePath, repositoryName);
                 if (harborConfigId == null) {
                     harborConfigId = appServiceImageVersionDTO.getHarborConfigId();
                     repoType = appServiceImageVersionDTO.getHarborRepoType();
@@ -387,11 +389,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 }
 
             } else {
-                values = replaceAndGetValues(files, tempFilePath, chartFile, null);
+                values = replaceAndGetValues(files, tempFilePath, chartFilePath, null);
             }
             FileUtil.checkYamlFormat(values);
 
-            uploadChart(chartFile, devopsHelmConfigDTO, repository);
+            uploadChart(new File(chartFilePath), devopsHelmConfigDTO, repository);
 
             AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionId);
             if (appServiceHelmVersionDTO == null) {
