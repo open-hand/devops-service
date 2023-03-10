@@ -329,11 +329,11 @@ public class CertificationServiceImpl implements CertificationService {
             baseDeleteById(certId);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     CERT_PREFIX + certificationDTO.getName() + ".yaml")) {
-                gitlabServiceClientOperator.deleteFile(
-                        TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         CERT_PREFIX + certificationDTO.getName() + ".yaml",
-                        "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                        String.format("【DELETE】%s", CERT_PREFIX + certificationDTO.getName() + ".yaml"),
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                        "master");
             }
             return;
         } else {
@@ -354,11 +354,7 @@ public class CertificationServiceImpl implements CertificationService {
                 .baseQueryByEnvIdAndPath(certEnvId, devopsEnvFileResourceDTO.getFilePath()).size() == 1) {
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
-                gitlabServiceClientOperator.deleteFile(
-                        gitLabEnvProjectId,
-                        devopsEnvFileResourceDTO.getFilePath(),
-                        "DELETE FILE " + certName,
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                gitlabServiceClientOperator.deleteFile(gitLabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<C7nCertification> certificationOperation = new ResourceConvertToYamlHandler<>();

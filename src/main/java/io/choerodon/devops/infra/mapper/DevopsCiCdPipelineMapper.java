@@ -48,4 +48,7 @@ public interface DevopsCiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
 
     List<PipelineInstanceReferenceVO> listDeployEnvReferencePipelineInfo(@Param("projectId") Long projectId,
                                                                          @Param("envId") Long envId);
+
+    List<PipelineInstanceReferenceVO> listConfigFileReferencePipelineInfo(@Param("projectId") Long projectId,
+                                                                          @Param("configFileId") Long configFileId);
 }

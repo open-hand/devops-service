@@ -78,6 +78,17 @@
         WHERE dcp.project_id = #{projectId}
           and dcddc.env_id = #{envId}
     </select>
-
+    <select id="listConfigFileReferencePipelineInfo"
+            resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
+        select dcj.id     as job_id,
+               dcj.name   as job_name,
+               dcp.`name` AS pipeline_name
+        from devops_ci_job dcj
+                 join devops_ci_job_config_file_rel dcjcfr
+                      ON dcj.id = dcjcfr.ci_job_id and dcjcfr.config_file_id = #{configFileId}
+                 JOIN devops_ci_stage dcs ON dcj.ci_stage_id = dcs.id
+                 JOIN devops_cicd_pipeline dcp ON dcs.ci_pipeline_id = dcp.id
+        WHERE dcp.project_id = #{projectId}
+    </select>
 
 </mapper>

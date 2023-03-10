@@ -103,6 +103,27 @@ public class DevopsCiJobVO {
     @ApiModelProperty("任务为主机部署类型，保存主机部署相关配置信息")
     private DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO;
 
+    @ApiModelProperty("触发其它流水线配置信息")
+    private DevopsCiPipelineTriggerConfigVO devopsCiPipelineTriggerConfigVO;
+
+    private List<ConfigFileRelVO> configFileRelList;
+
+    public List<ConfigFileRelVO> getConfigFileRelList() {
+        return configFileRelList;
+    }
+
+    public void setConfigFileRelList(List<ConfigFileRelVO> configFileRelList) {
+        this.configFileRelList = configFileRelList;
+    }
+
+    public DevopsCiPipelineTriggerConfigVO getDevopsCiPipelineTriggerConfigVO() {
+        return devopsCiPipelineTriggerConfigVO;
+    }
+
+    public void setDevopsCiPipelineTriggerConfigVO(DevopsCiPipelineTriggerConfigVO devopsCiPipelineTriggerConfigVO) {
+        this.devopsCiPipelineTriggerConfigVO = devopsCiPipelineTriggerConfigVO;
+    }
+
     public boolean isEdit() {
         return edit;
     }

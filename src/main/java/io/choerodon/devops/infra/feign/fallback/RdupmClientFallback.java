@@ -83,7 +83,7 @@ public class RdupmClientFallback implements RdupmClient {
     }
 
     @Override
-    public ResponseEntity<List<C7nNexusComponentDTO>> listMavenComponents(Long organizationId, Long projectId, Long repositoryId, String groupId, String artifactId, String versionRegular) {
+    public ResponseEntity<List<C7nNexusComponentDTO>> listMavenComponents(Long organizationId, Long projectId, Long repositoryId, String groupId, String artifactId, String version, String versionRegular) {
         throw new CommonException("devops.query.maven.components");
     }
 
@@ -135,5 +135,10 @@ public class RdupmClientFallback implements RdupmClient {
     @Override
     public ResponseEntity<HarborCustomRepo> queryCustomRepoById(Long projectId, Long repoId) {
         throw new CommonException("devops.query.harbor.custom.repo");
+    }
+
+    @Override
+    public ResponseEntity<String> queryHarborRepoConfigByCode(Long projectId, String repoType, String repoCode) {
+        throw new CommonException("devops.query.harbor.repo");
     }
 }

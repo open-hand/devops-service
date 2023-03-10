@@ -129,9 +129,9 @@ public interface RdupmClient {
             @ApiParam(value = "仓库主键list", required = true)
             @RequestParam("repositoryIds") Set<Long> repositoryIds);
 
-    @ApiOperation(value = "查询npm仓库-包含默认账户信息")
+    @ApiOperation(value = "查询仓库-包含默认账户信息")
     @Permission(permissionWithin = true)
-    @GetMapping("/v1/nexus-repositorys/project/{projectId}/npm/repo/{repositoryId}/with_default_user")
+    @GetMapping("/v1/nexus-repositorys/project/{projectId}/repo/{repositoryId}/with_default_user")
     ResponseEntity<String> queryRepoWithDefaultUserInfo(@PathVariable(name = "projectId") Long projectId,
                                                         @PathVariable(name = "repositoryId") Long repositoryId);
 
@@ -161,7 +161,7 @@ public interface RdupmClient {
                                                                    @RequestParam(name = "groupId", required = false) String groupId,
                                                                    @ApiParam(value = "artifactId", required = false)
                                                                    @RequestParam(name = "artifactId", required = false) String artifactId,
-                                                                   @ApiParam(value = "versionRegular", required = false)
+                                                                   @RequestParam(name = "version", required = false) String version,
                                                                    @RequestParam(name = "versionRegular", required = false) String versionRegular);
 
 
@@ -220,4 +220,11 @@ public interface RdupmClient {
     @GetMapping("/v1/projects/{project_id}/custom_repos/{repo_id}/basic_info_internal")
     ResponseEntity<HarborCustomRepo> queryCustomRepoById(@PathVariable("project_id") Long projectId,
                                                          @PathVariable("repo_id") Long repoId);
+
+    @GetMapping("/v1/harbor-choerodon-repos/project/{projectId}/harbor_config_by_code")
+    ResponseEntity<String> queryHarborRepoConfigByCode(@ApiParam(value = "猪齿鱼项目ID", required = true)
+                                                       @PathVariable("projectId") Long projectId,
+                                                       @ApiParam(value = "仓库类型", required = true)
+                                                       @RequestParam("repoType") String repoType,
+                                                       @RequestParam("repoCode") String repoCode);
 }

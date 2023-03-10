@@ -53,4 +53,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_record.groovy') {
         }
 
     }
+    changeSet(author: 'wanghao', id: '2023-2-07-add-column') {
+        addColumn(tableName: 'devops_ci_pipeline_record') {
+            column(name: "queued_duration", type: "BIGINT UNSIGNED", remarks: '流水线排队时长', afterColumn: "duration_seconds")
+        }
+
+    }
 }

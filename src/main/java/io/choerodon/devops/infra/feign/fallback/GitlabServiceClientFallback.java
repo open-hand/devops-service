@@ -1,8 +1,8 @@
 package io.choerodon.devops.infra.feign.fallback;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_CREATE;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_UPDATE;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.Date;
@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_CREATE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_UPDATE;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -343,7 +343,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<ImpersonationTokenDTO> createProjectToken(Integer userId, String tokenName, Date date) {
+    public ResponseEntity<String> createProjectToken(Integer userId, String tokenName, Date date) {
         throw new CommonException("devops.project.token.create");
     }
 
@@ -681,5 +681,30 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public List<MergeRequestDTO> listMergeRequest(Integer projectId, String state) {
         throw new CommonException("devops.open.mergereuqest.list");
+    }
+
+    @Override
+    public ResponseEntity<PipelineTrigger> createPipelineTrigger(Integer projectId, Integer userId, String description) {
+        throw new CommonException("devops.gitlab.pipeline.trigger.create");
+    }
+
+    @Override
+    public ResponseEntity<Void> deletePipelineTrigger(Integer projectId, Integer userId, Integer triggerId) {
+        throw new CommonException("devops.gitlab.pipeline.trigger.delete");
+    }
+
+    @Override
+    public ResponseEntity<List<PipelineTrigger>> listPipelineTrigger(Integer projectId, Integer userId) {
+        throw new CommonException("devops.gitlab.pipeline.trigger.list");
+    }
+
+    @Override
+    public ResponseEntity<String> archiveProject(Integer userId, Integer projectId) {
+        throw new CommonException("devops.gitlab.project.archive");
+    }
+
+    @Override
+    public ResponseEntity<String> unarchiveProject(Integer userId, Integer projectId) {
+        throw new CommonException("devops.gitlab.project.unarchive");
     }
 }

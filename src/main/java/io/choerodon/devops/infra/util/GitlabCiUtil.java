@@ -258,13 +258,19 @@ public class GitlabCiUtil {
      * @param sequence      步骤顺序
      * @return 指令
      */
-    public static String saveJarMetadata(Long nexusRepoId, Long mvnSettingsId, Long sequence) {
-        String rawCommand = "saveJarInfo %s %s %s";
-        return String.format(rawCommand, nexusRepoId, mvnSettingsId, sequence);
+    public static String saveJarMetadata(Long nexusRepoId,
+                                         Long sequence) {
+        String rawCommand = "saveJarInfo %s %s";
+        return String.format(rawCommand,
+                nexusRepoId,
+                sequence);
     }
 
-    public static String saveCustomJarMetadata(Long mvnSettingsId, Long sequence, String url, String username, String password) {
-        String rawCommand = "saveCustomJarInfo %s %s %s %s %s";
-        return String.format(rawCommand, mvnSettingsId, sequence, url, DESEncryptUtil.encode(username), DESEncryptUtil.encode(password));
+    public static String saveCustomJarMetadata(Long sequence,
+                                               String url,
+                                               String username,
+                                               String password) {
+        String rawCommand = "saveCustomJarInfo %s %s %s %s";
+        return String.format(rawCommand, sequence, url, DESEncryptUtil.encode(username), DESEncryptUtil.encode(password));
     }
 }

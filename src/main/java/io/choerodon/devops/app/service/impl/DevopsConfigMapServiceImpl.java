@@ -226,7 +226,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         CONFIG_MAP_PREFIX + devopsConfigMapDTO.getName() + ".yaml",
-                        "DELETE FILE",
+                        String.format("【DELETE】%s", CONFIG_MAP_PREFIX + devopsConfigMapDTO.getName() + ".yaml"),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), MASTER);
             }
             return;
@@ -247,7 +247,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(),
-                        "DELETE FILE",
+                        String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {

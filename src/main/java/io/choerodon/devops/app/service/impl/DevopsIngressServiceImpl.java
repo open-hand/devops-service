@@ -1,14 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import io.kubernetes.client.common.KubernetesObject;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
@@ -24,6 +20,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -117,7 +119,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_INGRESS,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_INGRESS,
             description = "Devops创建域名", inputSchema = "{}")
     public void createIngress(Long projectId, DevopsIngressVO devopsIngressVO) {
 
@@ -492,11 +494,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             baseDeletePathByIngressId(ingressId);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     GitOpsConstants.INGRESS_PREFIX + ingressDO.getName() + GitOpsConstants.YAML_FILE_SUFFIX)) {
-                gitlabServiceClientOperator.deleteFile(
-                        TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        GitOpsConstants.INGRESS_PREFIX + ingressDO.getName() + GitOpsConstants.YAML_FILE_SUFFIX,
-                        "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.INGRESS_PREFIX + ingressDO.getName() + GitOpsConstants.YAML_FILE_SUFFIX, String.format("【DELETE】%s", GitOpsConstants.INGRESS_PREFIX + ingressDO.getName() + GitOpsConstants.YAML_FILE_SUFFIX), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return;
 
@@ -516,11 +514,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         if (devopsEnvFileResourceDTOS.size() == 1) {
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
-                gitlabServiceClientOperator.deleteFile(
-                        TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        devopsEnvFileResourceDTO.getFilePath(),
-                        "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), devopsEnvFileResourceDTO.getFilePath(), String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             if (operateForOldTypeIngress) {
@@ -1211,7 +1205,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
     @Override
     public boolean operateForOldTypeIngressJudgeByClusterVersion(Long clusterId) {
-        ClusterSummaryInfoVO clusterSummaryInfoVO = JsonHelper.unmarshalByJackson(redisTemplate.opsForValue().get(DevopsClusterServiceImpl.renderClusterInfoRedisKey(clusterId)), ClusterSummaryInfoVO.class);
+        String clusterInfo = redisTemplate.opsForValue().get(DevopsClusterServiceImpl.renderClusterInfoRedisKey(clusterId));
+        // redis中没有集群信息，默认返回true
+        if (ObjectUtils.isEmpty(clusterInfo)) {
+            return true;
+        }
+
+        ClusterSummaryInfoVO clusterSummaryInfoVO = JsonHelper.unmarshalByJackson(clusterInfo, ClusterSummaryInfoVO.class);
         String[] split = clusterSummaryInfoVO.getVersion().split("\\.");
         int minorVersion = Integer.parseInt(split[1]);
         if (minorVersion <= 21) {

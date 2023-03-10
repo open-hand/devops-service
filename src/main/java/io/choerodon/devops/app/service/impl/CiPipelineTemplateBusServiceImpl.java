@@ -1,8 +1,22 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.hzero.core.util.AssertUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.pipeline.ConfigFileRelVO;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplatePipelineVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStageVO;
@@ -14,21 +28,9 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
-import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
+import io.choerodon.devops.infra.util.UserSyncErrorBuilder;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.core.util.AssertUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Created by wangxiang on 2021/12/3
@@ -63,7 +65,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     private CiTemplateVariableBusMapper ciTemplateVariableBusMapper;
 
     @Autowired
-    private PipelineTemplateUtils pipelineTemplateUtils;
+    private UserSyncErrorBuilder.PipelineTemplateUtils pipelineTemplateUtils;
 
     @Autowired
     private DevopsCiStepOperator devopsCiStepOperator;
@@ -78,34 +80,13 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     private CiTemplateJobStepRelBusMapper ciTemplateJobStepRelBusMapper;
 
     @Autowired
-    private CiTemplateMavenBuildMapper ciTemplateMavenBuildMapper;
-
-    @Autowired
-    private CiTemplateMavenPublishMapper ciTemplateMavenPublishMapper;
-
-    @Autowired
-    private CiTemplateDockerMapper ciTemplateDockerMapper;
-
-    @Autowired
-    private CiTemplateSonarMapper ciTemplateSonarMapper;
-
-    @Autowired
-    private DevopsCiTplSonarQualityGateMapper devopsCiTplSonarQualityGateMapper;
-
-    @Autowired
-    private DevopsCiTplSonarQualityGateConditionMapper devopsCiTplSonarQualityGateConditionMapper;
-
-    @Autowired
-    private CiTemplateMavenBuildService ciTemplateMavenBuildService;
-
-    @Autowired
-    private CiTemplateMavenPublishService ciTemplateMavenPublishService;
-
-    @Autowired
     private CiTemplateStageBusService ciTemplateStageBusService;
 
     @Autowired
     private CiTemplateVariableBusService ciTemplateVariableBusService;
+
+    @Autowired
+    private CiTplJobConfigFileRelService ciTplJobConfigFileRelService;
 
 
     @Override
@@ -174,7 +155,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     public CiTemplatePipelineVO queryPipelineTemplateById(Long sourceId, Long ciPipelineTemplateId) {
         //1. 查询流水线模板
         CiTemplatePipelineVO ciTemplatePipelineVO = queryBaseCiPipelineTemplate(ciPipelineTemplateId);
-        PipelineTemplateUtils.threadLocal.set(ciTemplatePipelineVO);
+        UserSyncErrorBuilder.PipelineTemplateUtils.threadLocal.set(ciTemplatePipelineVO);
         //2.查询模板下面的阶段
         List<CiTemplateStageVO> ciTemplateStageVOS = queryBaseCiTemplateStage(ciPipelineTemplateId);
         ciTemplateStageVOS.forEach(ciTemplateStageVO -> {
@@ -434,6 +415,11 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
             //填充CD Job的配置信息
             //根据步骤的类型填充CD的配置信息
             ciTemplateJobBusService.fillCdJobConfig(ciTemplateJobVO);
+            List<CiTplJobConfigFileRelDTO> ciTplJobConfigFileRelDTOS = ciTplJobConfigFileRelService.listByJobId(ciTemplateJobVO.getId());
+            if (!CollectionUtils.isEmpty(ciTplJobConfigFileRelDTOS)) {
+                ciTemplateJobVO.setConfigFileRelList(ConvertUtils.convertList(ciTplJobConfigFileRelDTOS, ConfigFileRelVO.class));
+            }
+
             ciTemplateJobVO.setDevopsCiStepVOList(ciTemplateStepVOS);
         });
         ciTemplateStageVO.setCiTemplateJobVOList(ciTemplateJobVOS);

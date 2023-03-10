@@ -16,8 +16,57 @@
         dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.project_id,
         das.`name` AS app_service_name, das.gitlab_project_id, dcp.image,dcp.last_update_date,
         dcp.last_updated_by,dcp.creation_date,
-        dcpr.status as latest_execute_status, dcpr.creation_date as latest_execute_date, dcpr.id is not null as
+        dcpr.status as latest_execute_status,
+        <if test="sortStr.contains('status')">
+            CASE dcpr.STATUS
+            WHEN 'success' THEN 1
+            WHEN 'pending' THEN 2
+            WHEN 'running' THEN 3
+            WHEN 'not_audit' THEN 4
+            WHEN 'manual' THEN 4
+            WHEN 'failed' THEN 5
+            WHEN 'skipped' THEN 6
+            ELSE 7
+            END
+            as latest_execute_status1,
+        </if>
+        dcpr.creation_date as latest_execute_date, dcpr.id is not null as
         has_records
+        FROM devops_cicd_pipeline dcp
+        INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
+        left join devops_ci_pipeline_record dcpr on dcpr.id = (SELECT max(id) FROM devops_ci_pipeline_record WHERE
+        ci_pipeline_id = dcp.id)
+        <where>
+            dcp.project_id = #{projectId}
+            <if test="searchParam != null">
+                and (das.name like CONCAT(CONCAT('%', #{searchParam}),'%')
+                or das.code like CONCAT(CONCAT('%', #{searchParam}),'%')
+                or dcp.name like CONCAT(CONCAT('%', #{searchParam}),'%')
+                )
+            </if>
+            <if test="appServiceIds!=null and appServiceIds.size>0">
+                and dcp.app_service_id in
+                <foreach collection="appServiceIds" item="appServiceId" index="index"
+                         open="(" close=")" separator=",">
+                    #{appServiceId}
+                </foreach>
+            </if>
+            <if test="enableFlag != null">
+                and dcp.is_enabled = #{enableFlag}
+            </if>
+            <if test="status != null">
+                and dcpr.status = #{status}
+            </if>
+            <if test="excludedPipelineId != null">
+                and dcp.id != #{excludedPipelineId}
+            </if>
+        </where>
+        ${sortStr}
+    </select>
+
+    <select id="queryByProjectIdAndName_COUNT" resultType="java.lang.Long">
+        SELECT
+        count(0)
         FROM devops_cicd_pipeline dcp
         INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
         left join devops_ci_pipeline_record dcpr on dcpr.id = (SELECT max(id) FROM devops_ci_pipeline_record WHERE
@@ -44,7 +93,6 @@
                 and dcpr.status = #{status}
             </if>
         </where>
-        ORDER BY dcp.id DESC
     </select>
 
     <select id="listPipelineNameByTaskConfigId" resultType="java.lang.String">

@@ -57,7 +57,7 @@ public interface DevopsCiPipelineService {
     /**
      * 查询项目下流水线列表
      */
-    Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest, Boolean enableFlag, String status);
+    Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest, Boolean enableFlag, String status, Long currentPipelineId, Long excludedPipelineId);
 
     /**
      * 查询流水线信息
@@ -118,6 +118,8 @@ public interface DevopsCiPipelineService {
     List<PipelineInstanceReferenceVO> listTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds);
 
     List<PipelineInstanceReferenceVO> listChartEnvReferencePipelineInfo(Long projectId, Long envId);
+
+    List<PipelineInstanceReferenceVO> listConfigFileReferencePipelineInfo(Long projectId, Long configFileId);
 
     List<PipelineInstanceReferenceVO> listDeployEnvReferencePipelineInfo(Long projectId, Long envId);
 

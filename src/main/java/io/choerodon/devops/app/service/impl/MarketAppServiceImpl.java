@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +36,7 @@ public class MarketAppServiceImpl implements MarketAppService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_MARKET_APPLICATION_SERVICE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_IMPORT_MARKET_APPLICATION_SERVICE,
             description = "Devops创建应用服务", inputSchema = "{}")
     public void importAppService(Long projectId, List<ApplicationImportInternalVO> applicationImportInternalVOS) {
         applicationImportInternalVOS.forEach(marketApplicationImportVO -> {

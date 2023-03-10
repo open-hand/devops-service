@@ -1,13 +1,15 @@
 package io.choerodon.devops.api.vo.template;
 
-import java.util.Date;
-import java.util.List;
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import java.util.Date;
+import java.util.List;
+import javax.validation.constraints.NotNull;
+
+import io.choerodon.devops.api.vo.pipeline.ConfigFileRelVO;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiTemplatePipelineTriggerConfigVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
@@ -60,6 +62,8 @@ public class CiTemplateJobVO {
     @ApiModelProperty("任务中的步骤列表")
     private List<CiTemplateStepVO> devopsCiStepVOList;
 
+    private List<ConfigFileRelVO> configFileRelList;
+
 
     @ApiModelProperty("所属任务分组名称")
     private String groupName;
@@ -108,11 +112,30 @@ public class CiTemplateJobVO {
     @ApiModelProperty("审核信息")
     private CiTplAuditVO ciAuditConfig;
 
+    @ApiModelProperty("流水线触发配置")
+    private DevopsCiTemplatePipelineTriggerConfigVO devopsCiPipelineTriggerConfigVO;
+
     @ApiModelProperty("顺序")
     private Integer sequence;
 
     @ApiModelProperty("分组类型")
     private String groupType;
+
+    public DevopsCiTemplatePipelineTriggerConfigVO getDevopsCiPipelineTriggerConfigVO() {
+        return devopsCiPipelineTriggerConfigVO;
+    }
+
+    public void setDevopsCiPipelineTriggerConfigVO(DevopsCiTemplatePipelineTriggerConfigVO devopsCiPipelineTriggerConfigVO) {
+        this.devopsCiPipelineTriggerConfigVO = devopsCiPipelineTriggerConfigVO;
+    }
+
+    public List<ConfigFileRelVO> getConfigFileRelList() {
+        return configFileRelList;
+    }
+
+    public void setConfigFileRelList(List<ConfigFileRelVO> configFileRelList) {
+        this.configFileRelList = configFileRelList;
+    }
 
     public Integer getSequence() {
         return sequence;
