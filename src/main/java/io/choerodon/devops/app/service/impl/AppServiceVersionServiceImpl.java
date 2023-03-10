@@ -196,6 +196,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
         String filePath = StringUtils.substringBeforeLast(chartFile.getPath(), ".");
         File[] fileList = tempFile.listFiles();
+        chartFile.delete();
         for (File file : fileList) {
             if (file.isDirectory()) {
                 FileUtil.toTgz(file.getPath(), filePath);
