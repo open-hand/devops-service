@@ -379,6 +379,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 String imageName = appServiceImageVersionDTO.getImage();
                 String repositoryName = imageName.split(":")[0];
                 values = replaceAndGetValues(files, tempFilePath, chartFile, repositoryName);
+                if (harborConfigId == null) {
+                    harborConfigId = appServiceImageVersionDTO.getHarborConfigId();
+                    repoType = appServiceImageVersionDTO.getHarborRepoType();
+                    image = imageName;
+                }
+
             } else {
                 values = replaceAndGetValues(files, tempFilePath, chartFile, null);
             }
