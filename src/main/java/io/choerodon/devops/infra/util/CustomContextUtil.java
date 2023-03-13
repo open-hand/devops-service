@@ -63,19 +63,12 @@ public class CustomContextUtil {
      */
     public static void setUserContext(String loginName, Long userId, Long orgId) {
         try {
-            CustomUserDetails customUserDetails = DetailsHelper.getUserDetails() == null ? new CustomUserDetails(loginName, "unknown", Collections.emptyList()) : DetailsHelper.getUserDetails();
+            CustomUserDetails customUserDetails = new CustomUserDetails(loginName, "default");
             customUserDetails.setUserId(userId);
             customUserDetails.setOrganizationId(orgId);
             customUserDetails.setLanguage("zh_CN");
             customUserDetails.setTimeZone("CCT");
-            Authentication user = new UsernamePasswordAuthenticationToken("default", "N/A", Collections.emptyList());
-            OAuth2Request request = new OAuth2Request(new HashMap<>(0), "", Collections.emptyList(), true,
-                    Collections.emptySet(), Collections.emptySet(), null, null, null);
-            OAuth2Authentication authentication = new OAuth2Authentication(request, user);
-            OAuth2AuthenticationDetails oAuth2AuthenticationDetails = new OAuth2AuthenticationDetails(new MockHttpServletRequest());
-            oAuth2AuthenticationDetails.setDecodedDetails(customUserDetails);
-            authentication.setDetails(oAuth2AuthenticationDetails);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            DetailsHelper.setCustomUserDetails(customUserDetails);
             ZKnowDetailsHelper.setRequestSource(customUserDetails, ZKnowDetailsHelper.VALUE_CHOERODON);
         } catch (Exception e) {
             throw new CommonException(DEVOPS_CONTEXT_SET_ERROR, e);
