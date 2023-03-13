@@ -408,8 +408,9 @@
                da.is_synchro,
                da.gitlab_project_id,
                da.harbor_config_id,
-               da.external_config_id da.chart_config_id,
-        da.token,
+               da.external_config_id,
+               da.chart_config_id,
+               da.token,
                da.object_version_number
         FROM devops_app_service da
         WHERE da.token = #{token}
