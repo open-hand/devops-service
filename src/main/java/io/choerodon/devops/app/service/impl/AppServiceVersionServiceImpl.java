@@ -195,12 +195,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         } catch (IOException e) {
             throw new CommonException("error.write.new.values", e);
         }
-//        String filePath = StringUtils.substringBeforeLast(chartFile.getPath(), ".");
+        String filePath = StringUtils.substringBeforeLast(chartFile.getPath(), ".");
         File[] fileList = tempFile.listFiles();
         chartFile.delete();
         for (File file : fileList) {
             if (file.isDirectory()) {
-                FileUtil.toTgz(file.getPath(), chartFilePath);
+                FileUtil.toTgz(file.getPath(), filePath);
             }
         }
         return values;
