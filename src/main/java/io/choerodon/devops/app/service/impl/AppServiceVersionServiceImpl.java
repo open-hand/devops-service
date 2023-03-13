@@ -370,7 +370,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             // 取commit的一部分作为文件路径
             String commitPart = commit == null ? "" : commit.substring(0, 8);
             tempFilePath = String.format(TEMP_PATH_TEMPLATE, appServiceId, version, commitPart);
-            String chartFilePath = tempFilePath + File.separator + files.getOriginalFilename();
+            String chartFilePath = tempFilePath + File.separator + files.getName();
 //            File chartFile = new File(tempFilePath, files.getOriginalFilename());
 
 //            String path = FileUtil.multipartFileToFile(tempFilePath, files);
