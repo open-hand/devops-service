@@ -1,18 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO;
 import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigService;
 import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigVariableService;
+import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineTriggerConfigMapper;
@@ -33,6 +35,9 @@ public class DevopsCiPipelineTriggerConfigServiceImpl implements DevopsCiPipelin
     @Autowired
     private DevopsCiPipelineTriggerConfigVariableService ciPipelineTriggerConfigVariableService;
 
+    @Autowired
+    private UserAttrService userAttrService;
+
     @Override
     public DevopsCiPipelineTriggerConfigDTO baseCreate(DevopsCiPipelineTriggerConfigDTO devopsCiPipelineTriggerConfigDTO) {
         return MapperUtil.resultJudgedInsertSelective(devopsCiPipelineTriggerConfigMapper, devopsCiPipelineTriggerConfigDTO, "error.ci.job.pipeline.trigger.config.create");
@@ -49,10 +54,13 @@ public class DevopsCiPipelineTriggerConfigServiceImpl implements DevopsCiPipelin
         if (CollectionUtils.isEmpty(devopsCiPipelineTriggerConfigDTOList)) {
             return;
         }
+
+        UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
+
         devopsCiPipelineTriggerConfigDTOList.forEach(devopsCiPipelineTriggerConfigDTO -> {
             try {
                 logger.info("try to delete pipeline trigger");
-                gitlabServiceClientOperator.deletePipelineTrigger(devopsCiPipelineTriggerConfigDTO.getTriggeredPipelineGitlabProjectId().intValue(), DetailsHelper.getUserDetails().getUserId(), devopsCiPipelineTriggerConfigDTO.getPipelineTriggerId());
+                gitlabServiceClientOperator.deletePipelineTrigger(devopsCiPipelineTriggerConfigDTO.getTriggeredPipelineGitlabProjectId().intValue(), userAttrVO.getGitlabUserId(), devopsCiPipelineTriggerConfigDTO.getPipelineTriggerId());
             } catch (Exception ignored) {
                 // 尝试删除线触发器，如果删除失败，不处理异常，继续向下执行
                 logger.info(ignored.getMessage());

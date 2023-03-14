@@ -9,7 +9,6 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -101,28 +100,6 @@ public class CiTemplateJobDTO extends AuditDomain {
      */
     @ApiModelProperty("触发类型")
     private String triggerType;
-
-    @Encrypt
-    private Long configFileId;
-
-    private String configFilePath;
-
-    public Long getConfigFileId() {
-        return configFileId;
-    }
-
-    public void setConfigFileId(Long configFileId) {
-        this.configFileId = configFileId;
-    }
-
-    public String getConfigFilePath() {
-        return configFilePath;
-    }
-
-    public void setConfigFilePath(String configFilePath) {
-        this.configFilePath = configFilePath;
-    }
-
     public String getTags() {
         return tags;
     }

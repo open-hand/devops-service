@@ -30,13 +30,13 @@
     </foreach>
   </select>
 
-  <delete id="deleteByIds">
-    DELETE FROM devops_ci_pipeline_trigger_config
-    WHERE id IN
-    <foreach collection="ids" separator="," open="(" close=")" item="id">
-      #{id}
-    </foreach>
-  </delete>
+    <delete id="deleteByIds">
+        DELETE FROM devops_ci_pipeline_trigger_config
+        WHERE id IN
+        <foreach collection="ids" separator="," open="(" close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
 
   <select id="queryConfigVoByIdWithVariables"
           resultMap="devopsCiPipelineTriggerConfigVO">
