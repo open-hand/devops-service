@@ -1,16 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import net.schmizz.sshj.SSHClient;
@@ -29,6 +18,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -189,7 +189,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         devopsHostDTO.setHostStatus(DevopsHostStatus.DISCONNECT.getValue());
         devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", ""));
-        return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "devops.insert.host"), DevopsHostVO.class);
+        DevopsHostVO devopsHostVO = ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "devops.insert.host"), DevopsHostVO.class);
+
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(DetailsHelper.getUserDetails().getUserId());
+        DevopsHostUserPermissionDTO devopsHostUserPermissionDTO = new DevopsHostUserPermissionDTO(iamUserDTO.getLoginName(), iamUserDTO.getId(), devopsHostVO.getId(), iamUserDTO.getRealName(), DevopsHostUserPermissionLabelEnums.ADMINISTRATOR.getValue());
+        devopsHostUserPermissionService.baseCreate(devopsHostUserPermissionDTO);
+
+        return devopsHostVO;
     }
 
     @Override
@@ -220,6 +226,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 //            devopsDockerInstanceMapper.deleteByHostId(hostId);
             devopsHostCommandMapper.deleteByHostId(hostId);
             devopsHostAppMapper.deleteByHostId(hostId);
+            devopsHostUserPermissionService.deleteByHostId(hostId);
         } catch (Exception exception) {
             throw new CommonException("falied to delete host");
         }

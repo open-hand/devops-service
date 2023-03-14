@@ -827,7 +827,7 @@ echo "Query npm repo info"
 function pipeline_trigger(){
   # 请求gitlab触发流水线
   http_status_code=$(curl -o trigger_result.json -s -m 10 --connect-timeout 10 -w %{http_code}  -X POST "${CI_SERVER_URL}/api/v4/projects/$3/trigger/pipeline?ref=$2&token=$4&$5")
-  if [ "$http_status_code" != "200" ];then
+  if [ "$http_status_code" != "201" ];then
     echo "failed to trigger pipeline"
     cat trigger_result.json
     exit 1
