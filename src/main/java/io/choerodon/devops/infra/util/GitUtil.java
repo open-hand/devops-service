@@ -132,10 +132,10 @@ public class GitUtil {
     public static Boolean validRepositoryUrl(String repositoryUrl, String username, String password) {
         LsRemoteCommand lsRemoteCommand = new LsRemoteCommand(null);
         lsRemoteCommand.setRemote(repositoryUrl);
-        if (ObjectUtils.isEmpty(username) || ObjectUtils.isEmpty(password)) {
-            throw new CommonException("devops.general.git.username.or.password.empty");
+        if (!ObjectUtils.isEmpty(username) && !ObjectUtils.isEmpty(password)) {
+            lsRemoteCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password));
         }
-        lsRemoteCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password));
+
         try {
             int size = lsRemoteCommand.call().size();
             if (size == 0) {
