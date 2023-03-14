@@ -1,12 +1,11 @@
 package io.choerodon.devops.api.vo;
 
 
-import java.util.Date;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import java.util.Date;
+import java.util.List;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -41,10 +40,8 @@ public class CiPipelineRecordVO extends AuditDomain {
     private String appServiceName;
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
-    @Encrypt
     @ApiModelProperty("关联流水线id")
     private Long ciPipelineId;
-    @Encrypt
     @ApiModelProperty("关联流水线id")
     private Long pipelineId;
     @ApiModelProperty("cicd 执行记录创建时间")

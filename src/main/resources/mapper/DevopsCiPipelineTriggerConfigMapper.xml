@@ -1,32 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiPipelineTriggerConfigMapper">
-  <resultMap id="devopsCiPipelineTriggerConfigVO"
-             type="io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO">
-      <result property="id" column="id"/>
-      <result property="triggeredPipelineId" column="triggered_pipeline_id"/>
-      <result property="triggeredPipelineProjectId" column="triggered_pipeline_project_id"/>
-      <result property="refName" column="ref_name"/>
-      <result property="token" column="token"/>
-      <result property="triggeredPipelineGitlabProjectId" column="triggered_pipeline_gitlab_project_id"/>
-      <collection property="devopsCiPipelineVariables"
-                  ofType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigVariableDTO">
-          <result property="id" column="variable_id"/>
-          <result property="variableKey" column="variable_key"/>
-          <result property="variableValue" column="variable_value"/>
-      </collection>
-  </resultMap>
+    <resultMap id="devopsCiPipelineTriggerConfigVO"
+               type="io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO">
+        <id property="id" column="id"/>
+        <result property="triggeredPipelineId" column="triggered_pipeline_id"/>
+        <result property="triggeredPipelineProjectId" column="triggered_pipeline_project_id"/>
+        <result property="refName" column="ref_name"/>
+        <result property="token" column="token"/>
+        <result property="triggeredPipelineGitlabProjectId" column="triggered_pipeline_gitlab_project_id"/>
+        <collection property="devopsCiPipelineVariables"
+                    ofType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigVariableDTO">
+            <id property="id" column="variable_id"/>
+            <result property="pipelineTriggerConfigId" column="pipeline_trigger_config_id"/>
+            <result property="variableKey" column="variable_key"/>
+            <result property="variableValue" column="variable_value"/>
+        </collection>
+    </resultMap>
 
-  <select id="listByJobIds" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigDTO">
-    SELECT dcptc.id,
-      dcptc.triggered_pipeline_gitlab_project_id,
-      dcptc.pipeline_trigger_id
-      FROM devops_ci_pipeline_trigger_config dcptc
-      JOIN devops_ci_job dcj ON dcj.config_id = dcptc.id AND dcj.type = 'pipeline_trigger'
-      WHERE dcj.id IN
-      <foreach collection="jobIds" separator="," open="(" close=")" item="jobId">
-          #{jobId}
-      </foreach>
+    <select id="listByJobIds" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigDTO">
+        SELECT dcptc.id,
+        dcptc.triggered_pipeline_gitlab_project_id,
+        dcptc.pipeline_trigger_id
+        FROM devops_ci_pipeline_trigger_config dcptc
+        JOIN devops_ci_job dcj ON dcj.config_id = dcptc.id AND dcj.type = 'pipeline_trigger'
+        WHERE dcj.id IN
+        <foreach collection="jobIds" separator="," open="(" close=")" item="jobId">
+            #{jobId}
+    </foreach>
   </select>
 
     <delete id="deleteByIds">
@@ -37,22 +38,23 @@
         </foreach>
     </delete>
 
-    <select id="queryConfigVoByIdWithVariables"
-            resultMap="devopsCiPipelineTriggerConfigVO">
-        SELECT dcptc.id,
-        dcptc.pipeline_id,
-        dcptc.triggered_pipeline_project_id,
-        dcptc.triggered_pipeline_id,
-        dcptc.triggered_pipeline_gitlab_project_id,
-        dcptc.pipeline_trigger_id,
-        dcptc.ref_name,
-        dcptc.token,
-        dcptcv.id AS variable_id,
-        variable_key,
-        variable_value
-        FROM devops_ci_pipeline_trigger_config dcptc
-        LEFT JOIN devops_ci_pipeline_trigger_config_variable dcptcv
-        ON dcptcv.pipeline_trigger_config_id = dcptc.id
-        WHERE dcptc.id = #{configId}
-    </select>
+  <select id="queryConfigVoByIdWithVariables"
+          resultMap="devopsCiPipelineTriggerConfigVO">
+      SELECT
+      dcptc.id AS id,
+      dcptc.pipeline_id AS pipeline_id,
+      dcptc.triggered_pipeline_project_id AS triggered_pipeline_project_id,
+      dcptc.triggered_pipeline_id AS triggered_pipeline_id,
+      dcptc.triggered_pipeline_gitlab_project_id AS triggered_pipeline_gitlab_project_id,
+      dcptc.pipeline_trigger_id AS pipeline_trigger_id,
+      dcptc.ref_name AS ref_name,
+      dcptc.token AS token,
+      dcptcv.id AS variable_id,
+      dcptcv.pipeline_trigger_config_id AS pipeline_trigger_config_id,
+      dcptcv.variable_key AS variable_key,
+      dcptcv.variable_value AS variable_value
+      FROM devops_ci_pipeline_trigger_config dcptc
+      LEFT JOIN devops_ci_pipeline_trigger_config_variable dcptcv ON dcptcv.pipeline_trigger_config_id = dcptc.id
+      WHERE dcptc.id = #{configId}
+  </select>
 </mapper>
