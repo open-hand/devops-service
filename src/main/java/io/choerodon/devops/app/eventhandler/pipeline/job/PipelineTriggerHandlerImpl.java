@@ -14,12 +14,10 @@ import static io.choerodon.devops.app.service.impl.DevopsCiPipelineTriggerConfig
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
+import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiTemplatePipelineTriggerConfigVO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigService;
-import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigVariableService;
-import io.choerodon.devops.app.service.DevopsCiTemplatePipelineTriggerConfigService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigDTO;
@@ -52,6 +50,9 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
     @Autowired
     private DevopsCiTemplatePipelineTriggerConfigService devopsCiTemplatePipelineTriggerConfigService;
 
+    @Autowired
+    private UserAttrService userAttrService;
+
     @Override
     public CiJobTypeEnum getType() {
         return CiJobTypeEnum.PIPELINE_TRIGGER;
@@ -80,13 +81,14 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
 
         String pipelineTriggerName = String.format(PIPELINE_TRIGGER_NAME_TEMPLATE, currentAppServiceDTO.getCode());
 
-        List<PipelineTrigger> pipelineTriggers = gitlabServiceClientOperator.listPipelineTrigger(targetAppServiceDTO.getGitlabProjectId(), DetailsHelper.getUserDetails().getUserId());
+        UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
+        List<PipelineTrigger> pipelineTriggers = gitlabServiceClientOperator.listPipelineTrigger(targetAppServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId());
         PipelineTrigger pipelineTrigger = pipelineTriggers.stream().filter(t -> t.getDescription().equals(pipelineTriggerName)).findAny().orElse(null);
         if (pipelineTrigger != null) {
             devopsCiPipelineTriggerConfigDTO.setToken(pipelineTrigger.getToken());
             devopsCiPipelineTriggerConfigDTO.setPipelineTriggerId(pipelineTrigger.getId().longValue());
         } else {
-            PipelineTrigger createdPipelineTrigger = gitlabServiceClientOperator.createPipelineTrigger(targetAppServiceDTO.getGitlabProjectId(), DetailsHelper.getUserDetails().getUserId(), pipelineTriggerName);
+            PipelineTrigger createdPipelineTrigger = gitlabServiceClientOperator.createPipelineTrigger(targetAppServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId(), pipelineTriggerName);
             if (createdPipelineTrigger == null) {
                 throw new CommonException("error.ci.job.pipeline.trigger.config.create");
             }
