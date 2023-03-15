@@ -610,7 +610,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     @Override
-    public PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId) {
+    public List<PipelineInstanceReferenceVO> queryPipelineReferenceHostApp(Long projectId, Long appId) {
         return devopsCiJobService.queryPipelineReferenceHostApp(projectId, appId);
     }
 
