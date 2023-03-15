@@ -104,7 +104,7 @@ public class CiController {
             @ApiParam(value = "image", required = true)
             @RequestParam String image,
             @ApiParam(value = "harbor_config_id", required = true)
-            @RequestParam(value = "harbor_config_id") Long harborConfigId,
+            @RequestParam(value = "harbor_config_id") String harborConfigId,
             @ApiParam(value = "repo_type", required = true)
             @RequestParam(value = "repo_type") String repoType,
             @ApiParam(value = "token", required = true)
