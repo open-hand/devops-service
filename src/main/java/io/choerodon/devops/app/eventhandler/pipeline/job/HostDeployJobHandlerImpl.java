@@ -1,21 +1,21 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CiHostDeployCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CiJobCode.DEVOPS_JOB_CONFIG_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.ResourceCheckConstant.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CiHostDeployCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CiJobCode.DEVOPS_JOB_CONFIG_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.*;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -128,6 +128,8 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
         if (!StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
             if (StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER_COMPOSE.value())) {
                 devopsCiHostDeployInfoDTO.setRunCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getDockerComposeRunCommand()));
+                devopsCiHostDeployInfoDTO.setImageJobName(ciHostDeployInfoVO.getPipelineTask());
+                devopsCiHostDeployInfoDTO.setDeployJson(ciHostDeployInfoVO.getPipelineTask());
             } else {
                 DevopsCiHostDeployInfoVO.JarDeploy jarDeployVO = new DevopsCiHostDeployInfoVO.JarDeploy();
                 jarDeployVO.setDeploySource(ciHostDeployInfoVO.getDeploySource());
@@ -193,6 +195,7 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
 
         if (StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER_COMPOSE.value())) {
             devopsCiHostDeployInfoVO.setDockerComposeRunCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getRunCommand()));
+            devopsCiHostDeployInfoVO.setPipelineTask(devopsCiHostDeployInfoVO.getDeployJson());
         } else {
             if (!ObjectUtils.isEmpty(devopsCiHostDeployInfoVO.getDeployJson())) {
                 if (!StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
