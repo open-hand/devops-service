@@ -83,6 +83,9 @@ public class CiTemplateCategoryBusServiceImpl implements CiTemplateCategoryBusSe
         CiTemplateCategoryDTO ciTemplateCategoryDTO = new CiTemplateCategoryDTO();
         BeanUtils.copyProperties(ciTemplateCategoryVO, ciTemplateCategoryDTO);
         ciTemplateCategoryDTO.setBuiltIn(Boolean.FALSE);
+        // 图标使用其他的
+        CiTemplateCategoryDTO templateCategoryDTO = ciTemplateCategoryBusMapper.selectOne(new CiTemplateCategoryDTO().setBuiltIn(true).setCategory("其他"));
+        ciTemplateCategoryDTO.setImage(templateCategoryDTO == null ? null : templateCategoryDTO.getImage());
         if (ciTemplateCategoryBusMapper.insertSelective(ciTemplateCategoryDTO) != 1) {
             throw new CommonException("error.create.template.category");
         }
