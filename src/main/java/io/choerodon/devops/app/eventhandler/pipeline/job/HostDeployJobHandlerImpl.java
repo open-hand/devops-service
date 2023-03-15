@@ -50,7 +50,8 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
     @Autowired
     private DevopsCiPipelineService devopsCiPipelineService;
-
+    @Autowired
+    private DockerComposeValueService dockerComposeValueService;
 
     @Override
     public CiJobTypeEnum getType() {
@@ -196,6 +197,9 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
         if (StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER_COMPOSE.value())) {
             devopsCiHostDeployInfoVO.setDockerComposeRunCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getRunCommand()));
             devopsCiHostDeployInfoVO.setPipelineTask(devopsCiHostDeployInfoVO.getDeployJson());
+            Long appId = devopsCiHostDeployInfoVO.getAppId();
+            DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
+            devopsCiHostDeployInfoVO.setValue(dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId()).getValue());
         } else {
             if (!ObjectUtils.isEmpty(devopsCiHostDeployInfoVO.getDeployJson())) {
                 if (!StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
