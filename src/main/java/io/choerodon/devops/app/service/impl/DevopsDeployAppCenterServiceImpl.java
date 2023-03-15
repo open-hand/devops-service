@@ -501,7 +501,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (devopsDeployAppCenterEnvDTO == null) {
             return;
         }
-        if (devopsCiJobService.listChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
+        if (!CollectionUtils.isEmpty(devopsCiJobService.listChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId()))) {
             throw new CommonException(ResourceCheckConstant.DEVOPS_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
     }
