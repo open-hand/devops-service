@@ -332,6 +332,11 @@ public class BaseServiceClientOperator {
         return this.listUsersByIds(ids);
     }
 
+    public Page<IamUserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, int page, int size, String params) {
+        return baseServiceClient.pagingQueryUsersWithRolesOnProjectLevel(projectId, page, size, params).getBody();
+    }
+
+
     public List<IamUserDTO> listUsersWithGitlabLabel(Long projectId,
                                                      RoleAssignmentSearchVO roleAssignmentSearchVO,
                                                      String labelName) {

@@ -185,53 +185,57 @@ public class UserAttrServiceImpl implements UserAttrService {
             selectedIamUserIds = KeyDecryptHelper.decryptIdList((JSONArray) maps.get("ids"));
             realName = (String) maps.get("userName");
         }
-        List<MemberDTO> memberDTOS = gitlabServiceClientOperator.listMemberByProject(appServiceDTO.getGitlabProjectId(), realName);
-        if (CollectionUtils.isEmpty(memberDTOS)) {
-            return new Page<>();
-        }
-        Set<Long> guids = memberDTOS.stream().filter(v -> v.getAccessLevel() >= AccessLevel.DEVELOPER.value).map(m -> m.getId().longValue()).collect(Collectors.toSet());
 
-        List<UserAttrVO> userAttrVOS = listUsersByGitlabUserIds(guids);
+        if (appServiceDTO.getExternalConfigId() == null) {
+            List<MemberDTO> memberDTOS = gitlabServiceClientOperator.listMemberByProject(appServiceDTO.getGitlabProjectId(), realName);
+            if (CollectionUtils.isEmpty(memberDTOS)) {
+                return new Page<>();
+            }
+            Set<Long> guids = memberDTOS.stream().filter(v -> v.getAccessLevel() >= AccessLevel.DEVELOPER.value).map(m -> m.getId().longValue()).collect(Collectors.toSet());
 
-        List<Long> uids = userAttrVOS.stream().filter(u -> u.getIamUserId() != null).map(UserAttrVO::getIamUserId).collect(Collectors.toList());
+            List<UserAttrVO> userAttrVOS = listUsersByGitlabUserIds(guids);
 
-        // allUserIds构成
-        // 1. 用户选中的
-        // 2. 项目下搜索到的
-        List<Long> allUserIds = new ArrayList<>(new HashSet<>(selectedIamUserIds));
+            List<Long> uids = userAttrVOS.stream().filter(u -> u.getIamUserId() != null).map(UserAttrVO::getIamUserId).collect(Collectors.toList());
 
-        if (!CollectionUtils.isEmpty(uids)) {
-            uids.forEach(uid -> {
-                if (!allUserIds.contains(uid)) {
-                    allUserIds.add(uid);
+            // allUserIds构成
+            // 1. 用户选中的
+            // 2. 项目下搜索到的
+            List<Long> allUserIds = new ArrayList<>(new HashSet<>(selectedIamUserIds));
+
+            if (!CollectionUtils.isEmpty(uids)) {
+                uids.forEach(uid -> {
+                    if (!allUserIds.contains(uid)) {
+                        allUserIds.add(uid);
+                    }
+                });
+            }
+            if (CollectionUtils.isEmpty(allUserIds)) {
+                return new Page<>();
+            }
+            List<IamUserDTO> userDTOS = allUserIds.stream().map(v -> {
+                IamUserDTO iamUserDTO = new IamUserDTO();
+                iamUserDTO.setId(v);
+                return iamUserDTO;
+            }).collect(Collectors.toList());
+
+            Page<IamUserDTO> page = PageInfoUtil.doPageFromList(userDTOS, pageRequest);
+
+            List<Long> userIds = page.getContent().stream().map(IamUserDTO::getId).collect(Collectors.toList());
+            List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
+            Map<Long, IamUserDTO> userMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+            page.getContent().forEach(v -> {
+                IamUserDTO iamUserDTO = userMap.get(v.getId());
+                if (iamUserDTO != null) {
+                    v.setLoginName(iamUserDTO.getLoginName());
+                    v.setRealName(iamUserDTO.getRealName());
+                    v.setLdap(iamUserDTO.getLdap());
+                    v.setEmail(iamUserDTO.getEmail());
                 }
             });
+            return page;
+        } else {
+            return baseServiceClientOperator.pagingQueryUsersWithRolesOnProjectLevel(projectId, pageRequest.getPage(), pageRequest.getSize(), realName);
         }
-        if (CollectionUtils.isEmpty(allUserIds)) {
-            return new Page<>();
-        }
-        List<IamUserDTO> userDTOS = allUserIds.stream().map(v -> {
-            IamUserDTO iamUserDTO = new IamUserDTO();
-            iamUserDTO.setId(v);
-            return iamUserDTO;
-        }).collect(Collectors.toList());
-
-        Page<IamUserDTO> page = PageInfoUtil.doPageFromList(userDTOS, pageRequest);
-
-        List<Long> userIds = page.getContent().stream().map(IamUserDTO::getId).collect(Collectors.toList());
-        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
-        Map<Long, IamUserDTO> userMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
-        page.getContent().forEach(v -> {
-            IamUserDTO iamUserDTO = userMap.get(v.getId());
-            if (iamUserDTO != null) {
-                v.setLoginName(iamUserDTO.getLoginName());
-                v.setRealName(iamUserDTO.getRealName());
-                v.setLdap(iamUserDTO.getLdap());
-                v.setEmail(iamUserDTO.getEmail());
-            }
-        });
-
-        return page;
     }
 
     @Override
