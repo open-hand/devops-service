@@ -427,7 +427,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteById(Long projectId, Long hostId, Long appId) {
         // 校验应用是否关联流水线，是则抛出异常，不能删除
-        if (queryPipelineReferenceHostApp(projectId, appId) != null) {
+        if (!CollectionUtils.isEmpty(queryPipelineReferenceHostApp(projectId, appId))) {
             throw new CommonException(ResourceCheckConstant.DEVOPS_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
         // 校验主机是否处于连接状态，未连接则抛出异常，不能删除
