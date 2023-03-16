@@ -1,13 +1,13 @@
 package io.choerodon.devops.infra.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import javax.annotation.Nullable;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.enums.HostAuthType;
 import io.choerodon.mybatis.annotation.ModifyAudit;

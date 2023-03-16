@@ -281,16 +281,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     @Override
     public Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, String deployType, String deployMode, String deployPayloadName, String deployResult, String deployObjectName, String deployObjectVersion) {
-        Page<DeployRecordVO> deployRecordVOPage = PageHelper
-                .doPageAndSort(pageRequest,
-                        () -> devopsDeployRecordMapper.listByParams(
-                                projectId,
-                                deployType,
-                                deployMode,
-                                deployPayloadName,
-                                deployResult,
-                                deployObjectName,
-                                deployObjectVersion));
+        Page<DeployRecordVO> deployRecordVOPage = pageRecord(projectId, pageRequest, deployType, deployMode, deployPayloadName, deployResult, deployObjectName, deployObjectVersion);
 
         if (CollectionUtils.isEmpty(deployRecordVOPage.getContent())) {
             return deployRecordVOPage;
@@ -329,6 +320,21 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
         });
 
+        return deployRecordVOPage;
+    }
+
+    protected Page<DeployRecordVO> pageRecord(Long projectId, PageRequest pageRequest, String deployType, String deployMode, String deployPayloadName, String deployResult, String deployObjectName, String deployObjectVersion) {
+        Page<DeployRecordVO> deployRecordVOPage = PageHelper
+                .doPageAndSort(pageRequest,
+                        () -> devopsDeployRecordMapper.listByParams(
+                                projectId,
+                                deployType,
+                                deployMode,
+                                deployPayloadName,
+                                deployResult,
+                                deployObjectName,
+                                deployObjectVersion,
+                                null));
         return deployRecordVOPage;
     }
 
