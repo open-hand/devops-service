@@ -37,7 +37,6 @@ public class AppServiceImageVersionServiceImpl implements AppServiceImageVersion
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AppServiceImageVersionDTO create(Long appServiceVersionId,
-                                            String version,
                                             Long harborConfigId,
                                             String repoType,
                                             String image) {

@@ -17,7 +17,6 @@ public interface AppServiceImageVersionService {
     AppServiceImageVersionDTO create(AppServiceImageVersionDTO appServiceImageVersionDTO);
 
     AppServiceImageVersionDTO create(Long appServiceVersionId,
-                                     String version,
                                      Long harborConfigId,
                                      String repoType,
                                      String image);

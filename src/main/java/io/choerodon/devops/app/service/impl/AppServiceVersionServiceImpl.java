@@ -1281,11 +1281,18 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (appServiceVersionDTO == null) {
             appServiceVersionDTO = create(appServiceId, version, commit, null);
         }
-        appServiceImageVersionService.create(appServiceVersionDTO.getId(),
-                version,
-                harborConfigId,
-                repoType,
-                image);
+        AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+        if (appServiceImageVersionDTO == null) {
+            appServiceImageVersionService.create(appServiceVersionDTO.getId(),
+                    harborConfigId,
+                    repoType,
+                    image);
+        } else {
+            appServiceImageVersionDTO.setHarborConfigId(harborConfigId);
+            appServiceImageVersionDTO.setHarborRepoType(repoType);
+            appServiceImageVersionDTO.setImage(image);
+            appServiceImageVersionService.baseUpdate(appServiceImageVersionDTO);
+        }
 
         // 创建helm版本
         return appServiceVersionDTO;
