@@ -69,8 +69,9 @@ public class CiTemplateCategoryDTO extends AuditDomain {
         return builtIn;
     }
 
-    public void setBuiltIn(Boolean builtIn) {
+    public CiTemplateCategoryDTO setBuiltIn(Boolean builtIn) {
         this.builtIn = builtIn;
+        return this;
     }
 
 
@@ -87,8 +88,9 @@ public class CiTemplateCategoryDTO extends AuditDomain {
         return category;
     }
 
-    public void setCategory(String category) {
+    public CiTemplateCategoryDTO setCategory(String category) {
         this.category = category;
+        return this;
     }
 
     public String getImage() {

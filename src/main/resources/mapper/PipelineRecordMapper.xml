@@ -34,7 +34,7 @@
     <select id="listUserAuditRecordsByPipelineId" resultType="io.choerodon.devops.api.vo.cd.PipelineRecordVO">
         select dpr.*
         from devops_pipeline_record dpr
-                 inner join devops_pipeline_audit_record dpar on dpar.pipeline_id = dpr.pipeline_id
+                 inner join devops_pipeline_audit_record dpar on dpar.pipeline_record_id = dpr.id
                  inner join devops_pipeline_audit_user_record dpaur on dpar.id = dpaur.audit_record_id
         where dpr.pipeline_id = #{pipelineId}
           and dpaur.user_id = #{userId}

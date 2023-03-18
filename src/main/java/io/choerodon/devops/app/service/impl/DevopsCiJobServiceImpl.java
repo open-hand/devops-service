@@ -399,23 +399,23 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
-    public PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId) {
-        return devopsCiJobMapper.queryPipelineReferenceEnvApp(projectId, appId);
+    public List<PipelineInstanceReferenceVO> listPipelineReferenceEnvApp(Long projectId, Long appId) {
+        return devopsCiJobMapper.listPipelineReferenceEnvApp(projectId, appId);
     }
 
     @Override
-    public PipelineInstanceReferenceVO queryChartPipelineReference(Long projectId, Long appId) {
-        return devopsCiJobMapper.queryChartPipelineReference(projectId, appId);
+    public List<PipelineInstanceReferenceVO> listChartPipelineReference(Long projectId, Long appId) {
+        return devopsCiJobMapper.listChartPipelineReference(projectId, appId);
     }
 
     @Override
-    public PipelineInstanceReferenceVO queryDeployValuePipelineReference(Long projectId, Long valueId) {
-        return devopsCiJobMapper.queryDeployValuePipelineReference(projectId, valueId);
+    public List<PipelineInstanceReferenceVO> listDeployValuePipelineReference(Long projectId, Long valueId) {
+        return devopsCiJobMapper.listDeployValuePipelineReference(projectId, valueId);
     }
 
     @Override
-    public PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId) {
-        return devopsCiJobMapper.queryPipelineReferenceHostApp(appId);
+    public List<PipelineInstanceReferenceVO> queryPipelineReferenceHostApp(Long projectId, Long appId) {
+        return devopsCiJobMapper.listPipelineReferenceHostApp(appId);
     }
 
     private SonarInfoVO getCiSonar(Long appServiceId) {

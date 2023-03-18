@@ -11,7 +11,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
@@ -21,7 +20,6 @@ import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
 import io.choerodon.devops.api.vo.AppServiceVersionVO;
 import io.choerodon.devops.api.vo.AppServiceVersionWithHelmConfigVO;
 import io.choerodon.devops.app.service.AppServiceVersionService;
-import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -34,6 +32,8 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/app_service_versions")
 public class AppServiceVersionController {
+
+    private static final String VERSION_QUERY_ERROR = "devops.application.version.query";
 
     @Autowired
     private AppServiceVersionService appServiceVersionService;
@@ -389,35 +389,5 @@ public class AppServiceVersionController {
             @ApiParam(value = "应用服务版本id", required = true)
             @RequestParam(value = "app_service_version_id") Long appServiceVersionId) {
         return ResponseEntity.ok(appServiceVersionService.queryVersionWithHelmConfig(projectId, appServiceVersionId));
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "保存镜像版本信息")
-    @PostMapping(value = "/image_version")
-    public ResponseEntity<AppServiceVersionDTO> saveImageVersion(
-            @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "code") String code,
-            @RequestParam String version,
-            @RequestParam String commit,
-            @RequestParam(value = "harbor_config_id") Long harborConfigId,
-            @RequestParam(value = "repo_type") String repoType,
-            @RequestParam String image) {
-        return ResponseEntity.ok(appServiceVersionService.saveImageVersion(projectId, code, version, commit, harborConfigId, repoType, image));
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "保存helm版本信息")
-    @PostMapping(value = "/helm_version")
-    public ResponseEntity<AppServiceVersionDTO> saveHelmVersion(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "code") String code,
-            @ApiParam(value = "版本", required = true)
-            @RequestParam String version,
-            @ApiParam(value = "commit", required = true)
-            @RequestParam String commit,
-            @ApiParam(value = "taz包", required = true)
-            @RequestParam MultipartFile file) {
-        return ResponseEntity.ok(appServiceVersionService.saveHelmVersion(projectId, code, version, commit, file));
     }
 }

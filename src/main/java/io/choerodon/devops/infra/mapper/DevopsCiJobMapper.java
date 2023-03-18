@@ -27,12 +27,12 @@ public interface DevopsCiJobMapper extends BaseMapper<DevopsCiJobDTO> {
 
     List<PipelineInstanceReferenceVO> listApiTestTaskReferencePipelineInfo(@Param("projectId") Long projectId, @Param("taskIds") Set<Long> taskIds);
 
-    PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(@Param("projectId") Long projectId, @Param("appId") Long appId);
+    List<PipelineInstanceReferenceVO> listPipelineReferenceEnvApp(@Param("projectId") Long projectId, @Param("appId") Long appId);
 
-    PipelineInstanceReferenceVO queryChartPipelineReference(@Param("projectId") Long projectId, @Param("appId") Long appId);
+    List<PipelineInstanceReferenceVO> listChartPipelineReference(@Param("projectId") Long projectId, @Param("appId") Long appId);
 
-    PipelineInstanceReferenceVO queryPipelineReferenceHostApp(@Param("appId") Long appId);
+    List<PipelineInstanceReferenceVO> listPipelineReferenceHostApp(@Param("appId") Long appId);
 
-    PipelineInstanceReferenceVO queryDeployValuePipelineReference(@Param("projectId") Long projectId,
-                                                                  @Param("valueId") Long valueId);
+    List<PipelineInstanceReferenceVO> listDeployValuePipelineReference(@Param("projectId") Long projectId,
+                                                                       @Param("valueId") Long valueId);
 }

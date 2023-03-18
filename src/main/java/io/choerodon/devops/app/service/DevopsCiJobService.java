@@ -123,11 +123,11 @@ public interface DevopsCiJobService {
 
     List<PipelineInstanceReferenceVO> listApiTestTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds);
 
-    PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId);
+    List<PipelineInstanceReferenceVO> listPipelineReferenceEnvApp(Long projectId, Long appId);
 
-    PipelineInstanceReferenceVO queryChartPipelineReference(Long projectId, Long appId);
+    List<PipelineInstanceReferenceVO> listChartPipelineReference(Long projectId, Long appId);
 
-    PipelineInstanceReferenceVO queryDeployValuePipelineReference(Long projectId, Long valueId);
+    List<PipelineInstanceReferenceVO> listDeployValuePipelineReference(Long projectId, Long valueId);
 
-    PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId);
+    List<PipelineInstanceReferenceVO> queryPipelineReferenceHostApp(Long projectId, Long appId);
 }

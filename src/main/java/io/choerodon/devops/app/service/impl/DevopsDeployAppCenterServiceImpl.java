@@ -476,14 +476,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = selectByPrimaryKey(appId);
         List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList = new ArrayList<>();
         if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
-            PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId);
-            if (pipelineInstanceReferenceVO != null) {
-                pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
+            List<PipelineInstanceReferenceVO> ciPipelineInstanceReferenceVOList = devopsCiJobService.listPipelineReferenceEnvApp(projectId, appId);
+            if (CollectionUtils.isEmpty(ciPipelineInstanceReferenceVOList)) {
+                pipelineInstanceReferenceVOList.addAll(ciPipelineInstanceReferenceVOList);
             }
         } else {
-            PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryChartPipelineReference(projectId, appId);
-            if (pipelineInstanceReferenceVO != null) {
-                pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
+            List<PipelineInstanceReferenceVO> ciPipelineInstanceReferenceVOList = devopsCiJobService.listChartPipelineReference(projectId, appId);
+            if (!CollectionUtils.isEmpty(ciPipelineInstanceReferenceVOList)) {
+                pipelineInstanceReferenceVOList.addAll(ciPipelineInstanceReferenceVOList);
             }
             List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList1 = pipelineService.listAppPipelineReference(projectId, appId);
             if (!CollectionUtils.isEmpty(pipelineInstanceReferenceVOList1)) {
@@ -501,7 +501,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (devopsDeployAppCenterEnvDTO == null) {
             return;
         }
-        if (devopsCiJobService.queryChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
+        if (!CollectionUtils.isEmpty(devopsCiJobService.listChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId()))) {
             throw new CommonException(ResourceCheckConstant.DEVOPS_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
     }

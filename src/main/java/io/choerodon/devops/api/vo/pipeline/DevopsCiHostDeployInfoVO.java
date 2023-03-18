@@ -1,11 +1,11 @@
 package io.choerodon.devops.api.vo.pipeline;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsCiHostDeployInfoVO {
     @Encrypt
@@ -68,6 +68,16 @@ public class DevopsCiHostDeployInfoVO {
 
     @ApiModelProperty("dockercompose执行命令")
     private String dockerComposeRunCommand;
+
+    private String value;
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 
     public String getDockerComposeRunCommand() {
         return dockerComposeRunCommand;

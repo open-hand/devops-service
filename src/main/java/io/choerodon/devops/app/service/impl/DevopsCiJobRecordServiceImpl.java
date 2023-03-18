@@ -290,7 +290,12 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         List<Long> userIds = ciAuditUserRecordDTOS.stream().map(CiAuditUserRecordDTO::getUserId).collect(Collectors.toList());
         if (ciAuditRecordDTO.getCountersigned()) {
             auditResultVO.setCountersigned(1);
-            auditFinishFlag = ciAuditUserRecordDTOS.stream().noneMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
+            if (ciAuditUserRecordDTOS.stream().anyMatch(v -> AuditStatusEnum.REFUSED.value().equals(v.getStatus()))
+                    || ciAuditUserRecordDTOS.stream().allMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()))) {
+                auditFinishFlag = true;
+            } else {
+                auditFinishFlag = false;
+            }
             // 添加审核人员信息
             Map<Long, IamUserDTO> userDTOMap = baseServiceClientOperator.queryUsersByUserIds(userIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
             ciAuditUserRecordDTOS.forEach(v -> {
