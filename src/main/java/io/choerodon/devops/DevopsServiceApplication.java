@@ -32,6 +32,34 @@ public class DevopsServiceApplication {
 
     public static void main(String[] args) {
         try {
+            String values = "# Default values for register-server.\n" +
+                    "# This is a YAML-formatted file.\n" +
+                    "# Declare variables to be passed into your templates.\n" +
+                    "\n" +
+                    "replicaCount: 1\n" +
+                    "\n" +
+                    "image:\n" +
+                    "  repository: \"\"\n" +
+                    "  pullPolicy: Always\n" +
+                    "\n" +
+                    "config:\n" +
+                    "  port: 8080\n" +
+                    "\n" +
+                    "resources:\n" +
+                    "  # We usually recommend not to specify default resources and to leave this as a conscious\n" +
+                    "  # choice for the user. This also increases chances charts run on environments with little\n" +
+                    "  # resources,such as Minikube. If you do want to specify resources,uncomment the following\n" +
+                    "  # lines,adjust them as necessary,and remove the curly braces after 'resources:'.\n" +
+                    "  limits:\n" +
+                    "    # cpu: 100m\n" +
+                    "    memory: 500Mi\n" +
+                    "  requests:\n" +
+                    "    # cpu: 100m\n" +
+                    "    memory: 256Mi\n" +
+                    "\n" +
+                    "\n";
+
+
             SpringApplication.run(DevopsServiceApplication.class, args);
         } catch (Exception e) {
             LOGGER.error("start error",e);
