@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsJenkinsServerMapper">
+  <select id="checkNameExist" resultType="java.lang.Boolean">
+    SELECT COUNT(*) > 0
+    FROM devops_jenkins_server
+    WHERE project_id = #{projectId}
+    AND name = #{serverName}
+    <if test="jenkinsServerId">
+      AND id != #{jenkinsServerId}
+    </if>
+  </select>
+
+  <select id="page" resultType="io.choerodon.devops.api.vo.DevopsJenkinsServerVO">
+    SELECT djs.id,
+    djs.name,
+    djs.project_id,
+    djs.url,
+    djs.username,
+    djs.password,
+    djs.description,
+    djs.status,
+    djs.object_version_number,
+    djs.created_by,
+    djs.creation_date,
+    djs.last_updated_by,
+    djs.last_update_date
+    FROM devops_jenkins_server djs
+    WHERE project_id = #{projectId}
+    <if test="searchVO != null">
+      <if test='searchVO.searchParam != null'>
+        <if test="searchVO.searchParam.name != null and searchVO.searchParam.name != ''">
+          AND djs.name LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.name, jdbcType=VARCHAR}), '%')
+        </if>
+        <if test="searchVO.searchParam.description != null and searchVO.searchParam.description != ''">
+          AND djs.description LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.description, jdbcType=VARCHAR}), '%')
+        </if>
+        <if test="searchVO.searchParam.url != null and searchVO.searchParam.url != ''">
+          AND djs.url LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.url}), '%')
+        </if>
+        <if test="searchVO.searchParam.status != null and searchVO.searchParam.status != ''">
+          AND djs.status LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.status}), '%')
+        </if>
+        <if test="searchVO.searchParam.username != null and searchVO.searchParam.username != ''">
+          AND djs.username LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.username}), '%')
+        </if>
+      </if>
+      <if test='searchVO.params != null and searchVO.params.size > 0'>
+        AND
+        <foreach collection="searchVO.params" item="param" open="(" separator=" OR " close=")">
+          (djs.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
+          OR djs.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
+          OR djs.url LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
+          OR djs.status LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
+          OR djs.username LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
+          )
+        </foreach>
+      </if>
+    </if>
+  </select>
+  <select id="listAll" resultType="io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO">
+        select *
+        from devops_jenkins_server djs
+        <where>
+          project_id = #{projectId}
+        </where>
+  </select>
+</mapper>
