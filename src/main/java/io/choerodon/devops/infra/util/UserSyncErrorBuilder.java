@@ -124,8 +124,8 @@ public class UserSyncErrorBuilder {
                         }
                         break;
                     case PROJECT:
-                        if (!baseServiceClientOperator.isOrganzationRoot(userDetails.getUserId(), sourceId)
-                                && !baseServiceClientOperator.isProjectOwner(userDetails.getUserId(), sourceId)) {
+                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(sourceId, false, false, false, false, false);
+                        if (!baseServiceClientOperator.isOrganzationRoot(userDetails.getUserId(), projectDTO.getOrganizationId()) && !baseServiceClientOperator.isProjectOwner(userDetails.getUserId(), sourceId)) {
                             throw new CommonException("error.no.permission.to.do.operation");
                         }
                         break;

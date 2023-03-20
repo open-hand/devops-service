@@ -13,7 +13,7 @@
 
     <select id="queryByProjectIdAndName" resultType="io.choerodon.devops.api.vo.CiCdPipelineVO">
         SELECT
-        dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.project_id,
+        dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.project_id,dcp.object_version_number,
         das.`name` AS app_service_name, das.gitlab_project_id, dcp.image,dcp.last_update_date,
         dcp.last_updated_by,dcp.creation_date,
         dcpr.status as latest_execute_status,

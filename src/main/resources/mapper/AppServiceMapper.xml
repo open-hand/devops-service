@@ -401,16 +401,17 @@
 
     <select id="queryByToken" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT da.id,
-        da.project_id,
-        da.name,
-        da.code,
-        da.is_active,
-        da.is_synchro,
-        da.gitlab_project_id,
-        da.harbor_config_id,
-        da.chart_config_id,
-        da.token,
-        da.object_version_number
+               da.project_id,
+               da.name,
+               da.code,
+               da.is_active,
+               da.is_synchro,
+               da.gitlab_project_id,
+               da.harbor_config_id,
+               da.external_config_id,
+               da.chart_config_id,
+               da.token,
+               da.object_version_number
         FROM devops_app_service da
         WHERE da.token = #{token}
     </select>

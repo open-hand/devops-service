@@ -79,7 +79,7 @@ public interface DevopsHostAppService {
 
     void deployCustomInstance(Long projectId, CustomDeployVO customDeployVO);
 
-    PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId);
+    List<PipelineInstanceReferenceVO> queryPipelineReferenceHostApp(Long projectId, Long appId);
 
 
 }

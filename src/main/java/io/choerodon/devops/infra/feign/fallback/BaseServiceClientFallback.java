@@ -71,6 +71,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<Page<IamUserDTO>> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, int page, int size, String params) {
+        throw new CommonException("devops.page.projects.user");
+    }
+
+    @Override
     public ResponseEntity<List<ProjectDTO>> queryByIds(Set<Long> ids) {
         throw new CommonException(ERROR_PROJECT_GET);
     }

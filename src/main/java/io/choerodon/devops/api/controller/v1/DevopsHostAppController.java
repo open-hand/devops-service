@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -106,12 +108,12 @@ public class DevopsHostAppController {
     @ApiOperation("查询引用了主机应用作为替换对象的流水线信息")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/apps/{app_id}/pipeline_reference")
-    public ResponseEntity<PipelineInstanceReferenceVO> queryPipelineReference(
+    public ResponseEntity<List<PipelineInstanceReferenceVO>> queryPipelineReference(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "应用ID", required = true)
             @PathVariable(value = "app_id") Long appId) {
-        return ResponseEntity.ok().body(devopsHostAppService.queryPipelineReferenceHostApp(projectId, appId));
+        return ResponseEntity.ok(devopsHostAppService.queryPipelineReferenceHostApp(projectId, appId));
     }
 }

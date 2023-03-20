@@ -1,12 +1,12 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Creator: Runge
@@ -255,5 +255,30 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
     @Override
     public int hashCode() {
         return Objects.hash(domain, name, envId, pathList);
+    }
+
+    @Override
+    public String toString() {
+        return "DevopsIngressVO{" +
+                "id=" + id +
+                ", appServiceId=" + appServiceId +
+                ", domain='" + domain + '\'' +
+                ", name='" + name + '\'' +
+                ", envId=" + envId +
+                ", envName='" + envName + '\'' +
+                ", envStatus=" + envStatus +
+                ", isUsable=" + isUsable +
+                ", status='" + status + '\'' +
+                ", certId=" + certId +
+                ", certName='" + certName + '\'' +
+                ", certStatus='" + certStatus + '\'' +
+                ", pathList=" + pathList +
+                ", commandType='" + commandType + '\'' +
+                ", commandStatus='" + commandStatus + '\'' +
+                ", error='" + error + '\'' +
+                ", annotations=" + annotations +
+                ", instances=" + instances +
+                ", instanceId=" + instanceId +
+                '}';
     }
 }

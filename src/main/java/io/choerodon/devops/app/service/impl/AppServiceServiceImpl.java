@@ -1356,7 +1356,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importFromGeneralGit(Long projectId, AppServiceImportVO appServiceImportVO) {
-        return saveAppService(projectId, appServiceImportVO, null, false);
+        return saveAppService(projectId, appServiceImportVO, null, true);
     }
 
     private AppServiceRepVO saveAppService(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate, Boolean importFromGeneralGit) {
@@ -2639,6 +2639,9 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         Long userId = DetailsHelper.getUserDetails().getUserId();
 
+        Map<String, Object> searchParam = searchVO == null ? null : searchVO.getSearchParam();
+        List<String> params = searchVO == null ? null : searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList());
+
         boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> list;
         if (projectOwnerOrRoot) {
@@ -2646,16 +2649,16 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (doPage == null || doPage) {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.list(projectId, isActive, hasVersion, type,
-                                searchVO.getSearchParam(),
-                                searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
+                                searchParam,
+                                params,
                                 PageRequestUtil.checkSortIsEmpty(pageable),
                                 includeExternal,
                                 excludeFailed)
                 );
             } else {
                 list = appServiceMapper.list(projectId, isActive, hasVersion, type,
-                        searchVO.getSearchParam(),
-                        searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
+                        searchParam,
+                        params,
                         PageRequestUtil.checkSortIsEmpty(pageable),
                         includeExternal,
                         excludeFailed);
@@ -2677,16 +2680,16 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (doPage == null || doPage) {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
-                                searchVO.getSearchParam(),
-                                searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
+                                searchParam,
+                                params,
                                 pageable.getSort() == null,
                                 userId,
                                 includeExternal,
                                 excludeFailed));
             } else {
                 list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
-                        searchVO.getSearchParam(),
-                        searchVO.getParams() == null ? null : searchVO.getParams().stream().filter(Objects::nonNull).map(o -> (String) o).collect(toList()),
+                        searchParam,
+                        params,
                         pageable.getSort() == null,
                         userId,
                         includeExternal,

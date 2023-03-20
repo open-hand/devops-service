@@ -627,7 +627,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         //查询流水线对应的应用服务
         AppServiceDTO appServiceDTO = getAppServiceDTO(ciCdPipelineVO);
 //        //当前用户是否能修改流水线权限
-//        fillEditPipelinePermission(projectId, ciCdPipelineVO, appServiceDTO);
+        fillEditPipelinePermission(projectId, ciCdPipelineVO, appServiceDTO);
         //查询CI相关的阶段以及JOB
         List<DevopsCiStageVO> devopsCiStageVOS = handleCiStage(pipelineId, deleteCdInfo);
 

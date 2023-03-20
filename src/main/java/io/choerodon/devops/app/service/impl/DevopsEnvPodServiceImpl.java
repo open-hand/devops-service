@@ -1,11 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Pod;
 import org.slf4j.Logger;
@@ -18,6 +12,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -105,26 +105,27 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
         try {
             V1Pod pod = K8sUtil.deserialize(message, V1Pod.class);
-            List<ContainerVO> containers = pod.getStatus().getContainerStatuses()
-                    .stream()
-                    .map(container -> {
-                        ContainerVO containerVO = new ContainerVO();
-                        containerVO.setName(container.getName());
-                        containerVO.setReady(container.getReady());
-                        return containerVO;
-                    })
-                    .collect(Collectors.toList());
+            if (pod.getStatus() != null && !ObjectUtils.isEmpty(pod.getStatus().getContainerStatuses())) {
+                List<ContainerVO> containers = pod.getStatus().getContainerStatuses().stream().map(container -> {
+                    ContainerVO containerVO = new ContainerVO();
+                    containerVO.setName(container.getName());
+                    containerVO.setReady(container.getReady());
+                    return containerVO;
+                }).collect(Collectors.toList());
 
-            // 将不可用的容器置于靠前位置
-            Map<Boolean, List<ContainerVO>> containsByStatus = containers.stream().collect(Collectors.groupingBy(container -> container.getReady() == null ? Boolean.FALSE : container.getReady()));
-            List<ContainerVO> result = new ArrayList<>();
-            if (!ArrayUtil.isEmpty(containsByStatus.get(Boolean.FALSE))) {
-                result.addAll(containsByStatus.get(Boolean.FALSE));
+                // 将不可用的容器置于靠前位置
+                Map<Boolean, List<ContainerVO>> containsByStatus = containers.stream().collect(Collectors.groupingBy(container -> container.getReady() == null ? Boolean.FALSE : container.getReady()));
+                List<ContainerVO> result = new ArrayList<>();
+                if (!ArrayUtil.isEmpty(containsByStatus.get(Boolean.FALSE))) {
+                    result.addAll(containsByStatus.get(Boolean.FALSE));
+                }
+                if (!ArrayUtil.isEmpty(containsByStatus.get(Boolean.TRUE))) {
+                    result.addAll(containsByStatus.get(Boolean.TRUE));
+                }
+                devopsEnvPodVO.setContainers(result);
+            } else {
+                LOGGER.info("pod status or container status is null :{}", message);
             }
-            if (!ArrayUtil.isEmpty(containsByStatus.get(Boolean.TRUE))) {
-                result.addAll(containsByStatus.get(Boolean.TRUE));
-            }
-            devopsEnvPodVO.setContainers(result);
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());

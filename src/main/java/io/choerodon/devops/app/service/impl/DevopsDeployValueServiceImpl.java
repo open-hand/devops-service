@@ -173,17 +173,15 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public List<PipelineInstanceReferenceVO> checkDelete(Long projectId, Long valueId) {
-        DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(valueId);
         List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList = new ArrayList<>();
-        PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryDeployValuePipelineReference(projectId, valueId);
-        if (pipelineInstanceReferenceVO != null) {
-            pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
+        List<PipelineInstanceReferenceVO> ciPipelineInstanceReferenceVOList = devopsCiJobService.listDeployValuePipelineReference(projectId, valueId);
+        if (!CollectionUtils.isEmpty(ciPipelineInstanceReferenceVOList)) {
+            pipelineInstanceReferenceVOList.addAll(ciPipelineInstanceReferenceVOList);
         }
         List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList1 = pipelineService.listDeployValuePipelineReference(projectId, valueId);
         if (!CollectionUtils.isEmpty(pipelineInstanceReferenceVOList1)) {
             pipelineInstanceReferenceVOList.addAll(pipelineInstanceReferenceVOList1);
         }
-//        List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.baseListByValueId(valueId);
         return pipelineInstanceReferenceVOList;
     }
 

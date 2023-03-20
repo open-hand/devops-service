@@ -62,6 +62,13 @@ public interface BaseServiceClient {
                                                          @RequestParam(name = "enabled", required = false) Boolean enabled,
                                                          @RequestParam(value = "params", required = false) String params);
 
+    @GetMapping(value = "/choerodon/v1/projects/{project_id}/users/search")
+    ResponseEntity<Page<IamUserDTO>> pagingQueryUsersWithRolesOnProjectLevel(
+            @PathVariable(name = "project_id") Long projectId,
+            @RequestParam(value = "page") int page,
+            @RequestParam(value = "size") int size,
+            @RequestParam(value = "params") String params);
+
 
     @PostMapping(value = "/choerodon/v1/projects/ids")
     ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<Long> ids);
