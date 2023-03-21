@@ -211,7 +211,12 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
                 .stageFlowNodes()
                 .stream()
                 .map(node -> {
-                    PipelineNodeLog pipelineNodeLog = jenkinsClient.api().jobsApi().pipelineNodeLog(folder, name, buildId, Integer.parseInt(node.id()));
+                    PipelineNodeLog pipelineNodeLog = null;
+                    try {
+                        pipelineNodeLog = jenkinsClient.api().jobsApi().pipelineNodeLog(folder, name, buildId, Integer.parseInt(node.id()));
+                    } catch (NumberFormatException e) {
+                        LOGGER.error("Query node log failed.", e);
+                    }
                     String log = pipelineNodeLog == null ? "" : pipelineNodeLog.text();
                     return new JenkinsNodeVO(node.id(),
                             node.name(),
