@@ -214,7 +214,7 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
                     PipelineNodeLog pipelineNodeLog = null;
                     try {
                         pipelineNodeLog = jenkinsClient.api().jobsApi().pipelineNodeLog(folder, name, buildId, Integer.parseInt(node.id()));
-                    } catch (NumberFormatException e) {
+                    } catch (Exception e) {
                         LOGGER.error("Query node log failed.", e);
                     }
                     String log = pipelineNodeLog == null ? "" : pipelineNodeLog.text();
