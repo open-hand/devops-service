@@ -2,9 +2,13 @@ package io.choerodon.devops.app;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 
 import com.cdancy.jenkins.rest.JenkinsClient;
+import com.cdancy.jenkins.rest.domain.plugins.Plugin;
+import com.cdancy.jenkins.rest.domain.plugins.Plugins;
 import com.cdancy.jenkins.rest.domain.system.SystemInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -14,17 +18,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerStatusCheckResponseVO;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerVO;
 import io.choerodon.devops.api.vo.SearchVO;
+import io.choerodon.devops.api.vo.jenkins.JenkinsPluginInfo;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO;
 import io.choerodon.devops.infra.enums.DevopsJenkinsServerStatusEnum;
+import io.choerodon.devops.infra.enums.jenkins.JenkinsPluginStatusEnum;
 import io.choerodon.devops.infra.mapper.DevopsJenkinsServerMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.JenkinsClientUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -36,6 +44,8 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
     private String version;
     @Autowired
     private DevopsJenkinsServerMapper devopsJenkinsServerMapper;
+    @Autowired
+    private JenkinsClientUtil jenkinsClientUtil;
 
 
     @Transactional
@@ -107,7 +117,32 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
 
     @Override
     public Page<DevopsJenkinsServerVO> pageServer(Long projectId, PageRequest pageable, SearchVO searchVO) {
-        return PageHelper.doPageAndSort(pageable, () -> devopsJenkinsServerMapper.page(projectId, searchVO));
+        Page<DevopsJenkinsServerVO> page = PageHelper.doPageAndSort(pageable, () -> devopsJenkinsServerMapper.page(projectId, searchVO));
+        if (CollectionUtils.isEmpty(page.getContent())) {
+            return page;
+        }
+        for (DevopsJenkinsServerVO devopsJenkinsServerVO : page.getContent()) {
+            JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(devopsJenkinsServerVO.getId());
+            Plugins plugins = jenkinsClient.api().pluginManagerApi().plugins(3, null);
+            if (!CollectionUtils.isEmpty(plugins.plugins())) {
+                Optional<Plugin> optionalPlugin = plugins.plugins().stream().filter(p -> p.shortName().equals("choerodon-integration")).findFirst();
+                JenkinsPluginInfo jenkinsPluginInfo = new JenkinsPluginInfo();
+                if (optionalPlugin.isPresent()) {
+                    Plugin plugin = optionalPlugin.get();
+                    jenkinsPluginInfo.setVersion(plugin.version());
+                    jenkinsPluginInfo.setLastedVersion(version);
+                    if (plugin.active()) {
+                        jenkinsPluginInfo.setStatus(StringUtils.compare(plugin.version(), version) < 0
+                                ? JenkinsPluginStatusEnum.UPGRADEABLE.value() : JenkinsPluginStatusEnum.INSTALLED.value());
+                    } else {
+                        jenkinsPluginInfo.setStatus(JenkinsPluginStatusEnum.DISABLED.value());
+                    }
+                } else {
+                    jenkinsPluginInfo.setStatus(JenkinsPluginStatusEnum.UNINSTALL.value());
+                }
+            }
+        }
+        return page;
     }
 
     @Override
