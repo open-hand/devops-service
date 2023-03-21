@@ -131,7 +131,7 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
                     Plugin plugin = optionalPlugin.get();
                     jenkinsPluginInfo.setVersion(plugin.version());
                     jenkinsPluginInfo.setLastedVersion(version);
-                    if (plugin.active()) {
+                    if (Boolean.TRUE.equals(plugin.active())) {
                         jenkinsPluginInfo.setStatus(StringUtils.compare(plugin.version(), version) < 0
                                 ? JenkinsPluginStatusEnum.UPGRADEABLE.value() : JenkinsPluginStatusEnum.INSTALLED.value());
                     } else {
@@ -140,6 +140,7 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
                 } else {
                     jenkinsPluginInfo.setStatus(JenkinsPluginStatusEnum.UNINSTALL.value());
                 }
+                devopsJenkinsServerVO.setJenkinsPluginInfo(jenkinsPluginInfo);
             }
         }
         return page;
