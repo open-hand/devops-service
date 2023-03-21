@@ -210,10 +210,15 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         return pipelineNode
                 .stageFlowNodes()
                 .stream()
-                .map(node -> new JenkinsNodeVO(node.id(),
-                        node.name(),
-                        node.status(),
-                        node.parameterDescription()))
+                .map(node -> {
+                    PipelineNodeLog pipelineNodeLog = jenkinsClient.api().jobsApi().pipelineNodeLog(folder, name, buildId, Integer.parseInt(node.id()));
+                    String log = pipelineNodeLog == null ? "" : pipelineNodeLog.text();
+                    return new JenkinsNodeVO(node.id(),
+                            node.name(),
+                            node.status(),
+                            node.parameterDescription(),
+                            log);
+                })
                 .collect(Collectors.toList());
     }
 
