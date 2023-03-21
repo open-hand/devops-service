@@ -1,10 +1,16 @@
 package io.choerodon.devops.app;
 
+import java.io.InputStream;
 import java.util.List;
 
 import com.cdancy.jenkins.rest.JenkinsClient;
 import com.cdancy.jenkins.rest.domain.system.SystemInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -25,8 +31,12 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerService {
+
+    @Value("${devops.jenkins.plugin.version}")
+    private String version;
     @Autowired
     private DevopsJenkinsServerMapper devopsJenkinsServerMapper;
+
 
     @Transactional
     @Override
@@ -127,5 +137,19 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
     @Override
     public List<DevopsJenkinsServerDTO> listAll(Long projectId, String status) {
         return devopsJenkinsServerMapper.listAll(projectId, status);
+    }
+
+    @Override
+    public ResponseEntity<Resource> downloadPlugin() {
+        String filename = "choerodon-integration-" + version + ".hpi";
+        String fileFolder = "jenkins-plugin";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("charset", "utf-8");
+        //设置下载文件名
+        headers.add("Content-Disposition", "attachment;filename=\"" + filename + "\"");
+
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileFolder + "/" + filename);
+        return ResponseEntity.ok().headers(headers).body(new InputStreamResource(inputStream));
     }
 }

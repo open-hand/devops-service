@@ -2,6 +2,9 @@ package io.choerodon.devops.app;
 
 import java.util.List;
 
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerStatusCheckResponseVO;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerVO;
@@ -33,4 +36,6 @@ public interface DevopsJenkinsServerService {
     DevopsJenkinsServerDTO queryById(Long id);
 
     List<DevopsJenkinsServerDTO> listAll(Long projectId, String status);
+
+    ResponseEntity<Resource> downloadPlugin();
 }

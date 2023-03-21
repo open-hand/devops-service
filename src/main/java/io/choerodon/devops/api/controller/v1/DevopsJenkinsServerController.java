@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -49,7 +50,7 @@ public class DevopsJenkinsServerController {
     @ApiOperation(value = "查询项目下可见的jenkins服务")
     @GetMapping("/all")
     public ResponseEntity<List<DevopsJenkinsServerDTO>> listAll(@ApiParam(value = "项目ID", required = true)
-                                                               @PathVariable(value = "project_id") Long projectId,
+                                                                    @PathVariable(value = "project_id") Long projectId,
                                                                 @RequestParam(required = false, defaultValue = "enabled") String status) {
         return ResponseEntity.ok(devopsJenkinsServerService.listAll(projectId, status));
     }
@@ -158,5 +159,17 @@ public class DevopsJenkinsServerController {
                                                    @Encrypt @RequestParam(value = "jenkins_server_id", required = false) Long jenkinsServerId,
                                                    @RequestParam(value = "name") String name) {
         return ResponseEntity.ok(devopsJenkinsServerService.checkNameExists(projectId, jenkinsServerId, name));
+    }
+
+    /**
+     * 检查jenkins 名称是否存在
+     * 如果是更新操作，需要带上jenkinsServerId
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionPublic = true)
+    @ApiOperation(value = "下载jenkins插件")
+    @GetMapping("/plugins/download")
+    public ResponseEntity<Resource> downloadPlugin(@ApiParam(value = "项目ID", required = true)
+                                                   @PathVariable(value = "project_id") Long projectId) {
+        return devopsJenkinsServerService.downloadPlugin();
     }
 }
