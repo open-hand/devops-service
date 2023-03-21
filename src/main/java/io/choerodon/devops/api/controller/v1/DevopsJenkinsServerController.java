@@ -161,10 +161,6 @@ public class DevopsJenkinsServerController {
         return ResponseEntity.ok(devopsJenkinsServerService.checkNameExists(projectId, jenkinsServerId, name));
     }
 
-    /**
-     * 检查jenkins 名称是否存在
-     * 如果是更新操作，需要带上jenkinsServerId
-     */
     @Permission(level = ResourceLevel.ORGANIZATION, permissionPublic = true)
     @ApiOperation(value = "下载jenkins插件")
     @GetMapping("/plugins/download")

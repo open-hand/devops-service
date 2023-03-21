@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.jenkins.JenkinsPluginInfo;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
@@ -33,6 +34,16 @@ public class DevopsJenkinsServerVO extends AuditDomain {
     private String password;
 
     private String status;
+
+    private JenkinsPluginInfo jenkinsPluginInfo;
+
+    public JenkinsPluginInfo getJenkinsPluginInfo() {
+        return jenkinsPluginInfo;
+    }
+
+    public void setJenkinsPluginInfo(JenkinsPluginInfo jenkinsPluginInfo) {
+        this.jenkinsPluginInfo = jenkinsPluginInfo;
+    }
 
     public Long getProjectId() {
         return projectId;
