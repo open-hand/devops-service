@@ -97,6 +97,14 @@ public class K8sUtil {
         return 0.0;
     }
 
+    public static Long getNormalValueFromPodString(String podAmount) {
+        if (podAmount.endsWith("k")) {
+            return Long.parseLong(podAmount.substring(0, podAmount.length() - 1)) * 1000;
+        } else {
+            return Long.parseLong(podAmount);
+        }
+    }
+
 
     private static String getPodStatus(V1ContainerStateTerminated containerStateTerminated) {
         LOGGER.debug("Get pod status: {}", containerStateTerminated);
