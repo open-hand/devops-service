@@ -175,6 +175,18 @@ public class K8sUtil {
             } else {
                 status = INIT + pod.getSpec().getInitContainers().size();
             }
+        } else if (!ArrayUtil.isEmpty(containerStatusList) && "Pending".equals(podStatusPhase)) {
+            for (V1ContainerStatus v1ContainerStatus : containerStatusList) {
+                if (v1ContainerStatus.getState() != null && v1ContainerStatus.getState().getRunning() == null) {
+                    if (v1ContainerStatus.getState().getTerminated() != null) {
+                        status = v1ContainerStatus.getState().getTerminated().getReason();
+                        break;
+                    } else if (v1ContainerStatus.getState().getWaiting() != null) {
+                        status = v1ContainerStatus.getState().getWaiting().getReason();
+                        break;
+                    }
+                }
+            }
         } else if (!ArrayUtil.isEmpty(containerStatusList) && !"Pending".equals(podStatusPhase)) {
             V1ContainerState containerState = containerStatusList.get(0).getState();
             V1ContainerStateWaiting containerStateWaiting = containerState.getWaiting();
