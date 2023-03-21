@@ -1,15 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_CI_PIPELINE;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_UPDATE_CI_JOB_RECORD;
-import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +22,16 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_CI_PIPELINE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_UPDATE_CI_JOB_RECORD;
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -888,6 +888,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                             if (!ObjectUtils.isEmpty(appServiceInstanceInfoVO)) {
                                 deployInfo.setAppServiceId(appServiceInstanceInfoVO.getAppServiceId());
                                 deployInfo.setStatus(appServiceInstanceInfoVO.getStatus());
+                                deployInfo.setPodCount(appServiceInstanceInfoVO.getPodCount());
+                                deployInfo.setPodRunningCount(appServiceInstanceInfoVO.getPodRunningCount());
                             }
                         }
                     }
