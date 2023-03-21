@@ -15,15 +15,26 @@ public class JenkinsNodeVO {
 
     private String parameterDescription;
 
+    private String log;
+
 
     public JenkinsNodeVO() {
     }
 
-    public JenkinsNodeVO(String id, String name, String status, String parameterDescription) {
+    public JenkinsNodeVO(String id, String name, String status, String parameterDescription, String log) {
         this.id = id;
         this.name = name;
         this.status = status;
         this.parameterDescription = parameterDescription;
+        this.log = log;
+    }
+
+    public String getLog() {
+        return log;
+    }
+
+    public void setLog(String log) {
+        this.log = log;
     }
 
     public String getParameterDescription() {
