@@ -9,6 +9,8 @@ import com.cdancy.jenkins.rest.domain.plugins.Plugin;
 import com.cdancy.jenkins.rest.domain.plugins.Plugins;
 import com.cdancy.jenkins.rest.domain.system.SystemInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -39,6 +41,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsJenkinsServerServiceImpl.class);
 
     @Value("${devops.jenkins.plugin.version}")
     private String version;
@@ -122,25 +126,29 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
             return page;
         }
         for (DevopsJenkinsServerVO devopsJenkinsServerVO : page.getContent()) {
-            JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(devopsJenkinsServerVO.getId());
-            Plugins plugins = jenkinsClient.api().pluginManagerApi().plugins(3, null);
-            if (!CollectionUtils.isEmpty(plugins.plugins())) {
-                Optional<Plugin> optionalPlugin = plugins.plugins().stream().filter(p -> p.shortName().equals("choerodon-integration")).findFirst();
-                JenkinsPluginInfo jenkinsPluginInfo = new JenkinsPluginInfo();
-                if (optionalPlugin.isPresent()) {
-                    Plugin plugin = optionalPlugin.get();
-                    jenkinsPluginInfo.setVersion(plugin.version());
-                    jenkinsPluginInfo.setLastedVersion(version);
-                    if (Boolean.TRUE.equals(plugin.active())) {
-                        jenkinsPluginInfo.setStatus(StringUtils.compare(plugin.version(), version) < 0
-                                ? JenkinsPluginStatusEnum.UPGRADEABLE.value() : JenkinsPluginStatusEnum.INSTALLED.value());
+            try {
+                JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(devopsJenkinsServerVO.getId());
+                Plugins plugins = jenkinsClient.api().pluginManagerApi().plugins(3, null);
+                if (!CollectionUtils.isEmpty(plugins.plugins())) {
+                    Optional<Plugin> optionalPlugin = plugins.plugins().stream().filter(p -> p.shortName().equals("choerodon-integration")).findFirst();
+                    JenkinsPluginInfo jenkinsPluginInfo = new JenkinsPluginInfo();
+                    if (optionalPlugin.isPresent()) {
+                        Plugin plugin = optionalPlugin.get();
+                        jenkinsPluginInfo.setVersion(plugin.version());
+                        jenkinsPluginInfo.setLastedVersion(version);
+                        if (Boolean.TRUE.equals(plugin.active())) {
+                            jenkinsPluginInfo.setStatus(StringUtils.compare(plugin.version(), version) < 0
+                                    ? JenkinsPluginStatusEnum.UPGRADEABLE.value() : JenkinsPluginStatusEnum.INSTALLED.value());
+                        } else {
+                            jenkinsPluginInfo.setStatus(JenkinsPluginStatusEnum.DISABLED.value());
+                        }
                     } else {
-                        jenkinsPluginInfo.setStatus(JenkinsPluginStatusEnum.DISABLED.value());
+                        jenkinsPluginInfo.setStatus(JenkinsPluginStatusEnum.UNINSTALL.value());
                     }
-                } else {
-                    jenkinsPluginInfo.setStatus(JenkinsPluginStatusEnum.UNINSTALL.value());
+                    devopsJenkinsServerVO.setJenkinsPluginInfo(jenkinsPluginInfo);
                 }
-                devopsJenkinsServerVO.setJenkinsPluginInfo(jenkinsPluginInfo);
+            } catch (Exception e) {
+                LOGGER.error("Query jenkins plugin info failed.", e);
             }
         }
         return page;
