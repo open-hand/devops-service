@@ -1,10 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Pattern;
-import javax.annotation.Nullable;
-
 import com.google.gson.Gson;
 import io.codearte.props2yaml.Props2YAML;
 import org.hzero.websocket.constant.ClientWebSocketConstant;
@@ -22,11 +17,17 @@ import org.springframework.web.socket.WebSocketSession;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Pattern;
+import javax.annotation.Nullable;
+
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.api.vo.kubernetes.ImagePullSecret;
 import io.choerodon.devops.api.vo.kubernetes.Payload;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
+import io.choerodon.devops.app.eventhandler.payload.DeleteHelmHookJobRequest;
 import io.choerodon.devops.app.eventhandler.payload.OperationPodPayload;
 import io.choerodon.devops.app.eventhandler.payload.SecretPayLoad;
 import io.choerodon.devops.app.service.AgentCommandService;
@@ -63,6 +64,8 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String RESOURCE_DESCRIBE = "resource_describe";
     private static final String HELM_RELEASE_UPGRADE = "helm_release_upgrade";
     private static final String OPERATE_POD_COUNT = "operate_pod_count";
+
+    private static final String DELETE_HELM_HOOK_JOB = "delete_helm_hook_job";
     private static final String OPERATE_DOCKER_REGISTRY_SECRET = "operate_docker_registry_secret";
     private static final String CLUSTER_AGENT = "choerodon-cluster-agent-";
 
@@ -234,6 +237,18 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setType(OPERATE_POD_COUNT);
         msg.setKey(String.format(CLUSTER_FORMAT, clusterId
         ));
+        sendToWebSocket(clusterId, msg);
+    }
+
+    @Override
+    public void deleteHelmHookJob(String name, String namespace, Long clusterId) {
+        AgentMsgVO msg = new AgentMsgVO();
+        DeleteHelmHookJobRequest operationPodPayload = new DeleteHelmHookJobRequest();
+        operationPodPayload.setJobName(name);
+        operationPodPayload.setNamespace(namespace);
+        msg.setPayload(JsonHelper.marshalByJackson(operationPodPayload));
+        msg.setType(DELETE_HELM_HOOK_JOB);
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
         sendToWebSocket(clusterId, msg);
     }
 

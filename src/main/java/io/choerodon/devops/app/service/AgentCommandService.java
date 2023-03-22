@@ -1,10 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import org.springframework.web.socket.WebSocketSession;
+
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-
-import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DescribeResourceVO;
@@ -52,6 +52,8 @@ public interface AgentCommandService {
     void installCertManager(String certManagerRepoUrl, Long clusterId, String certManagerReleaseName, String namespace, String chartVersion);
 
     void operatePodCount(String kind, String name, String namespace, Long clusterId, Long count, String commandId);
+
+    void deleteHelmHookJob(String name, String namespace, Long clusterId);
 
     void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO);
 
