@@ -2799,6 +2799,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public List<AppServiceInstanceDTO> listInstanceByValueId(Long projectId, Long valueId) {
         DevopsDeployValueDTO valueDTO = devopsDeployValueService.baseQueryById(valueId);
+        if (valueDTO == null) {
+            throw new CommonException("devops.value.not.exist");
+        }
         AppServiceInstanceDTO queryDTO = new AppServiceInstanceDTO();
         queryDTO.setEnvId(valueDTO.getEnvId());
         queryDTO.setAppServiceId(valueDTO.getAppServiceId());
