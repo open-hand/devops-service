@@ -977,6 +977,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置ID", required = true)
+            @Encrypt
             @RequestParam(value = "value_id") Long valueId) {
         return Results.success(appServiceInstanceService.listInstanceByValueId(projectId, valueId));
     }
