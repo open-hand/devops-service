@@ -472,4 +472,6 @@ public interface AppServiceInstanceService {
     List<PipelineInstanceReferenceVO> queryInstancePipelineReference(Long projectId, Long instanceId);
 
     Boolean isInstanceDeploying(Long instanceId);
+
+    AppServiceInstanceVO syncValueToDeploy(Long projectId, AppServiceSyncValueDeployVO syncValueDeployVO);
 }

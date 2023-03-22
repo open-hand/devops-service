@@ -1,6 +1,26 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import static io.choerodon.devops.app.service.impl.AgentMsgHandlerServiceImpl.CHOERODON_IO_REPLICAS_STRATEGY;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceInstanceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceVersionCode.DEVOPS_VERSION_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvCommandCode.DEVOPS_COMMAND_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
+import static io.choerodon.devops.infra.constant.MiscConstants.APP_INSTANCE_DELETE_REDIS_KEY;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.yqcloud.core.oauth.ZKnowDetailsHelper;
@@ -26,26 +46,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
-import static io.choerodon.devops.app.service.impl.AgentMsgHandlerServiceImpl.CHOERODON_IO_REPLICAS_STRATEGY;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceInstanceCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceVersionCode.DEVOPS_VERSION_ID_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvCommandCode.DEVOPS_COMMAND_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
-import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
-import static io.choerodon.devops.infra.constant.MiscConstants.APP_INSTANCE_DELETE_REDIS_KEY;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -2760,6 +2760,25 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public Boolean isInstanceDeploying(Long instanceId) {
         return appServiceInstanceMapper.countInstanceDeploying(instanceId) > 0;
+    }
+
+    @Override
+    public AppServiceInstanceVO syncValueToDeploy(Long projectId, AppServiceSyncValueDeployVO syncValueDeployVO) {
+        AppServiceInstanceDTO preInstance = baseQuery(syncValueDeployVO.getInstanceId());
+        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(preInstance.getAppServiceId(),
+                preInstance.getAppServiceVersionId(),
+                syncValueDeployVO.getEnvironmentId(),
+                devopsDeployValueService.baseQueryById(syncValueDeployVO.getValueId()).getValue(),
+                syncValueDeployVO.getValueId(),
+                preInstance.getCode(),
+                preInstance.getId(),
+                CommandType.UPDATE.getType(),
+                preInstance.getAppServiceName(),
+                preInstance.getCode());
+        AppServiceInstanceVO appServiceInstanceVO = createOrUpdate(projectId,
+                appServiceDeployVO,
+                DeployType.MANUAL);
+        return appServiceInstanceVO;
     }
 
     private String[] parseMarketRepo(String harborRepo) {
