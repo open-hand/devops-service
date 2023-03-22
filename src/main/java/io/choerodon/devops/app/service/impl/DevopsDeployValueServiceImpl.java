@@ -273,4 +273,9 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         condition.setEnvId(Objects.requireNonNull(envId));
         devopsDeployValueMapper.delete(condition);
     }
+
+    @Override
+    public List<DevopsDeployValueVO> listValueByInstanceId(Long projectId, Long instanceId) {
+       return null;
+    }
 }

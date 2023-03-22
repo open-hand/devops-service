@@ -104,4 +104,6 @@ public interface DevopsDeployValueService {
      * @param envId 环境id
      */
     void deleteByEnvId(Long envId);
+
+    List<DevopsDeployValueVO> listValueByInstanceId(Long projectId, Long instanceId);
 }
