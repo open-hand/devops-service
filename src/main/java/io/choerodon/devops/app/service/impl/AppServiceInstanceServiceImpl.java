@@ -1,26 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import static io.choerodon.devops.app.service.impl.AgentMsgHandlerServiceImpl.CHOERODON_IO_REPLICAS_STRATEGY;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceInstanceCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceVersionCode.DEVOPS_VERSION_ID_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvCommandCode.DEVOPS_COMMAND_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
-import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
-import static io.choerodon.devops.infra.constant.MiscConstants.APP_INSTANCE_DELETE_REDIS_KEY;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.yqcloud.core.oauth.ZKnowDetailsHelper;
@@ -46,6 +26,26 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+import static io.choerodon.devops.app.service.impl.AgentMsgHandlerServiceImpl.CHOERODON_IO_REPLICAS_STRATEGY;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceInstanceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceVersionCode.DEVOPS_VERSION_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvCommandCode.DEVOPS_COMMAND_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
+import static io.choerodon.devops.infra.constant.MiscConstants.APP_INSTANCE_DELETE_REDIS_KEY;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -2764,6 +2764,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public void deleteHelmHookJob(Long projectId, Long instanceId, Long envId, Long commandId, String jobName) {
+        // 校验用户是否拥有环境权限
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        devopsEnvironmentService.checkEnv(devopsEnvironmentService.baseQueryById(envId), userAttrDTO);
         DevopsEnvResourceDTO job = devopsEnvResourceService.baseQueryOptions(
                 instanceId,
                 commandId,
