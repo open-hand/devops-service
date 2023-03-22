@@ -1,20 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_RESOURCE_INSERT;
-import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
-import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
-import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
-import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
-import static org.springframework.transaction.annotation.Isolation.READ_COMMITTED;
-
-import java.io.IOException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
@@ -31,6 +16,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_RESOURCE_INSERT;
+import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
+import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
+import static org.springframework.transaction.annotation.Isolation.READ_COMMITTED;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -602,7 +602,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     handleUpdatePvMsg(key, clusterId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
                     break;
                 case DEPLOYMENT:
-                    handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
+                    handleUpdateWorkloadMsg(key, envId, msg, null, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
                     DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, KeyParseUtil.getResourceName(key));
                     // 部署组创建的deployment，如果副本变为0则更新应用状态为停止
                     if (deploymentDTO != null && WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(deploymentDTO.getSourceType())) {
@@ -624,7 +624,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 case DAEMONSET:
                 case CRON_JOB:
                 case STATEFULSET:
-                    handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
+                    handleUpdateWorkloadMsg(key, envId, msg, appServiceInstanceDTO == null ? null : appServiceInstanceDTO.getCommandId(), devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
                     if (appServiceInstanceDTO != null) {
                         // 保存应用异常数据（采集监控报表数据）
                         appExceptionRecordService.createOrUpdateExceptionRecord(ResourceType.STATEFULSET.getType(), msg, appServiceInstanceDTO);
@@ -663,11 +663,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
-    private void handleUpdateWorkloadMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO, DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO, AppServiceInstanceDTO appServiceInstanceDTO) {
+    private void handleUpdateWorkloadMsg(String key, Long envId, String msg, Long commandId, DevopsEnvResourceDTO devopsEnvResourceDTO, DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO, AppServiceInstanceDTO appServiceInstanceDTO) {
         DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
                 devopsEnvResourceService.baseQueryOptions(
                         appServiceInstanceDTO == null ? null : appServiceInstanceDTO.getId(),
-                        null,
+                        appServiceInstanceDTO == null ? null : commandId,
                         envId,
                         KeyParseUtil.getResourceType(key),
                         KeyParseUtil.getResourceName(key));
