@@ -1166,7 +1166,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         serviceSagaPayLoad.setV1Endpoints(v1Endpoints);
         serviceSagaPayLoad.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
 
-        devopsIngressVO.setEnvId(devopsServiceDTO.getEnvId());
+        if (devopsIngressVO != null) {
+            devopsIngressVO.setEnvId(devopsServiceDTO.getEnvId());
+        }
         serviceSagaPayLoad.setDevopsIngressVO(devopsIngressVO);
 
         producer.apply(
