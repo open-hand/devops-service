@@ -476,4 +476,6 @@ public interface AppServiceInstanceService {
     void deleteHelmHookJob(Long projectId, Long instanceId, Long envId, Long commandId, String jobName);
 
     AppServiceInstanceVO syncValueToDeploy(Long projectId, AppServiceSyncValueDeployVO syncValueDeployVO);
+
+    List<AppServiceInstanceDTO> listInstanceByValueId(Long projectId, Long valueId);
 }

@@ -2796,6 +2796,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return appServiceInstanceVO;
     }
 
+    @Override
+    public List<AppServiceInstanceDTO> listInstanceByValueId(Long projectId, Long valueId) {
+        DevopsDeployValueDTO valueDTO = devopsDeployValueService.baseQueryById(valueId);
+        AppServiceInstanceDTO queryDTO = new AppServiceInstanceDTO();
+        queryDTO.setEnvId(valueDTO.getEnvId());
+        queryDTO.setAppServiceId(valueDTO.getAppServiceId());
+        return appServiceInstanceMapper.select(queryDTO);
+    }
+
     private String[] parseMarketRepo(String harborRepo) {
         if (harborRepo.endsWith(BaseConstants.Symbol.SLASH)) {
             harborRepo = harborRepo.substring(0, harborRepo.length() - 1);

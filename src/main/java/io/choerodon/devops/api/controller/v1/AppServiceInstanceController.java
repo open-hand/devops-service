@@ -26,6 +26,7 @@ import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.config.SwaggerApiConfig;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.DeployType;
@@ -965,5 +966,18 @@ public class AppServiceInstanceController {
             @RequestBody @Valid AppServiceSyncValueDeployVO syncValueDeployVO) {
         appServiceInstanceService.syncValueToDeploy(projectId, syncValueDeployVO);
         return Results.success();
+    }
+
+    @ApiOperation(value = "根据valueId查询需要同步实例的列表")
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @GetMapping("/list_instance_by_value_id")
+    public ResponseEntity<List<AppServiceInstanceDTO>> listInstanceByValueId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "配置ID", required = true)
+            @RequestParam(value = "value_id") Long valueId) {
+        return Results.success(appServiceInstanceService.listInstanceByValueId(projectId, valueId));
     }
 }
