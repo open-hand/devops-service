@@ -1,8 +1,5 @@
 package io.choerodon.devops.infra.util;
 
-import java.util.*;
-import java.util.regex.Pattern;
-
 import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.models.V1beta1IngressRule;
 import io.kubernetes.client.models.V1beta1IngressTLS;
@@ -15,6 +12,9 @@ import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
+
+import java.util.*;
+import java.util.regex.Pattern;
 
 import io.choerodon.core.exception.CommonException;
 
@@ -56,7 +56,7 @@ public class K8sUtil {
 
     public static final Pattern PORT_NAME_CHARSET_PATTERN = Pattern.compile("^[-a-z0-9]+$");
 
-    public static final Pattern PORT_NAME_ONE_LETTER_PATTERN=Pattern.compile("[a-z]");
+    public static final Pattern PORT_NAME_ONE_LETTER_PATTERN = Pattern.compile("[a-z]");
 
 
     private K8sUtil() {
@@ -122,6 +122,14 @@ public class K8sUtil {
         return 0.0;
     }
 
+    public static Long getNormalValueFromPodString(String podAmount) {
+        if (podAmount.endsWith("k")) {
+            return Long.parseLong(podAmount.substring(0, podAmount.length() - 1)) * 1000;
+        } else {
+            return Long.parseLong(podAmount);
+        }
+    }
+
 
     private static String getPodStatus(V1ContainerStateTerminated containerStateTerminated) {
         LOGGER.debug("Get pod status: {}", containerStateTerminated);
@@ -166,6 +174,18 @@ public class K8sUtil {
                 status = INIT + containerStateWaiting.getReason();
             } else {
                 status = INIT + pod.getSpec().getInitContainers().size();
+            }
+        } else if (!ArrayUtil.isEmpty(containerStatusList) && "Pending".equals(podStatusPhase)) {
+            for (V1ContainerStatus v1ContainerStatus : containerStatusList) {
+                if (v1ContainerStatus.getState() != null && v1ContainerStatus.getState().getRunning() == null) {
+                    if (v1ContainerStatus.getState().getTerminated() != null) {
+                        status = v1ContainerStatus.getState().getTerminated().getReason();
+                        break;
+                    } else if (v1ContainerStatus.getState().getWaiting() != null) {
+                        status = v1ContainerStatus.getState().getWaiting().getReason();
+                        break;
+                    }
+                }
             }
         } else if (!ArrayUtil.isEmpty(containerStatusList) && !"Pending".equals(podStatusPhase)) {
             V1ContainerState containerState = containerStatusList.get(0).getState();

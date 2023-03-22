@@ -36,6 +36,9 @@
         devops_ci_template_pipeline dctp
         JOIN devops_ci_template_category dctc ON dctp.ci_template_category_id=dctc.id
         WHERE 1=1
+        <if test="sourceType != null">
+            AND dctp.id NOT IN ( SELECT dctp.ID FROM devops_ci_template_pipeline dctp WHERE dctp.source_type !=#{sourceType}  AND dctp.`enable` = 0 )
+        </if>
 
         <choose>
             <when test="sourceType == 'organization'">

@@ -1,11 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +9,14 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -107,9 +108,9 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         BeanUtils.copyProperties(raw, node);
         node.setCpuLimit(String.format(CPU_MEASURE_FORMAT, K8sUtil.getNormalValueFromCpuString(node.getCpuLimit())));
         node.setCpuRequest(String.format(CPU_MEASURE_FORMAT, K8sUtil.getNormalValueFromCpuString(node.getCpuRequest())));
-        node.setCpuTotal(String.format(CPU_MEASURE_FORMAT, K8sUtil.getNormalValueFromCpuString(StringUtils.isEmpty(raw.getCpuAllocatable()) ? raw.getCpuCapacity() : raw.getCpuAllocatable())));
-        node.setPodTotal(Long.parseLong(StringUtils.isEmpty(raw.getPodAllocatable()) ? raw.getPodCapacity() : raw.getPodAllocatable()));
-        node.setMemoryTotal(StringUtils.isEmpty(raw.getMemoryAllocatable()) ? raw.getMemoryCapacity() : raw.getMemoryAllocatable());
+        node.setCpuTotal(String.format(CPU_MEASURE_FORMAT, K8sUtil.getNormalValueFromCpuString(ObjectUtils.isEmpty(raw.getCpuAllocatable()) ? raw.getCpuCapacity() : raw.getCpuAllocatable())));
+        node.setPodTotal(ObjectUtils.isEmpty(raw.getPodAllocatable()) ? K8sUtil.getNormalValueFromPodString(raw.getPodCapacity()) : K8sUtil.getNormalValueFromPodString(raw.getPodAllocatable()));
+        node.setMemoryTotal(ObjectUtils.isEmpty(raw.getMemoryAllocatable()) ? raw.getMemoryCapacity() : raw.getMemoryAllocatable());
 
         setMemoryInfo(node);
 
@@ -308,8 +309,8 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         long total = stringRedisTemplate.opsForList().size(rediskey);
 
         return Objects.requireNonNull(stringRedisTemplate
-                .opsForList()
-                .range(rediskey, 0, total - 1))
+                        .opsForList()
+                        .range(rediskey, 0, total - 1))
                 .stream()
                 .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
                 .map(ClusterNodeInfoVO::getNodeName)
