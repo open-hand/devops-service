@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -950,6 +951,19 @@ public class AppServiceInstanceController {
                                                   @RequestParam(value = "job_name") String jobName) {
         appServiceInstanceService.deleteHelmHookJob(projectId, instanceId, envId, commandId, jobName);
         return ResponseEntity.noContent().build();
+    }
 
+    @ApiOperation(value = "同步values到实例部署")
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @PostMapping("/sync_value_deploy")
+    public ResponseEntity<Void> syncValueToDeploy(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "更新信息", required = true)
+            @RequestBody @Valid AppServiceSyncValueDeployVO syncValueDeployVO) {
+        appServiceInstanceService.syncValueToDeploy(projectId, syncValueDeployVO);
+        return Results.success();
     }
 }
