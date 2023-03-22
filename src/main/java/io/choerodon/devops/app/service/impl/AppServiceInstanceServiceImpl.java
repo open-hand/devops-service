@@ -2793,6 +2793,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceInstanceVO appServiceInstanceVO = createOrUpdate(projectId,
                 appServiceDeployVO,
                 DeployType.MANUAL);
+        appServiceInstanceMapper.updateSyncDeployValueId(appServiceInstanceVO.getId(), syncValueDeployVO.getValueId());
         return appServiceInstanceVO;
     }
 
