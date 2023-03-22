@@ -2762,6 +2762,21 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return appServiceInstanceMapper.countInstanceDeploying(instanceId) > 0;
     }
 
+    @Override
+    public void deleteHelmHookJob(Long projectId, Long instanceId, Long envId, Long commandId, String jobName) {
+        DevopsEnvResourceDTO job = devopsEnvResourceService.baseQueryOptions(
+                instanceId,
+                commandId,
+                envId,
+                "Job",
+                jobName);
+        if (job == null) {
+            throw new CommonException(DEVOPS_INSTANCE_JOB_MISMATCHED);
+        }
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        agentCommandService.deleteHelmHookJob(jobName, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId());
+    }
+
     private String[] parseMarketRepo(String harborRepo) {
         if (harborRepo.endsWith(BaseConstants.Symbol.SLASH)) {
             harborRepo = harborRepo.substring(0, harborRepo.length() - 1);

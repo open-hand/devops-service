@@ -65,6 +65,8 @@ public class ExceptionConstants {
         public static final String DEVOPS_INSTANCE_NOT_STOP = "devops.instance.not.stop";
         public static final String DEVOPS_INSTANCE_NOT_RUNNING = "devops.instance.not.running";
         public static final String DEVOPS_INSTANCE_RESOURCE_NOT_FOUND = "devops.instance.resource.not.found";
+
+        public static final String DEVOPS_INSTANCE_JOB_MISMATCHED = "devops.instance.job.mismatched";
         public static final String DEVOPS_APP_INSTANCE_NAME_ALREADY_EXIST = "devops.app.instance.name.already.exist";
         public static final String DEVOPS_APPLICATION_INSTANCE_CREATE = "devops.application.instance.create";
         public static final String DEVOPS_INSTANCE_UPDATE = "devops.instance.update";

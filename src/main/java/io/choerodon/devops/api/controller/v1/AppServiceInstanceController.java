@@ -1,9 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Date;
-import java.util.List;
-import javax.validation.Valid;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -13,6 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.Date;
+import java.util.List;
+import javax.validation.Valid;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -933,5 +933,23 @@ public class AppServiceInstanceController {
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId) {
         return ResponseEntity.ok(appServiceInstanceService.listByServiceAndEnv(projectId, appServiceId, envId, true));
+    }
+
+    @ApiOperation("删除集群中对应的job资源，以停止helm hook操作")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @DeleteMapping("/{instance_id}/delete_job")
+    public ResponseEntity<Void> deleteHelmHookJob(@ApiParam(value = "项目ID", required = true)
+                                                  @PathVariable(value = "project_id") Long projectId,
+                                                  @ApiParam(value = "应用实例id", required = true)
+                                                  @Encrypt @RequestParam(value = "instance_id") Long instanceId,
+                                                  @ApiParam(value = "操作id", required = true)
+                                                  @Encrypt @RequestParam(value = "command_id") Long commandId,
+                                                  @ApiParam(value = "环境id", required = true)
+                                                  @Encrypt @RequestParam(value = "env_id") Long envId,
+                                                  @ApiParam(value = "job名称", required = true)
+                                                  @RequestParam(value = "job_name") String jobName) {
+        appServiceInstanceService.deleteHelmHookJob(projectId, instanceId, envId, commandId, jobName);
+        return ResponseEntity.noContent().build();
+
     }
 }
