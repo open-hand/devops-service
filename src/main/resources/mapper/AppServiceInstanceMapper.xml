@@ -739,4 +739,10 @@
                  join devops_env_command dec2 on dasi.command_id = dec2.id and dec2.status = 'operating'
         where dasi.id = #{instanceId}
     </select>
+
+    <update id="updateSyncDeployValueId">
+        UPDATE devops_app_service_instance
+        SET sync_deploy_value_id=#{syncDeployValueId}
+        WHERE id = #{instanceId}
+    </update>
 </mapper>

@@ -102,4 +102,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_instance.groovy') {
             column(name: 'replicas_strategy',type: 'VARCHAR(16)',remarks: '副本数生效策略 values/deployment',afterColumn: 'source')
         }
     }
+
+    changeSet(id: '2023-03-22-add-column',author: 'changping.shi@zknow.com'){
+        addColumn(tableName:'devops_app_service_instance' ){
+            column(name: 'sync_deploy_value_id',type: 'BIGINT UNSIGNED',remarks: '部署配置同步至应用实例部署关联关系',afterColumn: 'value_id')
+        }
+    }
 }
