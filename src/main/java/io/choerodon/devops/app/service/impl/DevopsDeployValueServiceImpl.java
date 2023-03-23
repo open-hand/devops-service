@@ -297,6 +297,13 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public void updateValueByInstanceId(Long projectId, Long instanceId, String value) {
-        // todo scp
+        List<DevopsDeployValueDTO> list = devopsDeployValueMapper.listByInstanceId(instanceId);
+        if (CollectionUtils.isEmpty(list)) {
+            throw new CommonException("devops.instance.not.bind.values");
+        }
+        list.forEach(t -> {
+            t.setValue(value);
+            devopsDeployValueMapper.updateByPrimaryKey(t);
+        });
     }
 }
