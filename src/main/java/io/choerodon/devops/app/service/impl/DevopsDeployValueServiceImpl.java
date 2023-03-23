@@ -294,4 +294,9 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
             }
         }
     }
+
+    @Override
+    public void updateValueByInstanceId(Long projectId, Long instanceId, String value) {
+        // todo scp
+    }
 }
