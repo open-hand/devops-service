@@ -93,7 +93,7 @@ public class JenkinsJobController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "停止构建")
-    @GetMapping("/{name}/build/{build_id}/stop")
+    @PostMapping("/{name}/build/{build_id}/stop")
     public ResponseEntity<Void> stopBuild(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -108,7 +108,7 @@ public class JenkinsJobController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "重新执行")
-    @GetMapping("/{name}/build/{build_id}/restart")
+    @PostMapping("/{name}/build/{build_id}/restart")
     public ResponseEntity<Void> retryBuild(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
