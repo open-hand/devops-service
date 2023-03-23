@@ -296,13 +296,13 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public void updateValueByInstanceId(Long projectId, Long instanceId, String value) {
+    public void updateValueByInstanceId(Long projectId, Long instanceId, HashMap<String, String> mapValue) {
         List<DevopsDeployValueDTO> list = devopsDeployValueMapper.listByInstanceId(instanceId);
         if (CollectionUtils.isEmpty(list)) {
             throw new CommonException("devops.instance.not.bind.values");
         }
         list.forEach(t -> {
-            t.setValue(value);
+            t.setValue(mapValue.get("value"));
             devopsDeployValueMapper.updateByPrimaryKey(t);
         });
     }
