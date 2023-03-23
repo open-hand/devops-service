@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.HashMap;
 import java.util.List;
 import javax.validation.Valid;
 
@@ -216,7 +217,7 @@ public class DevopsDeployValueController {
         return Results.success(devopsDeployValueService.listValueByInstanceId(projectId, instanceId));
     }
 
-    @ApiOperation(value = "根据实例id查询关联的部署配置列表")
+    @ApiOperation(value = "根据实例id更新关联的部署配置列表")
     @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
@@ -227,8 +228,8 @@ public class DevopsDeployValueController {
             @ApiParam(value = "实例ID", required = true)
             @Encrypt
             @RequestParam(value = "instance_id") Long instanceId,
-            @RequestBody String value) {
-        devopsDeployValueService.updateValueByInstanceId(projectId, instanceId, value);
+            @RequestBody HashMap<String, String> mapValue) {
+        devopsDeployValueService.updateValueByInstanceId(projectId, instanceId, mapValue);
         return Results.success();
     }
 }
