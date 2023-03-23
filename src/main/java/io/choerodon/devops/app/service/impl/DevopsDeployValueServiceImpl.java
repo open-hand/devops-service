@@ -280,10 +280,12 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public List<DevopsDeployValueDTO> listValueByInstanceId(Long projectId, Long instanceId) {
+        // 查询流水线和持续部署是否绑定配置
         List<DevopsDeployValueDTO> list = devopsDeployValueMapper.listByInstanceId(instanceId);
         if (!CollectionUtils.isEmpty(list)) {
             return list.stream().distinct().collect(Collectors.toList());
         } else {
+            // 查询界面是否同步配置到资源
             AppServiceInstanceDTO instanceDTO = appServiceInstanceMapper.selectByPrimaryKey(instanceId);
             if (instanceDTO.getSyncDeployValueId() != null) {
                 return Collections.singletonList(devopsDeployValueMapper.selectByPrimaryKey(instanceDTO.getSyncDeployValueId()));
