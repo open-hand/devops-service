@@ -182,7 +182,7 @@
     </select>
 
     <select id="listByInstanceId" resultType="io.choerodon.devops.infra.dto.DevopsDeployValueDTO">
-        select ddv.id,ddv.env_id,ddv.`name`
+        select ddv.*
         from devops_deploy_value ddv
                  JOIN devops_ci_chart_deploy_cfg dccdc ON dccdc.value_id = ddv.id
                  JOIN devops_ci_job dcj ON dcj.config_id = dccdc.id
@@ -190,7 +190,7 @@
                  JOIN devops_app_service_instance dasi ON dasi.id = ddace.object_id and ddace.rdupm_type = 'chart'
         WHERE dasi.id = #{instanceId}
         union
-        select ddv.id,ddv.env_id,ddv.`name`
+        select ddv.*
         from devops_deploy_value ddv
                  JOIN devops_ci_chart_deploy_cfg dccdc ON dccdc.value_id = ddv.id
                  JOIN devops_pipeline_job dcj ON dcj.config_id = dccdc.id
