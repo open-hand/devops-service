@@ -91,4 +91,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
             column(name: 'tags', type: 'VARCHAR(255)', remarks: 'job的tag标签', afterColumn: 'start_in')
         }
     }
+
+    changeSet(author: 'changping.shi@zknow.com', id: '2023-03-22-add-idx') {
+        createIndex(indexName: "idx_config_id ", tableName: "devops_ci_job") {
+            column(name: "devops_ci_job")
+        }
+    }
 }

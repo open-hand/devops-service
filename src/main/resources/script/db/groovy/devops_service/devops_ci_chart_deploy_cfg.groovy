@@ -37,4 +37,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_chart_deploy_cfg.groovy') {
         }
     }
 
+    changeSet(author: 'changping.shi@zknow.com', id: '2023-03-22-add-idx') {
+        createIndex(indexName: "idx_app_id", tableName: "devops_ci_chart_deploy_cfg") {
+            column(name: "app_id")
+        }
+    }
+
 }
