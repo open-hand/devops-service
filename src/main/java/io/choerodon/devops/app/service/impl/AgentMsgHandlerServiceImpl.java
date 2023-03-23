@@ -1723,18 +1723,20 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
 
         // 这种情况是用户界面上主动停止init-job，agent将Reversion设置成了很大
-        if (oldDevopsEnvResourceDTO.getName().endsWith("init-job") && devopsEnvResourceDTO.getKind().equals("Job") && oldDevopsEnvResourceDTO.getReversion() < devopsEnvResourceDTO.getReversion()) {
-            oldDevopsEnvResourceDTO.setReversion(devopsEnvResourceDTO.getReversion());
-            devopsEnvResourceDetailDTO.setId(oldDevopsEnvResourceDTO.getResourceDetailId());
-            devopsEnvResourceService.baseUpdate(oldDevopsEnvResourceDTO);
-            devopsEnvResourceDetailService.baseUpdate(devopsEnvResourceDetailDTO);
-        }
-
-        if (!oldDevopsEnvResourceDTO.getReversion().equals(devopsEnvResourceDTO.getReversion())) {
-            oldDevopsEnvResourceDTO.setReversion(devopsEnvResourceDTO.getReversion());
-            devopsEnvResourceDetailDTO.setId(oldDevopsEnvResourceDTO.getResourceDetailId());
-            devopsEnvResourceService.baseUpdate(oldDevopsEnvResourceDTO);
-            devopsEnvResourceDetailService.baseUpdate(devopsEnvResourceDetailDTO);
+        if (oldDevopsEnvResourceDTO.getName().endsWith("init-db")) {
+            if (devopsEnvResourceDTO.getKind().equals("Job") && oldDevopsEnvResourceDTO.getReversion() < devopsEnvResourceDTO.getReversion()) {
+                oldDevopsEnvResourceDTO.setReversion(devopsEnvResourceDTO.getReversion());
+                devopsEnvResourceDetailDTO.setId(oldDevopsEnvResourceDTO.getResourceDetailId());
+                devopsEnvResourceService.baseUpdate(oldDevopsEnvResourceDTO);
+                devopsEnvResourceDetailService.baseUpdate(devopsEnvResourceDetailDTO);
+            }
+        } else {
+            if (!oldDevopsEnvResourceDTO.getReversion().equals(devopsEnvResourceDTO.getReversion())) {
+                oldDevopsEnvResourceDTO.setReversion(devopsEnvResourceDTO.getReversion());
+                devopsEnvResourceDetailDTO.setId(oldDevopsEnvResourceDTO.getResourceDetailId());
+                devopsEnvResourceService.baseUpdate(oldDevopsEnvResourceDTO);
+                devopsEnvResourceDetailService.baseUpdate(devopsEnvResourceDetailDTO);
+            }
         }
     }
 
