@@ -105,5 +105,5 @@ public interface DevopsDeployValueService {
      */
     void deleteByEnvId(Long envId);
 
-    List<DevopsDeployValueVO> listValueByInstanceId(Long projectId, Long instanceId);
+    List<DevopsDeployValueDTO> listValueByInstanceId(Long projectId, Long instanceId);
 }

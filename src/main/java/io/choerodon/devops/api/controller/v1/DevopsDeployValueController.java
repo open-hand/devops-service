@@ -20,6 +20,7 @@ import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -207,7 +208,7 @@ public class DevopsDeployValueController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @GetMapping("/list_value_by_instance_id")
-    public ResponseEntity<List<DevopsDeployValueVO>> listValueByInstanceId(
+    public ResponseEntity<List<DevopsDeployValueDTO>> listValueByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)

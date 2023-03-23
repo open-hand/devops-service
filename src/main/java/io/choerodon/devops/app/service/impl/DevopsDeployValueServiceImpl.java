@@ -20,11 +20,13 @@ import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -61,6 +63,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Lazy
     private PipelineService pipelineService;
 
+    @Autowired
+    private AppServiceInstanceMapper appServiceInstanceMapper;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -275,7 +279,17 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public List<DevopsDeployValueVO> listValueByInstanceId(Long projectId, Long instanceId) {
-       return null;
+    public List<DevopsDeployValueDTO> listValueByInstanceId(Long projectId, Long instanceId) {
+        List<DevopsDeployValueDTO> list = devopsDeployValueMapper.listByInstanceId(instanceId);
+        if (!CollectionUtils.isEmpty(list)) {
+            return list.stream().distinct().collect(Collectors.toList());
+        } else {
+            AppServiceInstanceDTO instanceDTO = appServiceInstanceMapper.selectByPrimaryKey(instanceId);
+            if (instanceDTO.getSyncDeployValueId() != null) {
+                return Collections.singletonList(devopsDeployValueMapper.selectByPrimaryKey(instanceDTO.getSyncDeployValueId()));
+            } else {
+                return null;
+            }
+        }
     }
 }
