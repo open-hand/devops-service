@@ -19,7 +19,6 @@ import io.choerodon.devops.api.vo.DevopsDeployValueUpdateVO;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -215,5 +214,20 @@ public class DevopsDeployValueController {
             @Encrypt
             @RequestParam(value = "instance_id") Long instanceId) {
         return Results.success(devopsDeployValueService.listValueByInstanceId(projectId, instanceId));
+    }
+
+    @ApiOperation(value = "根据实例id查询关联的部署配置列表")
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @PutMapping("/update_value_by_instance_id")
+    public ResponseEntity<List<DevopsDeployValueDTO>> updateValueByInstanceId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "实例ID", required = true)
+            @Encrypt
+            @RequestParam(value = "instance_id") Long instanceId,
+            @RequestBody String value) {
+        return Results.success(devopsDeployValueService.updateValueByInstanceId(projectId, instanceId, value));
     }
 }
