@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -18,7 +19,7 @@ public class AppServiceSyncValueDeployVO {
     @Encrypt
     @ApiModelProperty("实例id/必填")
     @NotNull(message = "{devops.app.instance.id.null}")
-    private Long instanceId;
+    private List<Long> instanceIds;
 
     @Encrypt
     @ApiModelProperty("部署配置id/必填")
@@ -33,12 +34,12 @@ public class AppServiceSyncValueDeployVO {
         this.environmentId = environmentId;
     }
 
-    public Long getInstanceId() {
-        return instanceId;
+    public List<Long> getInstanceIds() {
+        return instanceIds;
     }
 
-    public void setInstanceId(Long instanceId) {
-        this.instanceId = instanceId;
+    public void setInstanceIds(List<Long> instanceIds) {
+        this.instanceIds = instanceIds;
     }
 
     public Long getValueId() {

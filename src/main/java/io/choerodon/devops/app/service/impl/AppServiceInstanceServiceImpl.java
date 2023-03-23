@@ -2778,23 +2778,25 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public AppServiceInstanceVO syncValueToDeploy(Long projectId, AppServiceSyncValueDeployVO syncValueDeployVO) {
-        AppServiceInstanceDTO preInstance = baseQuery(syncValueDeployVO.getInstanceId());
-        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(preInstance.getAppServiceId(),
-                preInstance.getAppServiceVersionId(),
-                syncValueDeployVO.getEnvironmentId(),
-                devopsDeployValueService.baseQueryById(syncValueDeployVO.getValueId()).getValue(),
-                syncValueDeployVO.getValueId(),
-                preInstance.getCode(),
-                preInstance.getId(),
-                CommandType.UPDATE.getType(),
-                preInstance.getAppServiceName(),
-                preInstance.getCode());
-        AppServiceInstanceVO appServiceInstanceVO = createOrUpdate(projectId,
-                appServiceDeployVO,
-                DeployType.MANUAL);
-        appServiceInstanceMapper.updateSyncDeployValueId(appServiceInstanceVO.getId(), syncValueDeployVO.getValueId());
-        return appServiceInstanceVO;
+    public void syncValueToDeploy(Long projectId, AppServiceSyncValueDeployVO syncValueDeployVO) {
+        syncValueDeployVO.getInstanceIds().forEach(t -> {
+            AppServiceInstanceDTO preInstance = baseQuery(t);
+            AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(preInstance.getAppServiceId(),
+                    preInstance.getAppServiceVersionId(),
+                    syncValueDeployVO.getEnvironmentId(),
+                    devopsDeployValueService.baseQueryById(syncValueDeployVO.getValueId()).getValue(),
+                    syncValueDeployVO.getValueId(),
+                    preInstance.getCode(),
+                    preInstance.getId(),
+                    CommandType.UPDATE.getType(),
+                    preInstance.getAppServiceName(),
+                    preInstance.getCode());
+            AppServiceInstanceVO appServiceInstanceVO = createOrUpdate(projectId,
+                    appServiceDeployVO,
+                    DeployType.MANUAL);
+            // 添加同步配置绑定字段
+            appServiceInstanceMapper.updateSyncDeployValueId(appServiceInstanceVO.getId(), syncValueDeployVO.getValueId());
+        });
     }
 
     @Override

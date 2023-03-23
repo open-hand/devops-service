@@ -203,7 +203,7 @@ public class DevopsDeployValueController {
         return ResponseEntity.ok(devopsDeployValueService.listByEnvAndApp(projectId, appServiceId, envId, name));
     }
 
-    @ApiOperation(value = "根据实例id查询管理的部署配置列表")
+    @ApiOperation(value = "根据实例id查询关联的部署配置列表")
     @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
