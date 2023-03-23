@@ -137,6 +137,10 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     public DevopsDeployValueVO query(Long projectId, Long valueId) {
         DevopsDeployValueVO devopsDeployValueVO = ConvertUtils.convertObject(devopsDeployValueMapper.queryById(valueId), DevopsDeployValueVO.class);
         devopsDeployValueVO.setIndex(CollectionUtils.isEmpty(checkDelete(projectId, valueId)));
+        // 设置环境连接状态
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsDeployValueVO.getEnvId());
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
+        devopsDeployValueVO.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
         return devopsDeployValueVO;
     }
 
