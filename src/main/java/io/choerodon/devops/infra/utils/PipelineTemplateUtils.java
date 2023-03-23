@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.utils;
 
-import java.util.concurrent.ThreadLocalRandom;
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ThreadLocalRandom;
+import javax.annotation.Nullable;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -85,8 +85,8 @@ public class PipelineTemplateUtils {
                     }
                     break;
                 case PROJECT:
-                    if (!baseServiceClientOperator.isOrganzationRoot(userDetails.getUserId(), sourceId)
-                            && !baseServiceClientOperator.isProjectOwner(userDetails.getUserId(), sourceId)) {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(sourceId, false, false, false, false, false);
+                    if (!baseServiceClientOperator.isOrganzationRoot(userDetails.getUserId(), projectDTO.getOrganizationId()) && !baseServiceClientOperator.isProjectOwner(userDetails.getUserId(), sourceId)) {
                         throw new CommonException("error.no.permission.to.do.operation");
                     }
                     break;
