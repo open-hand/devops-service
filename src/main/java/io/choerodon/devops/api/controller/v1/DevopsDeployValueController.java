@@ -221,13 +221,14 @@ public class DevopsDeployValueController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @PutMapping("/update_value_by_instance_id")
-    public ResponseEntity<List<DevopsDeployValueDTO>> updateValueByInstanceId(
+    public ResponseEntity<Void> updateValueByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @Encrypt
             @RequestParam(value = "instance_id") Long instanceId,
             @RequestBody String value) {
-        return Results.success(devopsDeployValueService.updateValueByInstanceId(projectId, instanceId, value));
+        devopsDeployValueService.updateValueByInstanceId(projectId, instanceId, value);
+        return Results.success();
     }
 }
