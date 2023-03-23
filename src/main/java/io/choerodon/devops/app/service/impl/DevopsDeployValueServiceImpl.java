@@ -301,6 +301,9 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public void updateValueByInstanceId(Long projectId, Long instanceId, HashMap<String, String> mapValue) {
+        if (Objects.isNull(mapValue.get("value"))) {
+            throw new CommonException("devops.value.is.null");
+        }
         List<DevopsDeployValueDTO> list = devopsDeployValueMapper.listByInstanceId(instanceId);
         if (CollectionUtils.isEmpty(list)) {
             throw new CommonException("devops.instance.not.bind.values");
