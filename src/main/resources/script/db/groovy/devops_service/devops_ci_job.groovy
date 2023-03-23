@@ -94,7 +94,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
 
     changeSet(author: 'changping.shi@zknow.com', id: '2023-03-22-add-idx') {
         createIndex(indexName: "idx_config_id ", tableName: "devops_ci_job") {
-            column(name: "devops_ci_job")
+            column(name: "config_id")
         }
     }
 }
