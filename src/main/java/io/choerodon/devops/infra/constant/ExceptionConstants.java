@@ -221,4 +221,8 @@ public class ExceptionConstants {
         public static final String DEVOPS_UPDATE_APP_CONFIG_FAILED = "devops.update.app.config.failed";
     }
 
+    public static class CertificationExceptionCode {
+        public static final String ERROR_DEVOPS_CERTIFICATION_EXISTCERT_FILED_NULL = "error.devops.certification.existCert.filed.null";
+    }
+
 }

@@ -1,8 +1,11 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import java.util.List;
 
-public class C7nCertificationCreateVO {
+public class C7nCertificationCreateOrUpdateVO {
     private String id;
     private String certName;
     private String commonName;
@@ -15,6 +18,75 @@ public class C7nCertificationCreateVO {
     private String envId;
     private String envName;
     private Boolean envConnected;
+    @ApiModelProperty("操作类型 create/update")
+    private String operateType;
+
+    private List<NotifyObject> notifyObjects;
+
+    @ApiModelProperty("是否设置到期前通知")
+    private Boolean expireNotice;
+
+    @ApiModelProperty("到期提前多长时间通知")
+    private Integer advanceDays;
+
+    /**
+     * 通知对象类
+     */
+    public static class NotifyObject {
+        @ApiModelProperty("通知对象类型 user/role")
+        private String type;
+        @ApiModelProperty("id")
+        @Encrypt
+        private Long id;
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+    }
+
+    public String getOperateType() {
+        return operateType;
+    }
+
+    public void setOperateType(String operateType) {
+        this.operateType = operateType;
+    }
+
+    public List<NotifyObject> getNotifyObjects() {
+        return notifyObjects;
+    }
+
+    public void setNotifyObjects(List<NotifyObject> notifyObjects) {
+        this.notifyObjects = notifyObjects;
+    }
+
+    public Boolean getExpireNotice() {
+        return expireNotice;
+    }
+
+    public void setExpireNotice(Boolean expireNotice) {
+        this.expireNotice = expireNotice;
+    }
+
+    public Integer getAdvanceDays() {
+        return advanceDays;
+    }
+
+    public void setAdvanceDays(Integer advanceDays) {
+        this.advanceDays = advanceDays;
+    }
 
     public String getId() {
         return id;

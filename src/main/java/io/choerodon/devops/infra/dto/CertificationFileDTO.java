@@ -27,6 +27,12 @@ public class CertificationFileDTO extends AuditDomain {
     private String certFile;
     private String keyFile;
 
+    public CertificationFileDTO(Long id, String certFile, String keyFile) {
+        this.id = id;
+        this.certFile = certFile;
+        this.keyFile = keyFile;
+    }
+
     /**
      * construct cert file
      *

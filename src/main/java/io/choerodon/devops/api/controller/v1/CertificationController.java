@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -13,10 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.C7nCertificationCreateVO;
+import io.choerodon.devops.api.vo.C7nCertificationCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.CertificationRespVO;
 import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
@@ -57,7 +57,7 @@ public class CertificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书", required = true)
-            @ModelAttribute C7nCertificationCreateVO certification,
+            @ModelAttribute C7nCertificationCreateOrUpdateVO certification,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
