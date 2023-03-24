@@ -1,12 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
-
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.BeanUtils;
@@ -15,6 +8,13 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
@@ -53,7 +53,11 @@ public class CertificationServiceImpl implements CertificationService {
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     private static final String DEVOPS_CERT_MANAGER_NOT_INSTALLED = "devops.cert.manager.not.installed";
     private static final String DEVOPS_CERTIFICATION_CREATE = "devops.certification.create";
+
+    private static final String DEVOPS_CERTIFICATION_UPDATE = "devops.certification.update";
     private static final String DEVOPS_INSERT_CERTIFICATION_FILE = "devops.insert.certification.file";
+
+    private static final String DEVOPS_UPDATE_CERTIFICATION_FILE = "devops.update.certification.file";
 
 
     @Autowired
@@ -110,10 +114,10 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createCertification(Long projectId, C7nCertificationCreateVO c7nCertificationCreateVO,
+    public void createCertification(Long projectId, C7nCertificationCreateOrUpdateVO c7NCertificationCreateOrUpdateVO,
                                     MultipartFile key, MultipartFile cert) {
-        C7nCertificationVO certificationDTO = processEncryptCertification(c7nCertificationCreateVO);
-        Long envId = certificationDTO.getEnvId();
+        C7nCertificationVO certificationVO = processEncryptCertification(c7NCertificationCreateOrUpdateVO);
+        Long envId = certificationVO.getEnvId();
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //校验环境相关信息
@@ -132,17 +136,15 @@ public class CertificationServiceImpl implements CertificationService {
         String keyFileName;
 
         //如果是选择上传文件方式
-        if (certificationDTO.getType().equals(UPLOAD)) {
+        if (certificationVO.getType().equals(UPLOAD)) {
             if (key != null && cert != null) {
-                certFileName = cert.getOriginalFilename();
-                keyFileName = key.getOriginalFilename();
-                certificationDTO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
-                certificationDTO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
+                certificationVO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
+                certificationVO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
             } else {
                 certFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "crt");
                 keyFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "key");
-                FileUtil.saveDataToFile(path, certFileName, certificationDTO.getCertValue());
-                FileUtil.saveDataToFile(path, keyFileName, certificationDTO.getKeyValue());
+                FileUtil.saveDataToFile(path, certFileName, certificationVO.getCertValue());
+                FileUtil.saveDataToFile(path, keyFileName, certificationVO.getKeyValue());
             }
             // 因为放开了证书格式限制，所以不同格式有不同的校验逻辑。但是证书内容都是文本，无法正确判断当前上传的证书是什么格式，所以将证书校验这块交给用户自己来控制
 //        File certPath = new File(path + FILE_SEPARATOR + certFileName);
@@ -159,19 +161,19 @@ public class CertificationServiceImpl implements CertificationService {
 //        FileUtil.deleteFile(keyPath);
         }
 
-        String certName = certificationDTO.getCertName();
-        String type = certificationDTO.getType();
-        List<String> domains = certificationDTO.getDomains();
+        String certName = certificationVO.getCertName();
+        String type = certificationVO.getType();
+        List<String> domains = certificationVO.getDomains();
 
 
         CertificationFileDTO certificationFileDTO = null;
         //如果创建的时候选择证书
-        if (certificationDTO.getCertId() != null) {
-            CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCert(certificationDTO.getCertId(), projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        if (certificationVO.getCertId() != null) {
+            CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCert(certificationVO.getCertId(), projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
-            certificationDTO.setType(UPLOAD);
-            type = certificationDTO.getType();
-            certificationFileDTO = baseQueryCertFile(baseQueryById(certificationDTO.getCertId()).getId());
+            certificationVO.setType(UPLOAD);
+            type = certificationVO.getType();
+            certificationFileDTO = baseQueryCertFile(baseQueryById(certificationVO.getCertId()).getId());
         }
 
         devopsCertificationValidator.checkCertification(envId, certName);
@@ -179,13 +181,13 @@ public class CertificationServiceImpl implements CertificationService {
 
         // status operating
         CertificationDTO newCertificationDTO = new CertificationDTO(null,
-                certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationDTO.getCertId());
+                certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationVO.getCertId());
 
         String keyContent;
         String certContent;
         if (certificationFileDTO == null) {
-            keyContent = certificationDTO.getKeyValue();
-            certContent = certificationDTO.getCertValue();
+            keyContent = certificationVO.getKeyValue();
+            certContent = certificationVO.getCertValue();
         } else {
             keyContent = certificationFileDTO.getKeyFile();
             certContent = certificationFileDTO.getCertFile();
@@ -195,29 +197,33 @@ public class CertificationServiceImpl implements CertificationService {
         newCertificationDTO.setApiVersion(apiVersion);
 
         // 存入数据库
-        createAndStore(newCertificationDTO, keyContent, certContent);
+        if (c7NCertificationCreateOrUpdateVO.getOperateType().equals("create")) {
+            createAndStore(newCertificationDTO, keyContent, certContent);
+        } else {
+            updateAndStore(newCertificationDTO, keyContent, certContent);
+        }
 
         // 将资源对象生成yaml提交到gitlab
-        handleCertificationToGitlab(certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO);
+        handleCertificationToGitlab(certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO, c7NCertificationCreateOrUpdateVO.getOperateType());
     }
 
-    private void handleCertificationToGitlab(String certManagerVersion, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+    private void handleCertificationToGitlab(String certManagerVersion, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType) {
         if (CertManagerConstants.OLD_V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
-            handleAlpha1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO);
+            handleAlpha1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO, operateType);
         } else {
-            handleV1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO);
+            handleV1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO, operateType);
         }
     }
 
-    private void handleAlpha1Certification(String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+    private void handleAlpha1Certification(String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType) {
         C7nCertification c7nCertification = getV1Alpha1C7nCertification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO.getCode());
         // sent certification to agent
-        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification);
+        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification, operateType);
     }
 
-    private void handleV1Certification(String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+    private void handleV1Certification(String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType) {
         C7nCertification c7nCertification = getV1C7nCertification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO.getCode());
-        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification);
+        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification, operateType);
     }
 
     /**
@@ -239,6 +245,25 @@ public class CertificationServiceImpl implements CertificationService {
         storeCertFile(keyContent, certContent, certId);
     }
 
+    /**
+     * update certification, command and store cert file
+     *
+     * @param certificationDTO the information of certification
+     */
+    private void updateAndStore(CertificationDTO certificationDTO, @Nullable String keyContent, @Nullable String certContent) {
+        // create
+        certificationDTO = baseUpdate(certificationDTO);
+        Long certId = certificationDTO.getId();
+
+        CertificationDTO updateCertificationDTO = new CertificationDTO();
+        updateCertificationDTO.setId(certificationDTO.getId());
+        updateCertificationDTO.setCommandId(createCertCommand(CommandType.UPDATE.getType(), certId, null));
+        // cert command
+        baseUpdateCommandId(updateCertificationDTO);
+        // store crt & key if type is upload
+        updateCertFile(keyContent, certContent, certificationDTO);
+    }
+
 
     private void storeCertFile(String keyContent, String certContent, Long certId) {
         if (keyContent != null && certContent != null) {
@@ -247,6 +272,15 @@ public class CertificationServiceImpl implements CertificationService {
                     new CertificationFileDTO(certContent, keyContent)));
             certificationDTO.setId(certId);
             baseUpdateCertFileId(certificationDTO);
+        }
+    }
+
+    private void updateCertFile(String keyContent, String certContent, CertificationDTO certificationDTO) {
+        if (keyContent != null && certContent != null) {
+            CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.selectByPrimaryKey(certificationDTO.getCertificationFileId());
+            certificationFileDTO.setKeyFile(keyContent);
+            certificationFileDTO.setCertFile(certContent);
+            baseUpdateCertFile(certificationFileDTO);
         }
     }
 
@@ -290,7 +324,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     private void operateEnvGitLabFile(String certName,
                                       DevopsEnvironmentDTO devopsEnvironmentDTO,
-                                      C7nCertification c7nCertification) {
+                                      C7nCertification c7nCertification, String operateType) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentDTO, userAttrDTO);
         clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), EnvironmentType.USER.getValue(), devopsEnvironmentDTO.getClusterCode());
@@ -298,7 +332,7 @@ public class CertificationServiceImpl implements CertificationService {
         ResourceConvertToYamlHandler<C7nCertification> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(c7nCertification);
         resourceConvertToYamlHandler.operationEnvGitlabFile(CERT_PREFIX + certName,
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "create",
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), operateType,
                 userAttrDTO.getGitlabUserId(), null, null, null, false, null, null);
     }
 
@@ -514,6 +548,12 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
+    public CertificationDTO baseUpdate(CertificationDTO certificationDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCertificationMapper, certificationDTO, DEVOPS_CERTIFICATION_UPDATE);
+        return certificationDTO;
+    }
+
+    @Override
     public CertificationDTO baseQueryById(Long certId) {
         return devopsCertificationMapper.selectByPrimaryKey(certId);
     }
@@ -627,6 +667,11 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
+    public void baseUpdateCertFile(CertificationFileDTO certificationFileDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCertificationFileMapper, certificationFileDTO, DEVOPS_UPDATE_CERTIFICATION_FILE);
+    }
+
+    @Override
     public CertificationFileDTO baseQueryCertFile(Long certId) {
         CertificationDTO certificationDTO = devopsCertificationMapper.selectByPrimaryKey(certId);
         return devopsCertificationFileMapper.selectByPrimaryKey(certificationDTO.getCertificationFileId());
@@ -671,12 +716,12 @@ public class CertificationServiceImpl implements CertificationService {
         }
     }
 
-    private C7nCertificationVO processEncryptCertification(C7nCertificationCreateVO c7nCertificationCreateVO) {
+    private C7nCertificationVO processEncryptCertification(C7nCertificationCreateOrUpdateVO c7NCertificationCreateOrUpdateVO) {
         // TODO hzero 主键加密组件修复后删除
-        C7nCertificationVO certificationVO = ConvertUtils.convertObject(c7nCertificationCreateVO, C7nCertificationVO.class);
-        certificationVO.setCertId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getCertId()));
-        certificationVO.setEnvId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getEnvId()));
-        certificationVO.setId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getId()));
+        C7nCertificationVO certificationVO = ConvertUtils.convertObject(c7NCertificationCreateOrUpdateVO, C7nCertificationVO.class);
+        certificationVO.setCertId(KeyDecryptHelper.decryptValue(c7NCertificationCreateOrUpdateVO.getCertId()));
+        certificationVO.setEnvId(KeyDecryptHelper.decryptValue(c7NCertificationCreateOrUpdateVO.getEnvId()));
+        certificationVO.setId(KeyDecryptHelper.decryptValue(c7NCertificationCreateOrUpdateVO.getId()));
         return certificationVO;
     }
 }

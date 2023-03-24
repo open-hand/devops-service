@@ -1,8 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.openapi.models.V1Endpoints;
@@ -10,6 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.ERROR_DEVOPS_CERTIFICATION_EXISTCERT_FILED_NULL;
+
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.CertificationExistCert;
 import io.choerodon.devops.api.vo.kubernetes.certification.CertificationSpec;
@@ -77,10 +80,6 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
 
 //        validateCertManager(envId, updateC7nCertification, addC7nCertification, objectPath);
 
-        // 证书的内容不能更新，只能更新文件路径
-        updateC7nCertification.forEach(c7nCertification1 ->
-                updateC7nCertificationPath(c7nCertification1, envId, objectPath, path));
-
         // 挑剩下的就是要刪除的
         beforeC7nCertification
                 .forEach(certName -> {
@@ -102,12 +101,37 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                 devopsEnvFileResourceDTO.setEnvId(envId);
                 devopsEnvFileResourceDTO.setFilePath(filePath);
                 devopsEnvFileResourceDTO.setResourceId(
-                        createCertificationAndGetId(
-                                envId, c7nCertification, c7nCertification.getMetadata().getName(), filePath, path, userId));
+                        createOrUpdateCertification(
+                                envId, c7nCertification, c7nCertification.getMetadata().getName(), filePath, path, userId).getId());
                 devopsEnvFileResourceDTO.setResourceType(c7nCertification.getKind());
                 devopsEnvFileResourceService.baseCreate(devopsEnvFileResourceDTO);
             } catch (Exception e) {
                 throw new GitOpsExplainException(e.getMessage(), filePath, e);
+            }
+        });
+
+        // 要更新的
+        updateC7nCertification.forEach(c7nCertification1 -> {
+            String filePath = "";
+            try {
+                filePath = objectPath.get(TypeUtil.objToString(c7nCertification1.hashCode()));
+                CertificationDTO certificationDTO = certificationService
+                        .baseQueryByEnvAndName(envId, c7nCertification1.getMetadata().getName());
+                certificationService.checkCertNameUniqueInEnv(envId, c7nCertification1.getMetadata().getName());
+                if (checkC7nCertificationChanges(c7nCertification1, envId, objectPath, path)) {
+                    createOrUpdateCertification(envId, c7nCertification1, c7nCertification1.getMetadata().getName(), filePath, path, userId);
+                }
+                DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                        .baseQueryByEnvIdAndResourceId(envId, certificationDTO.getId(), c7nCertification1.getKind());
+                devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, devopsEnvFileResourceDTO,
+                        c7nCertification1.hashCode(), certificationDTO.getId(), c7nCertification1.getKind());
+            } catch (CommonException e) {
+                String errorCode = "";
+                if (e instanceof GitOpsExplainException) {
+                    errorCode = ((GitOpsExplainException) e)
+                            .getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
+                }
+                throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
             }
         });
     }
@@ -117,20 +141,8 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         return C7nCertification.class;
     }
 
-    private void updateC7nCertificationPath(C7nCertification c7nCertification,
-                                            Long envId, Map<String, String> objectPath, String path) {
-        Long certId = checkC7nCertificationChanges(c7nCertification, envId, objectPath, path);
-
-        String kind = c7nCertification.getKind();
-        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                .baseQueryByEnvIdAndResourceId(envId, certId, kind);
-        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId,
-                devopsEnvFileResourceDTO, c7nCertification.hashCode(), certId, kind);
-
-    }
-
-    private Long checkC7nCertificationChanges(C7nCertification c7nCertification, Long envId,
-                                              Map<String, String> objectPath, String path) {
+    private Boolean checkC7nCertificationChanges(C7nCertification c7nCertification, Long envId,
+                                                 Map<String, String> objectPath, String path) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         String certName = c7nCertification.getMetadata().getName();
         CertificationDTO certificationDTO = certificationService.baseQueryByEnvAndName(envId, certName);
@@ -165,30 +177,25 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                     }.getType()), keyContent, certContent, devopsEnvironmentDTO.getCode());
         }
 
-        if (!c7nCertification.equals(oldC7nCertification)) {
-            throw new GitOpsExplainException(GitOpsObjectError.CERT_CHANGED.getError(), filePath);
-        }
-        updateCommandSha(filePath, path, certificationDTO.getCommandId());
-        return certificationDTO.getId();
+        return !c7nCertification.equals(oldC7nCertification);
     }
 
-    private Long createCertificationAndGetId(Long envId, C7nCertification c7nCertification, String certName,
-                                             String filePath, String path, Long userId) {
+    private CertificationDTO createOrUpdateCertification(Long envId, C7nCertification c7nCertification, String certName,
+                                                         String filePath, String path, Long userId) {
         CertificationDTO certificationDTO = certificationService
                 .baseQueryByEnvAndName(envId, certName);
+        CertificationSpec certificationSpec = c7nCertification.getSpec();
+        String domain = certificationSpec.getCommonName();
+        List<String> dnsDomains = certificationSpec.getDnsNames();
+        List<String> domains = new ArrayList<>();
+        if (domain != null) {
+            domains.add(domain);
+        }
+        if (!CollectionUtils.isEmpty(dnsDomains)) {
+            domains.addAll(dnsDomains);
+        }
         if (certificationDTO == null) {
             certificationDTO = new CertificationDTO();
-
-            CertificationSpec certificationSpec = c7nCertification.getSpec();
-            String domain = certificationSpec.getCommonName();
-            List<String> dnsDomains = certificationSpec.getDnsNames();
-            List<String> domains = new ArrayList<>();
-            if (domain != null) {
-                domains.add(domain);
-            }
-            if (!CollectionUtils.isEmpty(dnsDomains)) {
-                domains.addAll(dnsDomains);
-            }
             certificationDTO.setDomains(gson.toJson(domains));
             certificationDTO.setEnvId(envId);
             certificationDTO.setName(certName);
@@ -204,9 +211,27 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                     .createCertCommand(CommandType.CREATE.getType(), certificationDTO.getId(), userId);
             certificationDTO.setCommandId(commandId);
             certificationService.baseUpdateCommandId(certificationDTO);
+        } else {
+            certificationDTO.setDomains(gson.toJson(domain));
+            certificationDTO.setEnvId(envId);
+            certificationDTO.setStatus(CertificationStatus.OPERATING.getStatus());
+            certificationDTO.setApiVersion(c7nCertification.getApiVersion());
+            if (certificationDTO.getCertificationFileId() != null) {
+                if (c7nCertification.getSpec().getExistCert() == null) {
+                    throw new CommonException(ERROR_DEVOPS_CERTIFICATION_EXISTCERT_FILED_NULL);
+                }
+                CertificationFileDTO certificationFileDTO = certificationService.baseQueryCertFile(certificationDTO.getCertificationFileId());
+                certificationFileDTO.setKeyFile(c7nCertification.getSpec().getExistCert().getKey());
+                certificationFileDTO.setCertFile(c7nCertification.getSpec().getExistCert().getCert());
+                certificationService.baseUpdateCertFile(certificationFileDTO);
+            }
+            Long commandId = certificationService
+                    .createCertCommand(CommandType.UPDATE.getType(), certificationDTO.getId(), userId);
+            certificationDTO.setCommandId(commandId);
+            certificationService.baseUpdate(certificationDTO);
         }
         updateCommandSha(filePath, path, certificationDTO.getCommandId());
-        return certificationDTO.getId();
+        return certificationDTO;
     }
 
     private void updateCommandSha(String filePath, String path, Long commandId) {
