@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -21,12 +22,17 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
+import io.choerodon.devops.api.vo.sonar.SonarInfo;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
+import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.infra.constant.PipelineConstants;
+import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.GitlabProjectSimple;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.devops.infra.util.*;
@@ -42,8 +48,12 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     private static final String DEVOPS_PROJECT_UPDATE = "devops.project.update";
     private Logger LOGGER = LoggerFactory.getLogger(DevopsProjectServiceImpl.class);
 
+    @Value("${services.sonarqube.url:}")
+    private String sonarqubeUrl;
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
+    @Autowired
+    private DevopsConfigService devopsConfigService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
 
@@ -213,6 +223,16 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public SonarInfo querySonarInfo(Long projectId) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, PipelineConstants.SONAR_NAME);
+        return new SonarInfo(sonarqubeUrl,
+                sonarConfig.getConfig(),
+                organizationDTO.getTenantNum() + "-" + projectDTO.getDevopsComponentCode());
     }
 
     @Override

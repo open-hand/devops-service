@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
-import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -12,11 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
+import io.choerodon.devops.api.vo.sonar.SonarInfo;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.infra.dto.GitlabProjectSimple;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -119,6 +118,15 @@ public class DevopsProjectController {
             @PathVariable(value = "project_id") Long projectId) {
         return new ResponseEntity<>(devopsProjectService.queryDevopsProject(projectId), HttpStatus.OK);
 
+    }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "查询项目下执行soanr扫描的信息")
+    @GetMapping("sonar_info")
+    public ResponseEntity<SonarInfo> querySonarInfo(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return ResponseEntity.ok(devopsProjectService.querySonarInfo(projectId));
     }
 
 }
