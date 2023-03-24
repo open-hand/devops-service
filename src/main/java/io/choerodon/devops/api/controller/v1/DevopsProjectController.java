@@ -120,7 +120,7 @@ public class DevopsProjectController {
 
     }
 
-    @Permission(permissionWithin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询项目下执行soanr扫描的信息")
     @GetMapping("sonar_info")
     public ResponseEntity<SonarInfo> querySonarInfo(
