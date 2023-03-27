@@ -101,7 +101,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                 devopsEnvFileResourceDTO.setFilePath(filePath);
                 devopsEnvFileResourceDTO.setResourceId(
                         createOrUpdateCertification(
-                                envId, c7nCertification, c7nCertification.getMetadata().getName(), filePath, path, userId).getId());
+                                envId, c7nCertification, c7nCertification.getMetadata().getName(), filePath, path, userId, CommandType.CREATE.getType()).getId());
                 devopsEnvFileResourceDTO.setResourceType(c7nCertification.getKind());
                 devopsEnvFileResourceService.baseCreate(devopsEnvFileResourceDTO);
             } catch (Exception e) {
@@ -118,7 +118,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                         .baseQueryByEnvAndName(envId, c7nCertification1.getMetadata().getName());
                 certificationService.checkCertNameUniqueInEnv(envId, c7nCertification1.getMetadata().getName());
                 if (checkC7nCertificationChanges(c7nCertification1, envId, objectPath, path)) {
-                    createOrUpdateCertification(envId, c7nCertification1, c7nCertification1.getMetadata().getName(), filePath, path, userId);
+                    createOrUpdateCertification(envId, c7nCertification1, c7nCertification1.getMetadata().getName(), filePath, path, userId, CommandType.UPDATE.getType());
                 }
                 DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                         .baseQueryByEnvIdAndResourceId(envId, certificationDTO.getId(), c7nCertification1.getKind());
@@ -180,9 +180,8 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     }
 
     private CertificationDTO createOrUpdateCertification(Long envId, C7nCertification c7nCertification, String certName,
-                                                         String filePath, String path, Long userId) {
-        CertificationDTO certificationDTO = certificationService
-                .baseQueryByEnvAndName(envId, certName);
+                                                         String filePath, String path, Long userId, String operateType) {
+        CertificationDTO certificationDTO;
         CertificationSpec certificationSpec = c7nCertification.getSpec();
         String domain = certificationSpec.getCommonName();
         List<String> dnsDomains = certificationSpec.getDnsNames();
@@ -193,7 +192,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         if (!CollectionUtils.isEmpty(dnsDomains)) {
             domains.addAll(dnsDomains);
         }
-        if (certificationDTO == null) {
+        if (CommandType.CREATE.getType().equals(operateType)) {
             certificationDTO = new CertificationDTO();
             certificationDTO.setDomains(gson.toJson(domains));
             certificationDTO.setEnvId(envId);
@@ -211,6 +210,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
             certificationDTO.setCommandId(commandId);
             certificationService.baseUpdateCommandId(certificationDTO);
         } else {
+            certificationDTO = certificationService.baseQueryByEnvAndName(envId, certName);
             certificationDTO.setDomains(gson.toJson(domains));
             certificationDTO.setEnvId(envId);
             certificationDTO.setStatus(CertificationStatus.OPERATING.getStatus());
