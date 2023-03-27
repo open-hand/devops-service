@@ -148,22 +148,15 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     @Override
     public void auditPass(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId, List<PropertyVO> properties) {
         JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
-
+        Map<String, List<ParamVO>> paramMap = new HashMap<>();
+        List<ParamVO> paramVOS = new ArrayList<>();
+        Map<String, List<String>> json = new HashMap<>();
         if (!CollectionUtils.isEmpty(properties)) {
-            Map<String, List<ParamVO>> paramMap = new HashMap<>();
-            List<ParamVO> paramVOS = properties.stream().map(propertyVO -> new ParamVO(propertyVO.getKey(), propertyVO.getValue())).collect(Collectors.toList());
-            paramMap.put("parameter", paramVOS);
-            Map<String, List<String>> json = new HashMap<>();
-            json.put("json", Lists.newArrayList(JsonHelper.marshalByJackson(paramMap)));
-            jenkinsClient.api().c7nJobsApi().inputSubmit(folder, name, buildId, inputId, json);
-        } else {
-            Map<String, List<ParamVO>> paramMap = new HashMap<>();
-            paramMap.put("parameter", new ArrayList<>());
-            Map<String, List<String>> json = new HashMap<>();
-            json.put("json", Lists.newArrayList(JsonHelper.marshalByJackson(paramMap)));
-            jenkinsClient.api().c7nJobsApi().inputSubmit(folder, name, buildId, inputId, json);
+            paramVOS = properties.stream().map(propertyVO -> new ParamVO(propertyVO.getKey(), propertyVO.getValue())).collect(Collectors.toList());
         }
-
+        paramMap.put("parameter", paramVOS);
+        json.put("json", Lists.newArrayList(JsonHelper.marshalByJackson(paramMap)));
+        jenkinsClient.api().c7nJobsApi().inputSubmit(folder, name, buildId, inputId, json);
     }
 
     @Override
