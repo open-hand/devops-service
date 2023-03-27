@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.devops.api.vo.C7nCertificationCreateOrUpdateVO;
 import io.choerodon.devops.app.service.DevopsCertificationNoticeService;
@@ -21,6 +22,9 @@ public class DevopsCertificationNoticeServiceImpl implements DevopsCertification
     @Transactional
     @Override
     public void batchCreate(Long certificationId, List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+        if (ObjectUtils.isEmpty(notifyObjects)) {
+            return;
+        }
         List<CertificationNoticeDTO> certificationNoticeDTOList = new ArrayList<>();
         notifyObjects.forEach(notifyObject -> {
             CertificationNoticeDTO certificationNoticeDTO = new CertificationNoticeDTO(notifyObject.getType(), notifyObject.getId(), certificationId);
@@ -33,6 +37,9 @@ public class DevopsCertificationNoticeServiceImpl implements DevopsCertification
     @Transactional
     @Override
     public void batchUpdate(Long certificationId, List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+        if (ObjectUtils.isEmpty(notifyObjects)) {
+            return;
+        }
         devopsCertificationNoticeMapper.deleteByCertificationId(certificationId);
         batchCreate(certificationId, notifyObjects);
     }

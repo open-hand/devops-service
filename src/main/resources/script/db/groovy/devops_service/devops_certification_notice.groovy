@@ -11,7 +11,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification_notice.groovy') {
             column(name: 'object_id', type: 'BIGINT UNSIGNED', remarks: '通知对象id')
             column(name: 'certification_id', type: 'BIGINT UNSIGNED', remarks: '证书id')
 
-
+            column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")

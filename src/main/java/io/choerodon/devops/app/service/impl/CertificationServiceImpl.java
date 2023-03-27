@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.BeanUtils;
@@ -27,6 +28,7 @@ import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.*;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -97,6 +99,8 @@ public class CertificationServiceImpl implements CertificationService {
     private DevopsClusterResourceService devopsClusterResourceService;
     @Autowired
     private DevopsCertificationNoticeService devopsCertificationNoticeService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -126,8 +130,12 @@ public class CertificationServiceImpl implements CertificationService {
             throw new CommonException(DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL);
         }
         if (!ObjectUtils.isEmpty(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr())) {
-            c7NCertificationCreateOrUpdateVO.setNotifyObjects(JsonHelper.unmarshalByJackson(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr(), new TypeReference<List<C7nCertificationCreateOrUpdateVO.NotifyObject>>() {
-            }));
+            try {
+                c7NCertificationCreateOrUpdateVO.setNotifyObjects(objectMapper.readValue(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr(), new TypeReference<List<C7nCertificationCreateOrUpdateVO.NotifyObject>>() {
+                }));
+            } catch (Exception e) {
+                throw new CommonException(ExceptionConstants.CertificationExceptionCode.ERROR_DEVOPS_CERTIFICATION_READ_NOTIFY_OBJECTS);
+            }
         }
         C7nCertificationVO certificationVO = processEncryptCertification(c7NCertificationCreateOrUpdateVO);
         Long envId = certificationVO.getEnvId();
@@ -194,7 +202,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         // status operating
         CertificationDTO newCertificationDTO = new CertificationDTO(null,
-                certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationVO.getCertId());
+                certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationVO.getCertId(), certificationVO.getExpireNotice(), certificationVO.getAdvanceDays(), certificationVO.getNotifyObjects());
 
         String keyContent;
         String certContent;
