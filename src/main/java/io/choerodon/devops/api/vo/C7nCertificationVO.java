@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -26,6 +27,38 @@ public class C7nCertificationVO {
     private Long envId;
     private String envName;
     private Boolean envConnected;
+
+    private List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects;
+
+    @ApiModelProperty("是否设置到期前通知")
+    private Boolean expireNotice;
+
+    @ApiModelProperty("到期提前多长时间通知")
+    private Integer advanceDays;
+
+    public List<C7nCertificationCreateOrUpdateVO.NotifyObject> getNotifyObjects() {
+        return notifyObjects;
+    }
+
+    public void setNotifyObjects(List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+        this.notifyObjects = notifyObjects;
+    }
+
+    public Boolean getExpireNotice() {
+        return expireNotice;
+    }
+
+    public void setExpireNotice(Boolean expireNotice) {
+        this.expireNotice = expireNotice;
+    }
+
+    public Integer getAdvanceDays() {
+        return advanceDays;
+    }
+
+    public void setAdvanceDays(Integer advanceDays) {
+        this.advanceDays = advanceDays;
+    }
 
     public Long getId() {
         return id;
