@@ -1,8 +1,24 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
@@ -25,21 +41,6 @@ import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Nullable;
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL;
 
 /**
  * Created by n!Ck
@@ -94,6 +95,8 @@ public class CertificationServiceImpl implements CertificationService {
     private PermissionHelper permissionHelper;
     @Autowired
     private DevopsClusterResourceService devopsClusterResourceService;
+    @Autowired
+    private DevopsCertificationNoticeService devopsCertificationNoticeService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -253,6 +256,8 @@ public class CertificationServiceImpl implements CertificationService {
         baseUpdateCommandId(updateCertificationDTO);
         // store crt & key if type is upload
         storeCertFile(keyContent, certContent, certId);
+        // 保存通知信息
+        storeNotifyInfo(certificationDTO);
     }
 
     /**
@@ -272,6 +277,9 @@ public class CertificationServiceImpl implements CertificationService {
         baseUpdateCommandId(updateCertificationDTO);
         // store crt & key if type is upload
         updateCertFile(keyContent, certContent, certificationDTO);
+
+        // 保存通知信息
+        updateNotifyInfo(certificationDTO);
     }
 
 
@@ -458,12 +466,24 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public Page<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageable, String params) {
         Page<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(null, envId, pageable, params), this::dtoToVo);
+        List<Long> certificationIds = certificationDTOPage.getContent().stream().map(CertificationVO::getId).collect(Collectors.toList());
+        Map<Long, List<C7nCertificationCreateOrUpdateVO.NotifyObject>> notifyObjectMap = new HashMap<>();
+        if (!ObjectUtils.isEmpty(certificationIds)) {
+            notifyObjectMap = devopsCertificationNoticeService.listByCertificationIds(certificationIds)
+                    .stream()
+                    .map(certificationNoticeDTO -> new C7nCertificationCreateOrUpdateVO.NotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getId(), certificationNoticeDTO.getCertificationId()))
+                    .collect(Collectors.groupingBy(C7nCertificationCreateOrUpdateVO.NotifyObject::getCertificationId));
+        }
+
+
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
+        Map<Long, List<C7nCertificationCreateOrUpdateVO.NotifyObject>> finalNotifyObjectMap = notifyObjectMap;
         certificationDTOPage.getContent().stream()
                 .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
                 .forEach(certificationDTO -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
                     certificationDTO.setEnvConnected(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
+                    certificationDTO.setNotifyObjects(finalNotifyObjectMap.get(certificationDTO.getId()));
                 });
         return certificationDTOPage;
     }
@@ -555,6 +575,16 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public CertificationDTO baseCreate(CertificationDTO certificationDTO) {
         return MapperUtil.resultJudgedInsert(devopsCertificationMapper, certificationDTO, DEVOPS_CERTIFICATION_CREATE);
+    }
+
+    @Override
+    public void storeNotifyInfo(CertificationDTO certificationDTO) {
+        devopsCertificationNoticeService.batchCreate(certificationDTO.getId(), certificationDTO.getNotifyObjects());
+    }
+
+    @Override
+    public void updateNotifyInfo(CertificationDTO certificationDTO) {
+        devopsCertificationNoticeService.batchUpdate(certificationDTO.getId(), certificationDTO.getNotifyObjects());
     }
 
     @Override

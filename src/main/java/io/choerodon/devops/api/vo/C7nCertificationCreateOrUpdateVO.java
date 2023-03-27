@@ -1,9 +1,9 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
-
-import java.util.List;
 
 public class C7nCertificationCreateOrUpdateVO {
     private String id;
@@ -40,6 +40,26 @@ public class C7nCertificationCreateOrUpdateVO {
         @ApiModelProperty("id")
         @Encrypt
         private Long id;
+        @Encrypt
+        private Long certificationId;
+
+        public NotifyObject() {
+
+        }
+
+        public NotifyObject(String type, Long id, Long certificationId) {
+            this.type = type;
+            this.id = id;
+            this.certificationId = certificationId;
+        }
+
+        public Long getCertificationId() {
+            return certificationId;
+        }
+
+        public void setCertificationId(Long certificationId) {
+            this.certificationId = certificationId;
+        }
 
         public String getType() {
             return type;

@@ -47,6 +47,47 @@ public class CertificationVO {
     @ApiModelProperty("是否跳过权限校验")
     private Boolean skipCheckProjectPermission;
 
+    private List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects;
+
+    private String notifyObjectsJsonStr;
+
+    @ApiModelProperty("是否设置到期前通知")
+    private Boolean expireNotice;
+
+    @ApiModelProperty("到期提前多长时间通知")
+    private Integer advanceDays;
+
+    public List<C7nCertificationCreateOrUpdateVO.NotifyObject> getNotifyObjects() {
+        return notifyObjects;
+    }
+
+    public void setNotifyObjects(List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+        this.notifyObjects = notifyObjects;
+    }
+
+    public String getNotifyObjectsJsonStr() {
+        return notifyObjectsJsonStr;
+    }
+
+    public void setNotifyObjectsJsonStr(String notifyObjectsJsonStr) {
+        this.notifyObjectsJsonStr = notifyObjectsJsonStr;
+    }
+
+    public Boolean getExpireNotice() {
+        return expireNotice;
+    }
+
+    public void setExpireNotice(Boolean expireNotice) {
+        this.expireNotice = expireNotice;
+    }
+
+    public Integer getAdvanceDays() {
+        return advanceDays;
+    }
+
+    public void setAdvanceDays(Integer advanceDays) {
+        this.advanceDays = advanceDays;
+    }
 
     public Long getId() {
         return id;

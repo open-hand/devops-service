@@ -71,6 +71,10 @@ public interface CertificationService {
 
     CertificationDTO baseCreate(CertificationDTO certificationVO);
 
+    void storeNotifyInfo(CertificationDTO certificationDTO);
+
+    void updateNotifyInfo(CertificationDTO certificationDTO);
+
     CertificationDTO baseUpdate(CertificationDTO certificationDTO);
 
     CertificationDTO baseQueryById(Long certId);
