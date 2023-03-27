@@ -223,6 +223,7 @@ public class ExceptionConstants {
 
     public static class CertificationExceptionCode {
         public static final String ERROR_DEVOPS_CERTIFICATION_EXISTCERT_FILED_NULL = "error.devops.certification.existCert.filed.null";
+        public static final String DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL = "devops.certification.operateType.null";
     }
 
 }
