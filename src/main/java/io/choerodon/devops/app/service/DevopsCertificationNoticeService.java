@@ -11,4 +11,6 @@ public interface DevopsCertificationNoticeService {
     void batchUpdate(Long certificationId, List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects);
 
     List<CertificationNoticeDTO> listByCertificationIds(List<Long> certificationIds);
+
+    List<CertificationNoticeDTO> listByCertificationId(Long certificationId);
 }

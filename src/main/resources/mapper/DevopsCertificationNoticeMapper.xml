@@ -15,4 +15,10 @@
       #{certificationId}
     </foreach>
   </select>
+
+  <select id="listByCertificationId" resultType="io.choerodon.devops.infra.dto.CertificationNoticeDTO">
+    SELECT *
+    FROM devops_certification_notice
+    WHERE certification_id = #{certificationId}
+  </select>
 </mapper>
