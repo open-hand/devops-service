@@ -157,7 +157,11 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
             json.put("json", Lists.newArrayList(JsonHelper.marshalByJackson(paramMap)));
             jenkinsClient.api().c7nJobsApi().inputSubmit(folder, name, buildId, inputId, json);
         } else {
-            jenkinsClient.api().c7nJobsApi().inputSubmit(folder, name, buildId, inputId, null);
+            Map<String, List<ParamVO>> paramMap = new HashMap<>();
+            paramMap.put("parameter", new ArrayList<>());
+            Map<String, List<String>> json = new HashMap<>();
+            json.put("json", Lists.newArrayList(JsonHelper.marshalByJackson(paramMap)));
+            jenkinsClient.api().c7nJobsApi().inputSubmit(folder, name, buildId, inputId, json);
         }
 
     }
