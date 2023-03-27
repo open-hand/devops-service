@@ -23,6 +23,8 @@ public class C7nCertificationCreateOrUpdateVO {
 
     private List<NotifyObject> notifyObjects;
 
+    private String notifyObjectsJsonStr;
+
     @ApiModelProperty("是否设置到期前通知")
     private Boolean expireNotice;
 
@@ -70,6 +72,14 @@ public class C7nCertificationCreateOrUpdateVO {
 
     public void setNotifyObjects(List<NotifyObject> notifyObjects) {
         this.notifyObjects = notifyObjects;
+    }
+
+    public String getNotifyObjectsJsonStr() {
+        return notifyObjectsJsonStr;
+    }
+
+    public void setNotifyObjectsJsonStr(String notifyObjectsJsonStr) {
+        this.notifyObjectsJsonStr = notifyObjectsJsonStr;
     }
 
     public Boolean getExpireNotice() {

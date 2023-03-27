@@ -1,21 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
-import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.*;
@@ -37,6 +24,19 @@ import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
 
 /**
  * Created by n!Ck
@@ -116,6 +116,8 @@ public class CertificationServiceImpl implements CertificationService {
     @Transactional(rollbackFor = Exception.class)
     public void createCertification(Long projectId, C7nCertificationCreateOrUpdateVO c7NCertificationCreateOrUpdateVO,
                                     MultipartFile key, MultipartFile cert) {
+        c7NCertificationCreateOrUpdateVO.setNotifyObjects(JsonHelper.unmarshalByJackson(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr(), new TypeReference<List<C7nCertificationCreateOrUpdateVO.NotifyObject>>() {
+        }));
         C7nCertificationVO certificationVO = processEncryptCertification(c7NCertificationCreateOrUpdateVO);
         Long envId = certificationVO.getEnvId();
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
