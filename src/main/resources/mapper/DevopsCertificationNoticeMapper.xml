@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCertificationNoticeMapper">
+  <delete id="deleteByCertificationId">
+    DELETE
+    FROM devops_certification_notice
+    WHERE certification_id = #{certificationId}
+  </delete>
+
+  <select id="listByCertificationIds" resultType="io.choerodon.devops.infra.dto.CertificationNoticeDTO">
+    SELECT *
+    FROM devops_certification_notice
+    WHERE certification_id IN
+    <foreach collection="certificationIds" item="certificationId" open="(" close=")" separator=",">
+      #{certificationId}
+    </foreach>
+  </select>
+</mapper>

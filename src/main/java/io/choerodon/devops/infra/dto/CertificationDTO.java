@@ -1,10 +1,12 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.Date;
+import java.util.List;
 import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.vo.C7nCertificationCreateOrUpdateVO;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -39,6 +41,8 @@ public class CertificationDTO extends AuditDomain {
     private Boolean skipCheckProjectPermission;
     private Long orgCertId;
     private Long projectId;
+    private Boolean expireNotice;
+    private Integer advanceDays;
 
     @Transient
     @ApiModelProperty("key文件内容")
@@ -52,6 +56,9 @@ public class CertificationDTO extends AuditDomain {
     private String commandStatus;
     @Transient
     private String error;
+    @Transient
+    private List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects;
+
 
     public CertificationDTO() {
     }
@@ -94,6 +101,22 @@ public class CertificationDTO extends AuditDomain {
     public void setValid(Date from, Date until) {
         this.setValidFrom(from);
         this.setValidUntil(until);
+    }
+
+    public Boolean getExpireNotice() {
+        return expireNotice;
+    }
+
+    public void setExpireNotice(Boolean expireNotice) {
+        this.expireNotice = expireNotice;
+    }
+
+    public Integer getAdvanceDays() {
+        return advanceDays;
+    }
+
+    public void setAdvanceDays(Integer advanceDays) {
+        this.advanceDays = advanceDays;
     }
 
     public Long getId() {
@@ -246,5 +269,13 @@ public class CertificationDTO extends AuditDomain {
 
     public void setCertValue(String certValue) {
         this.certValue = certValue;
+    }
+
+    public List<C7nCertificationCreateOrUpdateVO.NotifyObject> getNotifyObjects() {
+        return notifyObjects;
+    }
+
+    public void setNotifyObjects(List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+        this.notifyObjects = notifyObjects;
     }
 }
