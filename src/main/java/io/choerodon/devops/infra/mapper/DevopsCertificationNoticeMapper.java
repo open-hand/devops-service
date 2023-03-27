@@ -12,4 +12,6 @@ public interface DevopsCertificationNoticeMapper extends BaseMapper<Certificatio
     void deleteByCertificationId(@Param("certificationId") Long certificationId);
 
     List<CertificationNoticeDTO> listByCertificationIds(@Param("certificationIds") List<Long> certificationIds);
+
+    List<CertificationNoticeDTO> listByCertificationId(@Param("certificationId") Long certificationId);
 }

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -526,6 +527,15 @@ public class CertificationServiceImpl implements CertificationService {
         respVO.setCommonName(domains.isEmpty() ? null : domains.remove(0));
         respVO.setDNSNames(domains);
         respVO.setIngresses(listIngressNamesByCertId(certId));
+
+        List<CertificationNoticeDTO> certificationNoticeDTOList = devopsCertificationNoticeService.listByCertificationId(certId);
+        if (!CollectionUtils.isEmpty(certificationNoticeDTOList)) {
+            List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjectList = certificationNoticeDTOList.stream()
+                    .map(certificationNoticeDTO -> new C7nCertificationCreateOrUpdateVO.NotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId()))
+                    .collect(Collectors.toList());
+            respVO.setNotifyObjects(notifyObjectList);
+        }
+
         if (certificationDTO.getCreatedBy() != null && certificationDTO.getCreatedBy() != 0) {
             respVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, certificationDTO.getCreatedBy()));
         }

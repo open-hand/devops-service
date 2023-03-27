@@ -48,4 +48,9 @@ public class DevopsCertificationNoticeServiceImpl implements DevopsCertification
     public List<CertificationNoticeDTO> listByCertificationIds(List<Long> certificationIds) {
         return devopsCertificationNoticeMapper.listByCertificationIds(certificationIds);
     }
+
+    @Override
+    public List<CertificationNoticeDTO> listByCertificationId(Long certificationId) {
+        return devopsCertificationNoticeMapper.listByCertificationId(certificationId);
+    }
 }
