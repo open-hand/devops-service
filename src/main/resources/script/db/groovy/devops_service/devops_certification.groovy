@@ -71,7 +71,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification.groovy') {
         sql("update devops_certification set api_version = 'certmanager.k8s.io/v1alpha1' where env_id is not null")
     }
 
-    changeSet(author: 'ZMF', id: '2023-03-27-add-column') {
+    changeSet(author: 'lihao', id: '2023-03-27-add-column') {
         addColumn(tableName: 'devops_certification') {
             column(name: 'advance_days', type: 'INT(1)', remarks: '提前通知时间 1 2 3')
             column(name: 'expire_notice', type: 'TINYINT(1)', remarks: '是否启用', defaultValue: '0')
