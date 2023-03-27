@@ -289,10 +289,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
             // 设置deployment的状态、appConfig、containerConfig
             DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(centerEnvDTO.getObjectId());
-            detailVO.setObjectStatus(devopsDeploymentDTO.getStatus());
-            detailVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getAppConfig(), DevopsDeployGroupAppConfigVO.class));
-            detailVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getContainerConfig(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
-            }));
+            if (devopsDeploymentDTO != null) {
+                detailVO.setObjectStatus(devopsDeploymentDTO.getStatus());
+                detailVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getAppConfig(), DevopsDeployGroupAppConfigVO.class));
+                detailVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getContainerConfig(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
+                }));
+                detailVO.setLastUpdateDate(devopsDeploymentDTO.getLastUpdateDate());
+                detailVO.setUpdater(baseServiceClientOperator.queryUserByUserId(devopsDeploymentDTO.getLastUpdatedBy() == 0L ? centerEnvDTO.getLastUpdatedBy() : devopsDeploymentDTO.getLastUpdatedBy()));
+            }
         }
         // 环境信息查询
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());
