@@ -117,8 +117,8 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createCertification(Long projectId, C7nCertificationCreateOrUpdateVO c7NCertificationCreateOrUpdateVO,
-                                    MultipartFile key, MultipartFile cert) {
+    public void createOrUpdateCertification(Long projectId, C7nCertificationCreateOrUpdateVO c7NCertificationCreateOrUpdateVO,
+                                            MultipartFile key, MultipartFile cert) {
         if (ObjectUtils.isEmpty(c7NCertificationCreateOrUpdateVO.getOperateType())) {
             throw new CommonException(DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL);
         }
