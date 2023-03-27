@@ -2,16 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.openapi.models.V1Endpoints;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.ERROR_DEVOPS_CERTIFICATION_EXISTCERT_FILED_NULL;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.CertificationExistCert;
@@ -23,6 +13,15 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.openapi.models.V1Endpoints;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.ERROR_DEVOPS_CERTIFICATION_EXISTCERT_FILED_NULL;
 
 
 @Service
@@ -212,7 +211,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
             certificationDTO.setCommandId(commandId);
             certificationService.baseUpdateCommandId(certificationDTO);
         } else {
-            certificationDTO.setDomains(gson.toJson(domain));
+            certificationDTO.setDomains(gson.toJson(domains));
             certificationDTO.setEnvId(envId);
             certificationDTO.setStatus(CertificationStatus.OPERATING.getStatus());
             certificationDTO.setApiVersion(c7nCertification.getApiVersion());
