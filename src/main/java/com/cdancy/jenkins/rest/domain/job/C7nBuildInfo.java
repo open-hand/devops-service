@@ -12,7 +12,7 @@ public abstract class C7nBuildInfo {
     C7nBuildInfo() {
     }
 
-    @SerializedNames({"id", "status", "startTimeMillis", "durationTimeMillis", "username", "triggerType", "branch", "nextPendingInputAction"})
+    @SerializedNames({"id", "status", "startTimeMillis", "durationMillis", "username", "triggerType", "branch", "nextPendingInputAction"})
     public static C7nBuildInfo create(String id,
                                       String status,
                                       long startTimeMillis,
@@ -38,7 +38,7 @@ public abstract class C7nBuildInfo {
 
     public abstract long startTimeMillis();
 
-    public abstract long durationTimeMillis();
+    public abstract long durationMillis();
 
     public abstract String username();
 
