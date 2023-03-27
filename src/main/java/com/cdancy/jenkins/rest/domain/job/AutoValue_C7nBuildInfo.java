@@ -8,7 +8,7 @@ final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
     public final String branch;
     public final String status;
     public final long startTimeMillis;
-    public final long durationTimeMillis;
+    public final long durationMillis;
     public final String username;
     public final String triggerType;
     public String id;
@@ -17,7 +17,7 @@ final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
     public AutoValue_C7nBuildInfo(String id,
                                   String status,
                                   long startTimeMillis,
-                                  long durationTimeMillis,
+                                  long durationMillis,
                                   String username,
                                   String triggerType,
                                   String branch,
@@ -25,7 +25,7 @@ final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
         this.id = id;
         this.status = status;
         this.startTimeMillis = startTimeMillis;
-        this.durationTimeMillis = durationTimeMillis;
+        this.durationMillis = durationMillis;
         this.username = username;
         this.triggerType = triggerType;
         this.branch = branch;
@@ -50,8 +50,8 @@ final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
 
     @Override
     @Nullable
-    public long durationTimeMillis() {
-        return durationTimeMillis;
+    public long durationMillis() {
+        return durationMillis;
     }
 
     @Nullable

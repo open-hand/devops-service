@@ -278,7 +278,7 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
                 C7nBuildInfo buildInfo = jenkinsClient.api().c7nJobsApi().lastBuild(folder, job.name());
                 if (buildInfo != null) {
                     jenkinsJobVO.setStartTimeMillis(buildInfo.startTimeMillis());
-                    jenkinsJobVO.setDurationMillis(buildInfo.durationTimeMillis());
+                    jenkinsJobVO.setDurationMillis(buildInfo.durationMillis());
                     jenkinsJobVO.setUsername(buildInfo.username());
                     jenkinsJobVO.setTriggerType(buildInfo.triggerType());
                     jenkinsJobVO.setStatus(buildInfo.status());
