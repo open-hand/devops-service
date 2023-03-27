@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nullable;
@@ -37,6 +39,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL;
 
 /**
  * Created by n!Ck
@@ -116,8 +119,13 @@ public class CertificationServiceImpl implements CertificationService {
     @Transactional(rollbackFor = Exception.class)
     public void createCertification(Long projectId, C7nCertificationCreateOrUpdateVO c7NCertificationCreateOrUpdateVO,
                                     MultipartFile key, MultipartFile cert) {
-        c7NCertificationCreateOrUpdateVO.setNotifyObjects(JsonHelper.unmarshalByJackson(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr(), new TypeReference<List<C7nCertificationCreateOrUpdateVO.NotifyObject>>() {
-        }));
+        if (ObjectUtils.isEmpty(c7NCertificationCreateOrUpdateVO.getOperateType())) {
+            throw new CommonException(DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL);
+        }
+        if (!ObjectUtils.isEmpty(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr())) {
+            c7NCertificationCreateOrUpdateVO.setNotifyObjects(JsonHelper.unmarshalByJackson(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr(), new TypeReference<List<C7nCertificationCreateOrUpdateVO.NotifyObject>>() {
+            }));
+        }
         C7nCertificationVO certificationVO = processEncryptCertification(c7NCertificationCreateOrUpdateVO);
         Long envId = certificationVO.getEnvId();
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
