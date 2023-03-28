@@ -11,6 +11,7 @@
         dc.valid_from,
         dc.organization_id,
         dc.valid_until,
+        dc.type,
         dc.command_id,
         dc.object_version_number,
         dc.expire_notice,

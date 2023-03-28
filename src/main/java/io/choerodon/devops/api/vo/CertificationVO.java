@@ -1,10 +1,10 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.Date;
-import java.util.List;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by n!Ck
@@ -46,6 +46,8 @@ public class CertificationVO {
     private String error;
     @ApiModelProperty("是否跳过权限校验")
     private Boolean skipCheckProjectPermission;
+    private String certValue;
+    private String keyValue;
 
     private List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects;
 
@@ -56,6 +58,22 @@ public class CertificationVO {
 
     @ApiModelProperty("到期提前多长时间通知")
     private Integer advanceDays;
+
+    public String getKeyValue() {
+        return keyValue;
+    }
+
+    public void setKeyValue(String keyValue) {
+        this.keyValue = keyValue;
+    }
+
+    public String getCertValue() {
+        return certValue;
+    }
+
+    public void setCertValue(String certValue) {
+        this.certValue = certValue;
+    }
 
     public List<C7nCertificationCreateOrUpdateVO.NotifyObject> getNotifyObjects() {
         return notifyObjects;
