@@ -491,7 +491,7 @@ public class CertificationServiceImpl implements CertificationService {
                 uploadCertificationIds.add(certificationVO.getId());
             }
             if (certificationVO.getType().equals(CHOOSE)) {
-                orgCertificationIds.add(certificationVO.getOrgCertId());
+                orgCertificationIds.add(certificationVO.getCertId());
             }
         }
 
@@ -533,7 +533,7 @@ public class CertificationServiceImpl implements CertificationService {
                 certificationDTO.setCertValue(certificationFileDTO.getCertFile());
             }
             if (CHOOSE.equals(certificationDTO.getType())) {
-                certificationDTO.setDomains(getPrefixDomains(JsonHelper.unmarshalByJackson(finalOrgCertificationDTOMap.get(certificationDTO.getOrgCertId()).getDomains(), new TypeReference<List<String>>() {
+                certificationDTO.setDomains(getPrefixDomains(JsonHelper.unmarshalByJackson(finalOrgCertificationDTOMap.get(certificationDTO.getCertId()).getDomains(), new TypeReference<List<String>>() {
                 }).get(0), certificationDTO.getDomains()));
             }
 
@@ -629,6 +629,7 @@ public class CertificationServiceImpl implements CertificationService {
         certificationVO.setDomains(gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
         }.getType()));
         certificationVO.setCommonName(certificationVO.getDomains().get(0));
+        certificationVO.setCertId(certificationDTO.getOrgCertId());
         return certificationVO;
     }
 

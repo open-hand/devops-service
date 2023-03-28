@@ -49,7 +49,7 @@ public class CertificationVO {
     private String certValue;
     private String keyValue;
     @Encrypt
-    private Long orgCertId;
+    private Long certId;
 
     private List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects;
 
@@ -61,12 +61,12 @@ public class CertificationVO {
     @ApiModelProperty("到期提前多长时间通知")
     private Integer advanceDays;
 
-    public Long getOrgCertId() {
-        return orgCertId;
+    public Long getCertId() {
+        return certId;
     }
 
-    public void setOrgCertId(Long orgCertId) {
-        this.orgCertId = orgCertId;
+    public void setCertId(Long certId) {
+        this.certId = certId;
     }
 
     public String getKeyValue() {
