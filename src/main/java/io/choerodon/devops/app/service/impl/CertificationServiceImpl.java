@@ -475,6 +475,10 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public Page<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageable, String params) {
         Page<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(null, envId, pageable, params), this::dtoToVo);
+
+        Set<Long> envIds = certificationDTOPage.getContent().stream().map(CertificationVO::getEnvId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, DevopsEnvironmentDTO> environmentMap = devopsEnvironmentService.baseListByIds(new ArrayList<>(envIds)).stream().collect(Collectors.toMap(DevopsEnvironmentDTO::getId, Function.identity()));
+
         List<Long> certificationIds = certificationDTOPage.getContent().stream().map(CertificationVO::getId).collect(Collectors.toList());
         Map<Long, List<C7nCertificationCreateOrUpdateVO.NotifyObject>> notifyObjectMap = new HashMap<>();
         if (!ObjectUtils.isEmpty(certificationIds)) {
@@ -505,8 +509,11 @@ public class CertificationServiceImpl implements CertificationService {
                         certificationDTO.setCertValue(certificationFileDTO.getCertFile());
                     }
 
-                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
-                    certificationDTO.setEnvConnected(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = environmentMap.get(certificationDTO.getEnvId());
+                    if (devopsEnvironmentDTO != null) {
+                        certificationDTO.setEnvConnected(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
+                        certificationDTO.setEnvName(devopsEnvironmentDTO.getName());
+                    }
                     certificationDTO.setNotifyObjects(finalNotifyObjectMap.get(certificationDTO.getId()));
                 });
         return certificationDTOPage;
@@ -594,11 +601,6 @@ public class CertificationServiceImpl implements CertificationService {
         certificationVO.setDomains(gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
         }.getType()));
         certificationVO.setCommonName(certificationVO.getDomains().get(0));
-        if (certificationDTO.getEnvId() != null) {
-            Optional.ofNullable(devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId())).ifPresent(
-                    dto -> certificationVO.setEnvName(dto.getName())
-            );
-        }
         return certificationVO;
     }
 
