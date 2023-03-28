@@ -26,19 +26,24 @@ public class JenkinsClientUtil {
     private DevopsJenkinsServerService devopsJenkinsServerService;
 
     public JenkinsClient getClientByServerId(Long serverId) {
-        JenkinsClientWrapper jenkinsClientWrapper = jenkinsClientMap.get(serverId);
+//        JenkinsClientWrapper jenkinsClientWrapper = jenkinsClientMap.get(serverId);
         DevopsJenkinsServerDTO devopsJenkinsServerDTO = devopsJenkinsServerService.queryById(serverId);
-        if (jenkinsClientWrapper == null || jenkinsClientWrapper.getVersionId() < devopsJenkinsServerDTO.getObjectVersionNumber()) {
-            synchronized (this) {
-                JenkinsClient jenkinsClient = JenkinsClient.builder()
-                        .endPoint(devopsJenkinsServerDTO.getUrl())
-                        .credentials(String.format("%s:%s", devopsJenkinsServerDTO.getUsername(), devopsJenkinsServerDTO.getPassword()))
-                        .build();
-                jenkinsClientWrapper = new JenkinsClientWrapper(devopsJenkinsServerDTO.getObjectVersionNumber(), jenkinsClient);
-                jenkinsClientMap.put(serverId, jenkinsClientWrapper);
-            }
-        }
-        return jenkinsClientWrapper.getJenkinsClient();
+//        if (jenkinsClientWrapper == null || jenkinsClientWrapper.getVersionId() < devopsJenkinsServerDTO.getObjectVersionNumber()) {
+//            synchronized (this) {
+//                JenkinsClient jenkinsClient = JenkinsClient.builder()
+//                        .endPoint(devopsJenkinsServerDTO.getUrl())
+//                        .credentials(String.format("%s:%s", devopsJenkinsServerDTO.getUsername(), devopsJenkinsServerDTO.getPassword()))
+//                        .build();
+//                jenkinsClientWrapper = new JenkinsClientWrapper(devopsJenkinsServerDTO.getObjectVersionNumber(), jenkinsClient);
+//                jenkinsClientMap.put(serverId, jenkinsClientWrapper);
+//            }
+//        }
+//        return jenkinsClientWrapper.getJenkinsClient();
+
+        return JenkinsClient.builder()
+                .endPoint(devopsJenkinsServerDTO.getUrl())
+                .credentials(String.format("%s:%s", devopsJenkinsServerDTO.getUsername(), devopsJenkinsServerDTO.getPassword()))
+                .build();
     }
 
 }
