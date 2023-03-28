@@ -56,8 +56,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class CertificationServiceImpl implements CertificationService {
 
-    private static final String UPLOAD = "upload";
-    private static final String CHOOSE = "choose";
     private static final String CERT_PREFIX = "cert-";
     private static final String MASTER = "master";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
@@ -161,7 +159,7 @@ public class CertificationServiceImpl implements CertificationService {
         String keyFileName;
 
         //如果是选择上传文件方式
-        if (certificationVO.getType().equals(UPLOAD)) {
+        if (certificationVO.getType().equals(CertificationType.UPLOAD.getType())) {
             if (key != null && cert != null) {
                 certificationVO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
                 certificationVO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
@@ -193,7 +191,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         CertificationFileDTO certificationFileDTO = null;
         //如果创建的时候选择证书
-        if (CHOOSE.equals(type) && certificationVO.getCertId() != null) {
+        if (CertificationType.CHOOSE.getType().equals(type) && certificationVO.getCertId() != null) {
             CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCert(certificationVO.getCertId(), projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
             certificationFileDTO = baseQueryCertFile(baseQueryById(certificationVO.getCertId()).getId());
         }
@@ -338,7 +336,7 @@ public class CertificationServiceImpl implements CertificationService {
         c7nCertification.setMetadata(new CertificationMetadata(name, envCode));
         CertificationSpec spec = new CertificationSpec(type);
         // 如果是上传类型的，将证书放进去
-        if (type.equals(CertificationType.UPLOAD.getType())) {
+        if (type.equals(CertificationType.UPLOAD.getType()) || type.equals(CertificationType.CHOOSE.getType())) {
             CertificationExistCert existCert = new CertificationExistCert(keyContent, certContent);
             spec.setExistCert(existCert);
         }
@@ -487,10 +485,10 @@ public class CertificationServiceImpl implements CertificationService {
 
         for (CertificationVO certificationVO : certificationDTOPage.getContent()) {
             certificationIds.add(certificationVO.getId());
-            if (certificationVO.getType().equals(UPLOAD)) {
+            if (certificationVO.getType().equals(CertificationType.UPLOAD.getType())) {
                 uploadCertificationIds.add(certificationVO.getId());
             }
-            if (certificationVO.getType().equals(CHOOSE)) {
+            if (certificationVO.getType().equals(CertificationType.CHOOSE.getType())) {
                 orgCertificationIds.add(certificationVO.getCertId());
             }
         }
@@ -527,12 +525,12 @@ public class CertificationServiceImpl implements CertificationService {
         Map<Long, CertificationFileDTO> finalCertificationFileMap = certificationFileMap;
         Map<Long, CertificationDTO> finalOrgCertificationDTOMap = orgCertificationDTOMap;
         certificationDTOPage.getContent().stream().filter(certificationDTO -> certificationDTO.getOrganizationId() == null).forEach(certificationDTO -> {
-            if (UPLOAD.equals(certificationDTO.getType())) {
+            if (CertificationType.UPLOAD.getType().equals(certificationDTO.getType())) {
                 CertificationFileDTO certificationFileDTO = finalCertificationFileMap.get(certificationDTO.getId());
                 certificationDTO.setKeyValue(certificationFileDTO.getKeyFile());
                 certificationDTO.setCertValue(certificationFileDTO.getCertFile());
             }
-            if (CHOOSE.equals(certificationDTO.getType())) {
+            if (CertificationType.CHOOSE.getType().equals(certificationDTO.getType())) {
                 certificationDTO.setDomains(getPrefixDomains(JsonHelper.unmarshalByJackson(finalOrgCertificationDTOMap.get(certificationDTO.getCertId()).getDomains(), new TypeReference<List<String>>() {
                 }).get(0), certificationDTO.getDomains()));
             }

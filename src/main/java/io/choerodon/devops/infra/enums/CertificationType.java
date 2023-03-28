@@ -8,7 +8,8 @@ package io.choerodon.devops.infra.enums;
  */
 public enum CertificationType {
     REQUEST("request"),
-    UPLOAD("upload");
+    UPLOAD("upload"),
+    CHOOSE("choose");
 
     private String type;
 
