@@ -164,7 +164,6 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         c7nCertification.getSpec().setIssuerRef(issuerRef);
 
 
-        String filePath = objectPath.get(TypeUtil.objToString(c7nCertification.hashCode()));
         C7nCertification oldC7nCertification;
         if (C7nCertification.API_VERSION_V1ALPHA1.equals(certificationDTO.getApiVersion())) {
             oldC7nCertification = certificationService.getV1Alpha1C7nCertification(
