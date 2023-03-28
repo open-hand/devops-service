@@ -46,11 +46,43 @@ public class CertificationRespVO extends DevopsResourceDataInfoVO {
     @ApiModelProperty("到期提前多长时间通知")
     private Integer advanceDays;
 
+    @Encrypt
+    private Long certId;
+
+    @ApiModelProperty("绑定的域名,如果证书类型是选择证书，将会被设置成去掉泛域名后的前缀部分")
+    private List<String> domains;
+    @ApiModelProperty("绑定的完整域名")
+    private List<String> fullDomains;
+
     private String type;
     private String certValue;
     private String keyValue;
 
     private Long objectVersionNumber;
+
+    public List<String> getDomains() {
+        return domains;
+    }
+
+    public void setDomains(List<String> domains) {
+        this.domains = domains;
+    }
+
+    public List<String> getFullDomains() {
+        return fullDomains;
+    }
+
+    public void setFullDomains(List<String> fullDomains) {
+        this.fullDomains = fullDomains;
+    }
+
+    public Long getCertId() {
+        return certId;
+    }
+
+    public void setCertId(Long certId) {
+        this.certId = certId;
+    }
 
     public Long getObjectVersionNumber() {
         return objectVersionNumber;
