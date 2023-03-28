@@ -175,7 +175,7 @@ public class ResourceConvertToYamlHandler<T> {
                     case "Service":
                         handleService(t, content, objectType, operationType, resultBuilder, jsonObject);
                         break;
-                    case "C7nCertification":
+                    case "Certificate":
                         handleC7nCertification(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
                     case "ConfigMap":
