@@ -1,9 +1,9 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
-
-import java.util.List;
 
 public class C7nCertificationCreateOrUpdateVO {
     private String id;
@@ -18,6 +18,7 @@ public class C7nCertificationCreateOrUpdateVO {
     private String envId;
     private String envName;
     private Boolean envConnected;
+    private Long objectVersionNumber;
     @ApiModelProperty("操作类型 create/update")
     private String operateType;
 
@@ -30,6 +31,14 @@ public class C7nCertificationCreateOrUpdateVO {
 
     @ApiModelProperty("到期提前多长时间通知")
     private Integer advanceDays;
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 
     /**
      * 通知对象类

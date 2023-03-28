@@ -27,6 +27,7 @@ public class C7nCertificationVO {
     private Long envId;
     private String envName;
     private Boolean envConnected;
+    private Long objectVersionNumber;
 
     private List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects;
 
@@ -156,5 +157,11 @@ public class C7nCertificationVO {
         this.certValue = certValue;
     }
 
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
 
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 }

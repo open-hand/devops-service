@@ -101,6 +101,19 @@ public class CertificationDTO extends AuditDomain {
         this.notifyObjects = notifyObjects;
     }
 
+    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId, String type, Boolean expireNotice, Integer advanceDays, List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects, Long objectVersionNumber) {
+        this.type = type;
+        this.id = id;
+        this.name = name;
+        this.envId = envId;
+        this.domains = domains;
+        this.status = status;
+        this.orgCertId = orgCertId;
+        this.expireNotice = expireNotice;
+        this.advanceDays = advanceDays;
+        this.notifyObjects = notifyObjects;
+        this.setObjectVersionNumber(objectVersionNumber);
+    }
 
     /**
      * Certification constructor
