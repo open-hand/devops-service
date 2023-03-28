@@ -21,8 +21,10 @@ public class CertificationVO {
     private String certName;
     @ApiModelProperty("泛域名")
     private String commonName;
-    @ApiModelProperty("绑定的域名")
+    @ApiModelProperty("绑定的域名,如果证书类型是选择证书，将会被设置成去掉泛域名后的前缀部分")
     private List<String> domains;
+    @ApiModelProperty("绑定的完整域名")
+    private List<String> fullDomains;
     @ApiModelProperty("证书类型")
     private String type;
     @ApiModelProperty("证书状态")
@@ -253,5 +255,13 @@ public class CertificationVO {
 
     public void setOrganizationId(Long organizationId) {
         this.organizationId = organizationId;
+    }
+
+    public List<String> getFullDomains() {
+        return fullDomains;
+    }
+
+    public void setFullDomains(List<String> fullDomains) {
+        this.fullDomains = fullDomains;
     }
 }

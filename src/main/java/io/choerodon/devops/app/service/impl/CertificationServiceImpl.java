@@ -528,6 +528,7 @@ public class CertificationServiceImpl implements CertificationService {
         Map<Long, CertificationFileDTO> finalCertificationFileMap = certificationFileMap;
         Map<Long, CertificationDTO> finalOrgCertificationDTOMap = orgCertificationDTOMap;
         certificationDTOPage.getContent().stream().filter(certificationDTO -> certificationDTO.getOrganizationId() == null).forEach(certificationDTO -> {
+            certificationDTO.setFullDomains(certificationDTO.getDomains());
             if (CertificationType.UPLOAD.getType().equals(certificationDTO.getType())) {
                 CertificationFileDTO certificationFileDTO = finalCertificationFileMap.get(certificationDTO.getId());
                 certificationDTO.setKeyValue(certificationFileDTO.getKeyFile());
