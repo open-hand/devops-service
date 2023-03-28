@@ -552,8 +552,8 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public Boolean checkCertNameUniqueInEnv(Long envId, String certName) {
-        return baseCheckCertNameUniqueInEnv(envId, certName);
+    public Boolean checkCertNameUniqueInEnv(Long envId, String certName, Long certId) {
+        return devopsCertificationMapper.checkNameUnique(envId, certName, certId);
     }
 
     @Override
@@ -774,11 +774,6 @@ public class CertificationServiceImpl implements CertificationService {
             deleteCertFile(id);
         }
         devopsCertificationMapper.deleteByPrimaryKey(id);
-    }
-
-    @Override
-    public Boolean baseCheckCertNameUniqueInEnv(Long envId, String certName) {
-        return devopsCertificationMapper.select(new CertificationDTO(certName, envId)).isEmpty();
     }
 
     @Override

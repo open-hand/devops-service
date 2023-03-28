@@ -1,14 +1,15 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
+import java.util.List;
+import javax.persistence.*;
+
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.devops.api.vo.C7nCertificationCreateOrUpdateVO;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModelProperty;
-
-import javax.persistence.*;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Created by n!Ck
@@ -110,6 +111,12 @@ public class CertificationDTO extends AuditDomain {
     public CertificationDTO(String name, Long envId) {
         this.name = name;
         this.envId = envId;
+    }
+
+    public CertificationDTO(String name, Long envId, Long certId) {
+        this.name = name;
+        this.envId = envId;
+        this.id = certId;
     }
 
     public void setValid(Date from, Date until) {

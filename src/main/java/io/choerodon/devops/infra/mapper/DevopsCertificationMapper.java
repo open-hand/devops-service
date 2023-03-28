@@ -48,4 +48,6 @@ public interface DevopsCertificationMapper extends BaseMapper<CertificationDTO> 
     List<CertificationDTO> listClusterCertification(@Param("clusterId") Long clusterId);
 
     List<CertificationDTO> listByIds(@Param("ids") List<Long> ids);
+
+    Boolean checkNameUnique(@Param("envId") Long envId, @Param("certName") String certName, @Param("certId") Long certId);
 }
