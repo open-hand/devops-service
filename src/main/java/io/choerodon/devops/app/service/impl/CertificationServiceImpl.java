@@ -322,7 +322,7 @@ public class CertificationServiceImpl implements CertificationService {
             CertificationAcme acme = new CertificationAcme();
             acme.initConfig(new CertificationConfig(domains));
             spec.setAcme(acme);
-        } else if (type.equals(CertificationType.UPLOAD.getType())) {
+        } else {
             CertificationExistCert existCert = new CertificationExistCert(keyContent, certContent);
             spec.setExistCert(existCert);
         }
