@@ -225,26 +225,26 @@ public class CertificationServiceImpl implements CertificationService {
         }
 
         // 将资源对象生成yaml提交到gitlab
-        handleCertificationToGitlab(certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO, c7NCertificationCreateOrUpdateVO.getOperateType());
+        handleCertificationToGitlab(newCertificationDTO.getId(), certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO, c7NCertificationCreateOrUpdateVO.getOperateType());
     }
 
-    private void handleCertificationToGitlab(String certManagerVersion, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType) {
+    private void handleCertificationToGitlab(Long certificationId, String certManagerVersion, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType) {
         if (CertManagerConstants.OLD_V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
-            handleAlpha1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO, operateType);
+            handleAlpha1Certification(certificationId, certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO, operateType);
         } else {
-            handleV1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO, operateType);
+            handleV1Certification(certificationId, certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO, operateType);
         }
     }
 
-    private void handleAlpha1Certification(String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType) {
+    private void handleAlpha1Certification(Long certificationId, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType) {
         C7nCertification c7nCertification = getV1Alpha1C7nCertification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO.getCode());
         // sent certification to agent
-        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification, operateType);
+        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification, operateType, devopsEnvironmentDTO.getId(), certificationId);
     }
 
-    private void handleV1Certification(String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType) {
+    private void handleV1Certification(Long certificationId, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType) {
         C7nCertification c7nCertification = getV1C7nCertification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO.getCode());
-        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification, operateType);
+        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification, operateType, devopsEnvironmentDTO.getId(), certificationId);
     }
 
     /**
@@ -351,7 +351,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     private void operateEnvGitLabFile(String certName,
                                       DevopsEnvironmentDTO devopsEnvironmentDTO,
-                                      C7nCertification c7nCertification, String operateType) {
+                                      C7nCertification c7nCertification, String operateType, Long envId, Long certificationId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentDTO, userAttrDTO);
         clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), EnvironmentType.USER.getValue(), devopsEnvironmentDTO.getClusterCode());
@@ -360,7 +360,7 @@ public class CertificationServiceImpl implements CertificationService {
         resourceConvertToYamlHandler.setType(c7nCertification);
         resourceConvertToYamlHandler.operationEnvGitlabFile(CERT_PREFIX + certName,
                 TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), operateType,
-                userAttrDTO.getGitlabUserId(), null, null, null, false, null, null);
+                userAttrDTO.getGitlabUserId(), certificationId, "Certificate", null, false, envId, null);
     }
 
     @Override
