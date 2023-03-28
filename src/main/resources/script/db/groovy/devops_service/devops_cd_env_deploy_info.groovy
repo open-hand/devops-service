@@ -48,6 +48,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_env_deploy_info.groovy') {
             column(name: 'container_config_json', type: 'text', remarks: '容器配置', afterColumn: "app_config_json")
         }
     }
+    changeSet(author: 'wanghao', id: '2023-03-28-drop-create-table') {
+        dropTable(tableName: "devops_cd_env_deploy_info")
+    }
 
 
 }
