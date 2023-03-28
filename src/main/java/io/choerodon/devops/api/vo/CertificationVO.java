@@ -61,6 +61,16 @@ public class CertificationVO {
     @ApiModelProperty("到期提前多长时间通知")
     private Integer advanceDays;
 
+    private Long objectVersionNumber;
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
+
     public Long getCertId() {
         return certId;
     }

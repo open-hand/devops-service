@@ -196,11 +196,13 @@ public class CertificationServiceImpl implements CertificationService {
             certificationFileDTO = baseQueryCertFile(baseQueryById(certificationVO.getCertId()).getId());
         }
 
-        devopsCertificationValidator.checkCertification(envId, certName);
+        if (c7NCertificationCreateOrUpdateVO.getOperateType().equals("create")) {
+            devopsCertificationValidator.checkCertification(envId, certName);
+        }
 
 
         // status operating
-        CertificationDTO newCertificationDTO = new CertificationDTO(null, certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationVO.getCertId(), type, certificationVO.getExpireNotice(), certificationVO.getAdvanceDays(), certificationVO.getNotifyObjects());
+        CertificationDTO newCertificationDTO = new CertificationDTO(certificationVO.getId(), certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationVO.getCertId(), type, certificationVO.getExpireNotice(), certificationVO.getAdvanceDays(), certificationVO.getNotifyObjects(), certificationVO.getObjectVersionNumber());
 
         String keyContent;
         String certContent;
@@ -273,6 +275,7 @@ public class CertificationServiceImpl implements CertificationService {
      */
     private void updateAndStore(CertificationDTO certificationDTO, @Nullable String keyContent, @Nullable String certContent) {
         // create
+        certificationDTO.setName(null);
         certificationDTO = baseUpdate(certificationDTO);
         Long certId = certificationDTO.getId();
 
@@ -301,7 +304,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     private void updateCertFile(String keyContent, String certContent, CertificationDTO certificationDTO) {
         if (keyContent != null && certContent != null) {
-            CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.selectByPrimaryKey(certificationDTO.getCertificationFileId());
+            CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationDTO.getId());
             certificationFileDTO.setKeyFile(keyContent);
             certificationFileDTO.setCertFile(certContent);
             baseUpdateCertFile(certificationFileDTO);
