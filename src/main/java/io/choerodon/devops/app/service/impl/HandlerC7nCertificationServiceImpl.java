@@ -198,11 +198,15 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                 certificationDTO.setEnvId(envId);
                 certificationDTO.setStatus(CertificationStatus.OPERATING.getStatus());
                 certificationDTO.setApiVersion(c7nCertification.getApiVersion());
+                certificationDTO.setName(c7nCertification.getMetadata().getName());
                 certificationDTO = certificationService.baseCreate(certificationDTO);
                 CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
                 if (existCert != null) {
                     certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(
                             new CertificationFileDTO(existCert.getCert(), existCert.getKey())));
+                    certificationDTO.setType(CertificationType.UPLOAD.getType());
+                } else {
+                    certificationDTO.setType(CertificationType.REQUEST.getType());
                 }
                 Long commandId = certificationService
                         .createCertCommand(CommandType.CREATE.getType(), certificationDTO.getId(), userId);
