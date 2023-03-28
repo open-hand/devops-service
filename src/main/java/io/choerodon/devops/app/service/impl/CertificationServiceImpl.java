@@ -584,9 +584,15 @@ public class CertificationServiceImpl implements CertificationService {
         BeanUtils.copyProperties(certificationDTO, respVO);
         List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
         }.getType());
+        respVO.setFullDomains(new ArrayList<>(domains));
+        if (respVO.getType().equals(CertificationType.CHOOSE.getType())) {
+            CertificationDTO orgCertificationDTO = devopsCertificationMapper.queryById(certificationDTO.getOrgCertId());
+            respVO.setDomains(getPrefixDomains(JsonHelper.unmarshalByJackson(orgCertificationDTO.getDomains(), new TypeReference<List<String>>() {
+            }).get(0), domains));
+        }
         respVO.setCommonName(domains.isEmpty() ? null : domains.remove(0));
-        respVO.setDNSNames(domains);
         respVO.setIngresses(listIngressNamesByCertId(certId));
+        respVO.setCertId(certificationDTO.getOrgCertId());
 
         List<CertificationNoticeDTO> certificationNoticeDTOList = devopsCertificationNoticeService.listByCertificationId(certId);
         if (!CollectionUtils.isEmpty(certificationNoticeDTOList)) {
