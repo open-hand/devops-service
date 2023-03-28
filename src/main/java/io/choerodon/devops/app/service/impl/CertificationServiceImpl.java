@@ -488,10 +488,10 @@ public class CertificationServiceImpl implements CertificationService {
 
         for (CertificationVO certificationVO : certificationDTOPage.getContent()) {
             certificationIds.add(certificationVO.getId());
-            if (certificationVO.getType().equals(CertificationType.UPLOAD.getType())) {
+            if (CertificationType.UPLOAD.getType().equals(certificationVO.getType())) {
                 uploadCertificationIds.add(certificationVO.getId());
             }
-            if (certificationVO.getType().equals(CertificationType.CHOOSE.getType())) {
+            if (CertificationType.CHOOSE.getType().equals(certificationVO.getType())) {
                 orgCertificationIds.add(certificationVO.getCertId());
             }
         }
