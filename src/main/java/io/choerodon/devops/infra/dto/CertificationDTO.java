@@ -1,15 +1,14 @@
 package io.choerodon.devops.infra.dto;
 
-import java.util.Date;
-import java.util.List;
-import javax.persistence.*;
-
-import io.swagger.annotations.ApiModelProperty;
-
 import io.choerodon.devops.api.vo.C7nCertificationCreateOrUpdateVO;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
+
+import javax.persistence.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by n!Ck
@@ -43,6 +42,7 @@ public class CertificationDTO extends AuditDomain {
     private Long projectId;
     private Boolean expireNotice;
     private Integer advanceDays;
+    private String type;
 
     @Transient
     @ApiModelProperty("key文件内容")
@@ -87,7 +87,8 @@ public class CertificationDTO extends AuditDomain {
         this.orgCertId = orgCertId;
     }
 
-    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId, Boolean expireNotice, Integer advanceDays, List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId, String type, Boolean expireNotice, Integer advanceDays, List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+        this.type = type;
         this.id = id;
         this.name = name;
         this.envId = envId;
@@ -114,6 +115,14 @@ public class CertificationDTO extends AuditDomain {
     public void setValid(Date from, Date until) {
         this.setValidFrom(from);
         this.setValidUntil(until);
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public Boolean getExpireNotice() {

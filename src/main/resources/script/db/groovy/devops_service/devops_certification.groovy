@@ -78,4 +78,11 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification.groovy') {
         }
     }
 
+
+    changeSet(author: 'lihao', id: '2023-03-28-add-column') {
+        addColumn(tableName: 'devops_certification') {
+            column(name: 'type', type: 'VARCHAR(10)', remarks: '证书类型')
+        }
+    }
+
 }
