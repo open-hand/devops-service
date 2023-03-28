@@ -46,4 +46,6 @@ public interface DevopsCertificationMapper extends BaseMapper<CertificationDTO> 
     List<CertificationDTO> listAllOrgCertificationToMigrate();
 
     List<CertificationDTO> listClusterCertification(@Param("clusterId") Long clusterId);
+
+    List<CertificationDTO> listByIds(@Param("ids") List<Long> ids);
 }
