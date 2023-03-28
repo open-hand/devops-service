@@ -258,15 +258,17 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
         DevopsDeploymentDTO deploymentDTO = new DevopsDeploymentDTO();
         deploymentDTO.setName(name);
         deploymentDTO.setEnvId(envId);
-        devopsDeploymentMapper.delete(deploymentDTO);
+        DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectOne(deploymentDTO);
+        baseDelete(devopsDeploymentDTO.getId());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseDelete(Long id) {
         DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectByPrimaryKey(id);
-
-        devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsDeploymentDTO.getEnvId(), devopsDeploymentDTO.getId(), RdupmTypeEnum.DEPLOYMENT.value());
+        if (WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(devopsDeploymentDTO.getSourceType()) && devopsDeploymentDTO.getInstanceId() != null) {
+            devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsDeploymentDTO.getEnvId(), devopsDeploymentDTO.getId(), RdupmTypeEnum.DEPLOYMENT.value());
+        }
         devopsDeploymentMapper.deleteByPrimaryKey(id);
         devopsWorkloadResourceContentService.deleteByResourceId(ResourceType.DEPLOYMENT.getType(), id);
     }
