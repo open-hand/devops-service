@@ -12,6 +12,7 @@
         dc.organization_id,
         dc.valid_until,
         dc.type,
+        dc.org_cert_id,
         dc.command_id,
         dc.object_version_number,
         dc.expire_notice,
@@ -132,11 +133,21 @@
     </select>
     <select id="listClusterCertification" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
         SELECT
-            dc.*
+        dc.*
         FROM
-            devops_certification dc
-            LEFT JOIN devops_env env ON env.id = dc.env_id
+        devops_certification dc
+        LEFT JOIN devops_env env ON env.id = dc.env_id
         WHERE
-            env.cluster_id = #{clusterId}
+        env.cluster_id = #{clusterId}
+    </select>
+
+    <select id="listByIds" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
+        SELECT dc.*
+        FROM devops_certification dc
+        WHERE dc.id
+        IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </select>
 </mapper>
