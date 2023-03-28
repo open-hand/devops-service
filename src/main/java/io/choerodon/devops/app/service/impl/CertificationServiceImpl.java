@@ -200,9 +200,10 @@ public class CertificationServiceImpl implements CertificationService {
             devopsCertificationValidator.checkCertification(envId, certName);
         }
 
+        boolean needToUpdateGitOps = checkNeedToUpdateGitOpsAndSetStatus(certificationVO, c7NCertificationCreateOrUpdateVO.getOperateType());
 
         // status operating
-        CertificationDTO newCertificationDTO = new CertificationDTO(certificationVO.getId(), certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationVO.getCertId(), type, certificationVO.getExpireNotice(), certificationVO.getAdvanceDays(), certificationVO.getNotifyObjects(), certificationVO.getObjectVersionNumber());
+        CertificationDTO newCertificationDTO = new CertificationDTO(certificationVO.getId(), certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), certificationVO.getStatus(), certificationVO.getCertId(), type, certificationVO.getExpireNotice(), certificationVO.getAdvanceDays(), certificationVO.getNotifyObjects(), certificationVO.getObjectVersionNumber());
 
         String keyContent;
         String certContent;
@@ -225,7 +226,9 @@ public class CertificationServiceImpl implements CertificationService {
         }
 
         // 将资源对象生成yaml提交到gitlab
-        handleCertificationToGitlab(newCertificationDTO.getId(), certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO, c7NCertificationCreateOrUpdateVO.getOperateType(), clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode()));
+        if (needToUpdateGitOps) {
+            handleCertificationToGitlab(newCertificationDTO.getId(), certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO, c7NCertificationCreateOrUpdateVO.getOperateType(), clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode()));
+        }
     }
 
     private void handleCertificationToGitlab(Long certificationId, String certManagerVersion, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType, String filePath) {
@@ -858,5 +861,45 @@ public class CertificationServiceImpl implements CertificationService {
             prefixDomains.add(domain.substring(0, i - 1));
         });
         return prefixDomains;
+    }
+
+    private boolean checkNeedToUpdateGitOpsAndSetStatus(C7nCertificationVO certificationVO, String operateType) {
+        certificationVO.setStatus(CertificationStatus.OPERATING.getStatus());
+        if (CommandType.CREATE.getType().equals(operateType)) {
+            return true;
+        } else {
+            CertificationDTO oldCertification = devopsCertificationMapper.selectByPrimaryKey(certificationVO.getId());
+            switch (CertificationType.valueOf(certificationVO.getType().toUpperCase())) {
+                case REQUEST:
+                    if (!org.apache.commons.collections.CollectionUtils.isEqualCollection(JsonHelper.unmarshalByJackson(oldCertification.getDomains(), new TypeReference<List<String>>() {
+                    }), certificationVO.getDomains())) {
+                        return true;
+                    } else {
+                        certificationVO.setStatus(oldCertification.getStatus());
+                        return false;
+                    }
+                case UPLOAD:
+                    CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationVO.getId());
+                    if (!org.apache.commons.collections.CollectionUtils.isEqualCollection(JsonHelper.unmarshalByJackson(oldCertification.getDomains(), new TypeReference<List<String>>() {
+                    }), certificationVO.getDomains()) || !certificationFileDTO.getKeyFile().equals(certificationVO.getKeyValue()) || !certificationFileDTO.getCertFile().equals(certificationVO.getCertValue())) {
+                        return true;
+                    } else {
+                        certificationVO.setStatus(oldCertification.getStatus());
+                        return false;
+                    }
+                case CHOOSE:
+                    CertificationFileDTO oldCertificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationVO.getId());
+                    CertificationFileDTO orgCertificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationVO.getCertId());
+                    if (!org.apache.commons.collections.CollectionUtils.isEqualCollection(JsonHelper.unmarshalByJackson(oldCertification.getDomains(), new TypeReference<List<String>>() {
+                    }), certificationVO.getDomains()) || !oldCertificationFileDTO.getKeyFile().equals(orgCertificationFileDTO.getKeyFile()) || !oldCertificationFileDTO.getCertFile().equals(orgCertificationFileDTO.getCertFile())) {
+                        certificationVO.setStatus(oldCertification.getStatus());
+                        return true;
+                    } else {
+                        return false;
+                    }
+                default:
+                    throw new CommonException(ExceptionConstants.CertificationExceptionCode.ERROR_DEVOPS_CERTIFICATION_TYPE_UNKNOWN);
+            }
+        }
     }
 }
