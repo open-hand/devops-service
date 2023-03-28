@@ -1,9 +1,9 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import java.util.List;
 
 public class C7nCertificationCreateOrUpdateVO {
     private String id;
@@ -42,6 +42,15 @@ public class C7nCertificationCreateOrUpdateVO {
         private Long id;
         @Encrypt
         private Long certificationId;
+        private String realName;
+
+        public String getRealName() {
+            return realName;
+        }
+
+        public void setRealName(String realName) {
+            this.realName = realName;
+        }
 
         public NotifyObject() {
 

@@ -15,6 +15,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -39,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
@@ -476,7 +478,18 @@ public class CertificationServiceImpl implements CertificationService {
         List<Long> certificationIds = certificationDTOPage.getContent().stream().map(CertificationVO::getId).collect(Collectors.toList());
         Map<Long, List<C7nCertificationCreateOrUpdateVO.NotifyObject>> notifyObjectMap = new HashMap<>();
         if (!ObjectUtils.isEmpty(certificationIds)) {
-            notifyObjectMap = devopsCertificationNoticeService.listByCertificationIds(certificationIds).stream().map(certificationNoticeDTO -> new C7nCertificationCreateOrUpdateVO.NotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId()))
+            List<CertificationNoticeDTO> certificationNoticeDTOS = devopsCertificationNoticeService.listByCertificationIds(certificationIds);
+            Set<Long> userIds = certificationNoticeDTOS.stream().filter(certificationNoticeDTO -> certificationNoticeDTO.getType().equals("user")).map(CertificationNoticeDTO::getObjectId).collect(Collectors.toSet());
+            Map<Long, IamUserDTO> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(new ArrayList<>(userIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+            notifyObjectMap = certificationNoticeDTOS.stream().map(certificationNoticeDTO -> {
+                        C7nCertificationCreateOrUpdateVO.NotifyObject notifyObject = new C7nCertificationCreateOrUpdateVO.NotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId());
+                        if (notifyObject.getType().equals("user")) {
+                            if (iamUserDTOMap.get(notifyObject.getId()) != null) {
+                                notifyObject.setRealName(iamUserDTOMap.get(notifyObject.getId()).getRealName());
+                            }
+                        }
+                        return notifyObject;
+                    })
                     .collect(Collectors.groupingBy(C7nCertificationCreateOrUpdateVO.NotifyObject::getCertificationId));
         }
 
@@ -488,10 +501,8 @@ public class CertificationServiceImpl implements CertificationService {
                 .forEach(certificationDTO -> {
                     if ("upload".equals(certificationDTO.getType())) {
                         CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationDTO.getId());
-                        if (certificationDTO != null) {
-                            certificationDTO.setKeyValue(certificationFileDTO.getKeyFile());
-                            certificationDTO.setCertValue(certificationFileDTO.getCertFile());
-                        }
+                        certificationDTO.setKeyValue(certificationFileDTO.getKeyFile());
+                        certificationDTO.setCertValue(certificationFileDTO.getCertFile());
                     }
 
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
@@ -524,6 +535,14 @@ public class CertificationServiceImpl implements CertificationService {
             return null;
         }
 
+        if (certificationDTO.getCertificationFileId() != null) {
+            CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationDTO.getCertificationFileId());
+            if (certificationFileDTO != null) {
+                certificationDTO.setKeyValue(certificationFileDTO.getKeyFile());
+                certificationDTO.setCertValue(certificationFileDTO.getCertFile());
+            }
+        }
+
         CertificationRespVO respVO = new CertificationRespVO();
         BeanUtils.copyProperties(certificationDTO, respVO);
         List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
@@ -534,8 +553,18 @@ public class CertificationServiceImpl implements CertificationService {
 
         List<CertificationNoticeDTO> certificationNoticeDTOList = devopsCertificationNoticeService.listByCertificationId(certId);
         if (!CollectionUtils.isEmpty(certificationNoticeDTOList)) {
+            Set<Long> userIds = certificationNoticeDTOList.stream().filter(certificationNoticeDTO -> certificationNoticeDTO.getType().equals("user")).map(CertificationNoticeDTO::getObjectId).collect(Collectors.toSet());
+            Map<Long, IamUserDTO> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(new ArrayList<>(userIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
             List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjectList = certificationNoticeDTOList.stream()
-                    .map(certificationNoticeDTO -> new C7nCertificationCreateOrUpdateVO.NotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId()))
+                    .map(certificationNoticeDTO -> {
+                        C7nCertificationCreateOrUpdateVO.NotifyObject notifyObject = new C7nCertificationCreateOrUpdateVO.NotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId());
+                        if (notifyObject.getType().equals("user")) {
+                            if (iamUserDTOMap.get(notifyObject.getId()) != null) {
+                                notifyObject.setRealName(iamUserDTOMap.get(notifyObject.getId()).getRealName());
+                            }
+                        }
+                        return notifyObject;
+                    })
                     .collect(Collectors.toList());
             respVO.setNotifyObjects(notifyObjectList);
         }
