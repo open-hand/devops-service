@@ -117,7 +117,6 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                 filePath = objectPath.get(TypeUtil.objToString(c7nCertification1.hashCode()));
                 CertificationDTO certificationDTO = certificationService
                         .baseQueryByEnvAndName(envId, c7nCertification1.getMetadata().getName());
-                certificationService.checkCertNameUniqueInEnv(envId, c7nCertification1.getMetadata().getName());
                 if (checkC7nCertificationChanges(c7nCertification1, envId, objectPath, path)) {
                     createOrUpdateCertification(envId, c7nCertification1, c7nCertification1.getMetadata().getName(), filePath, path, userId, CommandType.UPDATE.getType());
                 }
@@ -198,7 +197,6 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                 certificationDTO = new CertificationDTO();
                 certificationDTO.setDomains(gson.toJson(domains));
                 certificationDTO.setEnvId(envId);
-                certificationDTO.setName(certName);
                 certificationDTO.setStatus(CertificationStatus.OPERATING.getStatus());
                 certificationDTO.setApiVersion(c7nCertification.getApiVersion());
                 certificationDTO = certificationService.baseCreate(certificationDTO);

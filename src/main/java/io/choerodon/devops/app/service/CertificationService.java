@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.C7nCertificationCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.CertificationRespVO;
@@ -10,9 +14,6 @@ import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.devops.infra.enums.CertificationStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 /**
  * Created by n!Ck
@@ -45,7 +46,7 @@ public interface CertificationService {
 
     List<CertificationVO> queryActiveCertificationByDomain(Long projectId, Long envId, String domain);
 
-    Boolean checkCertNameUniqueInEnv(Long envId, String certName);
+    Boolean checkCertNameUniqueInEnv(Long envId, String certName, Long certId);
 
 
     /**
@@ -94,8 +95,6 @@ public interface CertificationService {
     void baseClearValidField(Long certId);
 
     void baseDeleteById(Long certId);
-
-    Boolean baseCheckCertNameUniqueInEnv(Long envId, String certName);
 
     Long baseStoreCertFile(CertificationFileDTO certificationFileDTO);
 

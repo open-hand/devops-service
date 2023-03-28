@@ -150,4 +150,14 @@
             #{id}
         </foreach>
     </select>
+
+    <select id="checkNameUnique" resultType="java.lang.Boolean">
+        SELECT COUNT(*) = 0
+        FROM devops_certification
+        WHERE env_id = #{envId}
+        AND name = #{certName}
+        <if test="certId != null">
+            AND id != #{certId}
+        </if>
+    </select>
 </mapper>
