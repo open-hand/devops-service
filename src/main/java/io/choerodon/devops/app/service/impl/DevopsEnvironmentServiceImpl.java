@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -1909,6 +1910,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnvironmentDTO> baseListByIds(List<Long> envIds) {
+        if (ObjectUtils.isEmpty(envIds)) {
+            return new ArrayList<>();
+        }
         return devopsEnvironmentMapper.listByIds(envIds);
     }
 

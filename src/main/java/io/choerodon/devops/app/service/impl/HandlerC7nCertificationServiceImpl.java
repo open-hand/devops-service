@@ -1,7 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.ERROR_DEVOPS_CERTIFICATION_EXISTCERT_FILED_NULL;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.openapi.models.V1Endpoints;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.CertificationExistCert;
@@ -13,15 +23,6 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.openapi.models.V1Endpoints;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.ERROR_DEVOPS_CERTIFICATION_EXISTCERT_FILED_NULL;
 
 
 @Service
@@ -181,7 +182,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
 
     private CertificationDTO createOrUpdateCertification(Long envId, C7nCertification c7nCertification, String certName,
                                                          String filePath, String path, Long userId, String operateType) {
-        CertificationDTO certificationDTO;
+        CertificationDTO certificationDTO = certificationService.baseQueryByEnvAndName(envId, certName);
         CertificationSpec certificationSpec = c7nCertification.getSpec();
         String domain = certificationSpec.getCommonName();
         List<String> dnsDomains = certificationSpec.getDnsNames();
@@ -193,24 +194,25 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
             domains.addAll(dnsDomains);
         }
         if (CommandType.CREATE.getType().equals(operateType)) {
-            certificationDTO = new CertificationDTO();
-            certificationDTO.setDomains(gson.toJson(domains));
-            certificationDTO.setEnvId(envId);
-            certificationDTO.setName(certName);
-            certificationDTO.setStatus(CertificationStatus.OPERATING.getStatus());
-            certificationDTO.setApiVersion(c7nCertification.getApiVersion());
-            certificationDTO = certificationService.baseCreate(certificationDTO);
-            CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
-            if (existCert != null) {
-                certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(
-                        new CertificationFileDTO(existCert.getCert(), existCert.getKey())));
+            if (certificationDTO == null) {
+                certificationDTO = new CertificationDTO();
+                certificationDTO.setDomains(gson.toJson(domains));
+                certificationDTO.setEnvId(envId);
+                certificationDTO.setName(certName);
+                certificationDTO.setStatus(CertificationStatus.OPERATING.getStatus());
+                certificationDTO.setApiVersion(c7nCertification.getApiVersion());
+                certificationDTO = certificationService.baseCreate(certificationDTO);
+                CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
+                if (existCert != null) {
+                    certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(
+                            new CertificationFileDTO(existCert.getCert(), existCert.getKey())));
+                }
+                Long commandId = certificationService
+                        .createCertCommand(CommandType.CREATE.getType(), certificationDTO.getId(), userId);
+                certificationDTO.setCommandId(commandId);
+                certificationService.baseUpdateCommandId(certificationDTO);
             }
-            Long commandId = certificationService
-                    .createCertCommand(CommandType.CREATE.getType(), certificationDTO.getId(), userId);
-            certificationDTO.setCommandId(commandId);
-            certificationService.baseUpdateCommandId(certificationDTO);
         } else {
-            certificationDTO = certificationService.baseQueryByEnvAndName(envId, certName);
             certificationDTO.setDomains(gson.toJson(domains));
             certificationDTO.setEnvId(envId);
             certificationDTO.setStatus(CertificationStatus.OPERATING.getStatus());
