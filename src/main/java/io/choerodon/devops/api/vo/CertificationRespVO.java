@@ -1,11 +1,11 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Date;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * 证书及其相关的Ingress名称
@@ -49,6 +49,16 @@ public class CertificationRespVO extends DevopsResourceDataInfoVO {
     private String type;
     private String certValue;
     private String keyValue;
+
+    private Long objectVersionNumber;
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 
     public String getType() {
         return type;
