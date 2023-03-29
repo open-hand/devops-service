@@ -24,9 +24,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     @Encrypt
     @ApiModelProperty("ci 执行记录的id")
     private Long ciRecordId;
-    @Encrypt
-    @ApiModelProperty("cd 执行记录的id")
-    private Long cdRecordId;
     @ApiModelProperty("gitlab的流水线id")
     private Long gitlabPipelineId;
     @ApiModelProperty("cd流水线记录的状态")
@@ -61,9 +58,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private CiCdPipelineVO ciCdPipelineVO;
     @ApiModelProperty("ci和cd阶段记录的集合")
     private List<DevopsCiStageRecordVO> stageRecordVOS;
-    @ApiModelProperty("待审核状态时需要的一些数据")
-    private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
-
 
     public Long getPipelineId() {
         return pipelineId;
@@ -138,14 +132,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
         this.ciCdPipelineVO = ciCdPipelineVO;
     }
 
-    public DevopsCdPipelineDeatilVO getDevopsCdPipelineDeatilVO() {
-        return devopsCdPipelineDeatilVO;
-    }
-
-    public void setDevopsCdPipelineDeatilVO(DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO) {
-        this.devopsCdPipelineDeatilVO = devopsCdPipelineDeatilVO;
-    }
-
     public Long getDevopsPipelineRecordRelId() {
         return devopsPipelineRecordRelId;
     }
@@ -161,15 +147,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     public void setCiRecordId(Long ciRecordId) {
         this.ciRecordId = ciRecordId;
     }
-
-    public Long getCdRecordId() {
-        return cdRecordId;
-    }
-
-    public void setCdRecordId(Long cdRecordId) {
-        this.cdRecordId = cdRecordId;
-    }
-
 
     public Long getGitlabPipelineId() {
         return gitlabPipelineId;
@@ -232,7 +209,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
         return "CiCdPipelineRecordVO{" +
                 "devopsPipelineRecordRelId=" + devopsPipelineRecordRelId +
                 ", ciRecordId=" + ciRecordId +
-                ", cdRecordId=" + cdRecordId +
                 ", gitlabPipelineId=" + gitlabPipelineId +
                 ", cdStatus='" + cdStatus + '\'' +
                 ", ciStatus='" + ciStatus + '\'' +
@@ -241,7 +217,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
                 ", commit=" + commit +
                 ", ciCdPipelineVO=" + ciCdPipelineVO +
                 ", stageRecordVOS=" + stageRecordVOS +
-                ", devopsCdPipelineDeatilVO=" + devopsCdPipelineDeatilVO +
                 ", pipelineName='" + pipelineName + '\'' +
                 ", gitlabProjectId=" + gitlabProjectId +
                 ", viewId='" + viewId + '\'' +

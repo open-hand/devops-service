@@ -866,19 +866,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
     }
 
-    protected Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO recordDTO, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
-        return StringMapBuilder.newBuilder()
-                .put(MessageCodeConstants.PIPE_LINE_NAME, recordDTO.getPipelineName())
-                .put(PROJECT_ID, recordDTO.getProjectId())
-                .put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName())
-                .put(ORGANIZATION_ID, projectDTO.getOrganizationId())
-                .put(STAGE_ID, stageId)
-                .put("triggerType", recordDTO.getTriggerType())
-                .put(STAGE_NAME, stageName)
-                .putAll(params)
-                .build();
-    }
-
     protected Map<String, String> constructCiParamsForPipeline(String pipelineName, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
                 .put(MessageCodeConstants.PIPE_LINE_NAME, pipelineName)
