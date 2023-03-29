@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
 import static io.choerodon.devops.infra.constant.PipelineCheckConstant.*;
 import static io.choerodon.devops.infra.constant.PipelineConstants.*;
-import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL;
 import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
 import static io.choerodon.devops.infra.enums.CiJobTypeEnum.API_TEST;
 
@@ -51,7 +50,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -97,7 +95,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
 
     private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
-    private final DevopsCiJobMapper devopsCiJobMapper;
     private final DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private final DevopsCiStageService devopsCiStageService;
     private final DevopsCiJobService devopsCiJobService;
@@ -200,7 +197,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.permissionHelper = permissionHelper;
         this.appServiceMapper = appServiceMapper;
         this.ciCdPipelineMapper = ciCdPipelineMapper;
-        this.devopsCiJobMapper = devopsCiJobMapper;
     }
 
     /**
@@ -376,8 +372,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 1.保存ci stage信息
         saveCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
-        // 2.保存cd stage信息
-//        saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
 
         // 3. 为gitlab-ci文件添加include指令
         // 生成gitlab-ci.yaml文件，（避免第一次执行没有保存mavenSettings文件）
@@ -701,7 +695,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
         if (projectOwner) {
-//            appServiceIds = appServiceMapper.listByActive(projectId, null).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
             appServiceIds = new HashSet<>();
         } else {
             //如果是项目成员，需要developer及以上的权限
@@ -791,7 +784,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除stage
         List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
         devopsCiStageService.deleteByPipelineId(pipelineId);
-//        devopsCdStageService.deleteByPipelineId(pipelineId);
 
         // 删除job
         devopsCiJobService.deleteByPipelineId(pipelineId);
@@ -801,8 +793,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciChartDeployConfigService.deleteConfigByPipelineId(pipelineId);
         ciDeployDeployCfgService.deleteConfigByPipelineId(pipelineId);
         devopsCiHostDeployInfoService.deleteConfigByPipelineId(pipelineId);
-
-//        devopsCdJobService.deleteByPipelineId(pipelineId);
 
         //删除任务配置
 
@@ -888,14 +878,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 保存执行记录
         try {
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = createCiPipelineRecord(pipelineId, gitlabProjectId, pipeline);
-            // 保存流水线记录关系
-//            DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
-//            devopsPipelineRecordRelDTO.setPipelineId(ciCdPipelineDTO.getId());
-//            devopsPipelineRecordRelDTO.setCiPipelineRecordId(devopsCiPipelineRecordDTO.getId());
-//            devopsPipelineRecordRelDTO.setCdPipelineRecordId(PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID);
-//            devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
-            // 初始化cd流水线记录
-//            devopsCdPipelineService.initPipelineRecordWithStageAndJob(projectId, pipeline.getId().longValue(), pipeline.getSha(), pipeline.getRef(), pipeline.getTag(), ciCdPipelineDTO);
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(),
                     pipeline.getId(),
                     userAttrDTO.getGitlabUserId().intValue(),
@@ -999,7 +981,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (Objects.isNull(ciCdPipelineDTO)) {
             return pipelineFrequencyVO;
         }
-//        List<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = devopsPipelineRecordRelMapper.listByPipelineId(pipelineId, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime()));
         List<DevopsCiPipelineRecordDTO> devopsCiPipelineRecordDTOS = devopsCiPipelineRecordService.listByPipelineId(pipelineId, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime()));
         if (CollectionUtils.isEmpty(devopsCiPipelineRecordDTOS)) {
             return pipelineFrequencyVO;
@@ -1052,14 +1033,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             ciCdPipelineRecordVO.setIamUserDTO(baseServiceClientOperator.queryUserByUserId(ciCdPipelineRecordVO.getCreatedBy()));
             //阶段集合
             DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = devopsCiPipelineRecordService.queryByCiPipelineRecordId(ciCdPipelineRecordVO.getCiRecordId());
-//            DevopsCdPipelineRecordVO devopsCdPipelineRecordVO = devopsCdPipelineRecordService.queryByCdPipelineRecordId(ciCdPipelineRecordVO.getCdRecordId());
-//            List<StageRecordVO> stageRecordVOS = getStageRecordVOS(devopsCiPipelineRecordVO, devopsCdPipelineRecordVO);
             ciCdPipelineRecordVO.setStageRecordVOS(devopsCiPipelineRecordVO.getStageRecordVOS());
-            //状态
-//            CiCdPipelineUtils.calculateStatus(ciCdPipelineRecordVO, devopsCiPipelineRecordVO, devopsCdPipelineRecordVO);
-            //执行耗时
-//            ciCdPipelineRecordVO.setDurationSeconds(getPipelineExecuteTime(ciCdPipelineRecordVO.getDevopsPipelineRecordRelId()));
-
         });
         return cdPipelineRecordVOS;
     }
@@ -1159,35 +1133,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return new ArrayList<>();
         }
         return pipelineInstanceReferenceVOS;
-//        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByProjectIdAndType(projectId, API_TEST);
-//        if (CollectionUtils.isEmpty(devopsCiJobDTOS)) {
-//            return pipelineInstanceReferenceVOList;
-//        }
-//
-//        // 收集与测试任务关联的任务列表，并记录对应关系
-//        for (DevopsCiJobDTO devopsCiJobDTO : devopsCiJobDTOS) {
-//            CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CdApiTestConfigVO.class);
-//            if (taskIds.contains(cdApiTestConfigVO.getApiTestTaskId())) {
-//                PipelineInstanceReferenceVO pipelineInstanceReferenceVO = new PipelineInstanceReferenceVO();
-//                pipelineInstanceReferenceVO.setJobId(devopsCiJobDTO.getId());
-//                pipelineInstanceReferenceVO.setTaskId(cdApiTestConfigVO.getApiTestTaskId());
-//                pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
-//            }
-//        }
-//        if (CollectionUtils.isEmpty(pipelineInstanceReferenceVOList)) {
-//            return pipelineInstanceReferenceVOList;
-//        }
-//        Set<Long> jobIds = pipelineInstanceReferenceVOList.stream().map(PipelineInstanceReferenceVO::getJobId).collect(Collectors.toSet());
-//        List<DevopsCdJobVO> devopsCdJobVOS = devopsCdJobService.listByIdsWithNames(jobIds);
-//        Map<Long, DevopsCdJobVO> cdJobVOMap = devopsCdJobVOS.stream().collect(Collectors.toMap(DevopsCdJobVO::getId, Function.identity()));
-//        pipelineInstanceReferenceVOList.forEach(pipelineInstanceReferenceVO -> {
-//            DevopsCdJobVO devopsCdJobVO = cdJobVOMap.get(pipelineInstanceReferenceVO.getJobId());
-//            pipelineInstanceReferenceVO.setPipelineName(devopsCdJobVO.getPipelineName());
-//            pipelineInstanceReferenceVO.setStageName(devopsCdJobVO.getStageName());
-//            pipelineInstanceReferenceVO.setJobName(devopsCdJobVO.getName());
-//        });
-//
-//        return pipelineInstanceReferenceVOList;
     }
 
     @Override
@@ -1237,7 +1182,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
         ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
         ciCdPipelineRecordVO.setCiRecordId(devopsPipelineRecordRelDTO.getId());
-//        ciCdPipelineRecordVO.setCdRecordId(devopsPipelineRecordRelDTO.getCdPipelineRecordId());
         ciCdPipelineRecordVO.setCreatedDate(devopsPipelineRecordRelDTO.getCreationDate());
         ciCdPipelineRecordVO.setCreatedBy(devopsPipelineRecordRelDTO.getCreatedBy());
         ciCdPipelineRecordVO.setStatus(devopsPipelineRecordRelDTO.getStatus());
@@ -1259,29 +1203,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                          List<DevopsCiPipelineRecordDTO> devopsCiPipelineRecordDTOList) {
         final Long[] successCount = {0L};
         final Long[] failCount = {0L};
-//        devopsCiPipelineRecordDTOList.forEach(devopsCiPipelineRecordDTO -> {
-////            List<DevopsPipelineRecordVO> devopsPipelineRecordVOS = new ArrayList<>();
-////            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(devopsPipelineRecordRelDTO.getCiPipelineRecordId());
-////            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(devopsPipelineRecordRelDTO.getCdPipelineRecordId());
-////            if (!Objects.isNull(devopsCdPipelineRecordDTO)) {
-////                devopsPipelineRecordVOS.add(ConvertUtils.convertObject(devopsCdPipelineRecordDTO, DevopsCdPipelineRecordVO.class));
-////            }
-////            if (!Objects.isNull(devopsCiPipelineRecordDTO)) {
-////                devopsPipelineRecordVOS.add(ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class));
-////            }
-//            if (!CollectionUtils.isEmpty(devopsCiPipelineRecordDTO)) {
-//                //包含失败就是失败 整条流水线失败
-//                List<DevopsCiPipelineRecordDTO> failPipelineRecordVOS = devopsCiPipelineRecordDTO.stream().filter(devopsPipelineRecordVO -> StringUtils.equalsIgnoreCase(devopsPipelineRecordVO.getStatus(), PipelineStatus.FAILED.toValue())).collect(Collectors.toList());
-//                if (!CollectionUtils.isEmpty(failPipelineRecordVOS)) {
-//                    failCount[0] += 1;
-//                }
-//                // 不包含非成功的  即所有状态都成功
-//                List<DevopsPipelineRecordVO> successPipelineRecordVOS = devopsPipelineRecordVOS.stream().filter(devopsPipelineRecordVO -> !StringUtils.equalsIgnoreCase(devopsPipelineRecordVO.getStatus(), PipelineStatus.SUCCESS.toValue())).collect(Collectors.toList());
-//                if (CollectionUtils.isEmpty(successPipelineRecordVOS)) {
-//                    successCount[0] += 1;
-//                }
-//            }
-//        });
         if (!CollectionUtils.isEmpty(devopsCiPipelineRecordDTOList)) {
             //包含失败就是失败 整条流水线失败
             List<DevopsCiPipelineRecordDTO> failPipelineRecordVOS = devopsCiPipelineRecordDTOList.stream().filter(devopsPipelineRecordVO -> StringUtils.equalsIgnoreCase(devopsPipelineRecordVO.getStatus(), PipelineStatus.FAILED.toValue())).collect(Collectors.toList());
@@ -1365,16 +1286,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException(DEVOPS_UPDATE_PIPELINE_FAILED);
         }
 
-
-        boolean initCiFileFlag = false;
-        // 如果有ci阶段，需要判断是否是新增的ci阶段。如果是新增的需要初始化gitlab-ci.yaml
-        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
-            // 校验之前是否是纯cd流水线
-            List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
-            // 之前不存在ci stage则证明之前是纯cd流水线
-            initCiFileFlag = CollectionUtils.isEmpty(devopsCiStageDTOS);
-        }
-
         // 更新流水线函数
         // 先删除之前的函数
         devopsCiPipelineFunctionService.deleteByPipelineId(pipelineId);
@@ -1399,9 +1310,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
 
         //更新CI流水线
-        updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO, initCiFileFlag);
-        //更新CD流水线
-//        updateCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
+        updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
 
         // 生成gitlab-ci.yaml文件，（避免第一次执行没有保存mavenSettings文件）
         devopsCiContentService.queryLatestContent(ciCdPipelineDTO.getToken());
@@ -1430,7 +1339,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
 
-    private void updateCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO, boolean initCiFileFlag) {
+    private void updateCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
         // 更新stage
         // 查询数据库中原有stage列表,并和新的stage列表作比较。
         // 差集：要删除的记录
@@ -1438,39 +1347,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(ciCdPipelineDTO.getId());
         Set<Long> oldStageIds = devopsCiStageDTOS.stream().map(DevopsCiStageDTO::getId).collect(Collectors.toSet());
 
-//        Set<Long> updateIds = ciCdPipelineVO.getDevopsCiStageVOS().stream()
-//                .map(DevopsCiStageVO::getId)
-//                .filter(Objects::nonNull)
-//                .collect(Collectors.toSet());
         // 去掉要更新的记录，剩下的为要删除的记录
-//        oldStageIds.removeAll(updateIds);
         oldStageIds.forEach(stageId -> {
             devopsCiStageService.deleteById(stageId);
             devopsCiJobService.deleteByStageIdCascade(stageId);
         });
 
         ciCdPipelineVO.getDevopsCiStageVOS().forEach(devopsCiStageVO -> {
-//            if (devopsCiStageVO.getId() != null) {
-//                // 更新
-//                devopsCiStageService.update(devopsCiStageVO);
-//                devopsCiJobService.deleteByStageIdCascade(devopsCiStageVO.getId());
-//                // 保存job信息
-//                if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
-//                    devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-////                        DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
-////                        devopsCiJobDTO.setId(null);
-////                        devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
-////                        devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
-////                        devopsCiJobService.create(devopsCiJobDTO);
-//
-//                        // 保存任务信息
-//                        AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
-//                        DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), devopsCiStageVO.getId(), devopsCiJobVO);
-//
-//                        batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
-//                    });
-//                }
-//            } else {
             // 新增
             devopsCiStageVO.setCiPipelineId(ciCdPipelineDTO.getId());
             DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
@@ -1478,11 +1361,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 保存job信息
             if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                 devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-//                        DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
-//                        devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
-//                        devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
-//                        devopsCiJobService.create(devopsCiJobDTO);
-
                     // 保存任务信息
                     AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
                     DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), savedDevopsCiStageDTO.getId(), devopsCiJobVO);
@@ -1490,25 +1368,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
                 });
             }
-//            }
         });
-
-        // 新增ci阶段，需要初始化gitlab-ci.yaml
-        if (initCiFileFlag) {
-            AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
-            String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
-            List<DevopsPipelineBranchRelDTO> devopsPipelineBranchRelDTOS = listPipelineBranchRel(ciCdPipelineDTO.getId());
-            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
-
-            devopsPipelineBranchRelDTOS.forEach(devopsPipelineBranchRelDTO -> {
-                if (appExternalConfigDTO == null) {
-                    initGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch(), ciFileIncludeUrl);
-                } else {
-                    initExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch(), ciFileIncludeUrl, appExternalConfigDTO);
-                }
-            });
-
-        }
     }
 
 
@@ -1700,34 +1560,4 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         gitlabCi.setBeforeScript(beforeScripts);
     }
 
-
-    /**
-     * 供子类拓展
-     *
-     * @param cdHostDeployConfigVO
-     */
-    protected void additionalCheck(CdHostDeployConfigVO cdHostDeployConfigVO) {
-        // 创建主机应用，必须输入主机id
-        if (DeployTypeEnum.CREATE.value().equals(cdHostDeployConfigVO.getDeployType()) && cdHostDeployConfigVO.getHostId() == null) {
-            throw new CommonException(DEVOPS_HOST_ID_IS_NULL);
-        }
-    }
-
-    public void checkCdHostJobName(Long ciPipelineId, CdHostDeployConfigVO deployConfigVO, String cdHostName, DevopsCdJobDTO devopsCdJobDTO) {
-        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
-        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
-        if (deployConfigVO.getJarDeploy() != null
-                && deployConfigVO.getJarDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
-            devopsCiJobDTO.setName(deployConfigVO.getJarDeploy().getPipelineTask());
-        }
-        if (!StringUtils.isEmpty(devopsCiJobDTO.getName())) {
-            DevopsCiJobDTO ciJobDTO = devopsCiJobMapper.selectOne(devopsCiJobDTO);
-            if (ciJobDTO == null) {
-                throw new CommonException(DEVOPS_CD_HOST_JOB_UNION_CI_JOB, devopsCiJobDTO.getName(), cdHostName);
-            }
-            if (!ciJobDTO.getTriggerType().equals(devopsCdJobDTO.getTriggerType())) {
-                throw new CommonException(DEVOPS_CI_CD_TRIGGER_TYPE_INVALID);
-            }
-        }
-    }
 }
