@@ -1401,6 +1401,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             Map<String, String> variables = devopsCiPipelineVariableDTOS.stream().collect(Collectors.toMap(DevopsCiPipelineVariableDTO::getVariableKey, DevopsCiPipelineVariableDTO::getVariableValue));
             gitlabCi.setVariables(variables);
         }
+        Map<String, String> defaultMap = new HashMap<>();
+        defaultMap.put("interruptible", ciCdPipelineDTO.getInterruptible().toString());
+        gitlabCi.setDefaultSection(defaultMap);
+
         List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOS = ciDockerAuthConfigService.listByPipelineId(pipelineId);
         if (!CollectionUtils.isEmpty(ciDockerAuthConfigDTOS)) {
             Map<String, Object> auth = new HashMap<>();
