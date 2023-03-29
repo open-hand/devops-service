@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.task;
 
+import java.util.Map;
+
 import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,7 +30,7 @@ public class CertificationNotifyTask {
             code = FIND_AND_SEND_CERTIFICATION_EXPIRE_NOTICE,
             description = "查找将要过期的证书并根据配置发送提醒")
     @TimedTask(name = FIND_AND_SEND_CERTIFICATION_EXPIRE_NOTICE, description = "查找将要过期的证书并根据配置发送邮件提醒", params = {}, cronExpression = "0 0 1 * * ?")
-    public void findAndSendNotice() {
+    public void findAndSendNotice(Map<String, Object> map) {
         certificationService.findAndSendCertificationExpireNotice();
     }
 }
