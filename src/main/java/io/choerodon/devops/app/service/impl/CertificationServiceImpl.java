@@ -233,7 +233,7 @@ public class CertificationServiceImpl implements CertificationService {
         if (c7NCertificationCreateOrUpdateVO.getOperateType().equals("create")) {
             createAndStore(newCertificationDTO, keyContent, certContent);
         } else {
-            updateAndStore(newCertificationDTO, keyContent, certContent);
+            updateAndStore(newCertificationDTO, keyContent, certContent, needToUpdateGitOps);
         }
 
         // 将资源对象生成yaml提交到gitlab
@@ -287,17 +287,19 @@ public class CertificationServiceImpl implements CertificationService {
      *
      * @param certificationDTO the information of certification
      */
-    private void updateAndStore(CertificationDTO certificationDTO, @Nullable String keyContent, @Nullable String certContent) {
+    private void updateAndStore(CertificationDTO certificationDTO, @Nullable String keyContent, @Nullable String certContent, Boolean needToUpdateGitOps) {
         // create
         certificationDTO.setName(null);
         certificationDTO = baseUpdate(certificationDTO);
         Long certId = certificationDTO.getId();
 
-        CertificationDTO updateCertificationDTO = new CertificationDTO();
-        updateCertificationDTO.setId(certificationDTO.getId());
-        updateCertificationDTO.setCommandId(createCertCommand(CommandType.UPDATE.getType(), certId, null));
-        // cert command
-        baseUpdateCommandId(updateCertificationDTO);
+        if (Boolean.TRUE.equals(needToUpdateGitOps)) {
+            CertificationDTO updateCertificationDTO = new CertificationDTO();
+            updateCertificationDTO.setId(certificationDTO.getId());
+            updateCertificationDTO.setCommandId(createCertCommand(CommandType.UPDATE.getType(), certId, null));
+            // cert command
+            baseUpdateCommandId(updateCertificationDTO);
+        }
         // store crt & key if type is upload
         updateCertFile(keyContent, certContent, certificationDTO);
 
