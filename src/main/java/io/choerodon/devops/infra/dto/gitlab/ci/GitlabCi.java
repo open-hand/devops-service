@@ -41,6 +41,18 @@ public class GitlabCi {
     @ApiModelProperty("before_script")
     private List<String> beforeScript;
 
+    @YamlProperty(value = "default")
+    @JsonProperty("default")
+    private Map<String, String> defaultSection;
+
+    public Map<String, String> getDefaultSection() {
+        return defaultSection;
+    }
+
+    public void setDefaultSection(Map<String, String> defaultSection) {
+        this.defaultSection = defaultSection;
+    }
+
     public Map<String, String> getVariables() {
         return variables;
     }

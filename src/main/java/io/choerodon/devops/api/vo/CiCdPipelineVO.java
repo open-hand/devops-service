@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -54,6 +55,10 @@ public class CiCdPipelineVO {
     private String latestExecuteStatus;
     @ApiModelProperty(name = "流水线是否含有执行记录的标志")
     private Boolean hasRecords = false;
+
+    @ApiModelProperty("是否可中断")
+    @Column(name = "is_interruptible")
+    private Boolean interruptible;
     @ApiModelProperty(name = "是否拥有流水线编辑权限")
     private Boolean edit;
     @ApiModelProperty(name = "流程耗时")
@@ -84,6 +89,14 @@ public class CiCdPipelineVO {
     private List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList;
     @ApiModelProperty(name = "Docker认证配置")
     private List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOList;
+
+    public Boolean getInterruptible() {
+        return interruptible;
+    }
+
+    public void setInterruptible(Boolean interruptible) {
+        this.interruptible = interruptible;
+    }
 
     public Boolean getEnableSchedule() {
         return enableSchedule;
