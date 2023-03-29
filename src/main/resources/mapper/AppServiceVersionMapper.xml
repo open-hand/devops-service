@@ -619,7 +619,7 @@
         FROM devops_app_service_version dasv
         <where>
             dasv.app_service_id = #{appServiceId}
-            <if test="version!=null and version.length > 0">
+            <if test="versions!=null and versions.length > 0">
                 and
                 <foreach collection="versions" open="(" close=")" separator="OR" index="i" item="version">
                     dasv.version LIKE CONCAT(CONCAT('%', #{version}, '%'))
