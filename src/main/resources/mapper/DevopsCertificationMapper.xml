@@ -4,6 +4,12 @@
     <resultMap id="certificationDTOWithNoticeObjects" type="io.choerodon.devops.infra.dto.CertificationDTO">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
+        <result column="env_id" property="envId"/>
+        <result column="project_id" property="projectId"/>
+        <result column="valid_until" property="validUntil"/>
+        <result column="object_version_number" property="objectVersionNumber"/>
+        <result column="advance_days" property="advanceDays"/>
+        <result column="env_name" property="envName"/>
         <collection property="notifyObjects"
                     ofType="io.choerodon.devops.api.vo.CertificationNotifyObject">
             <id column="object_id" property="id"/>
@@ -170,13 +176,19 @@
     </select>
 
     <select id="listExpireCertificate" resultMap="certificationDTOWithNoticeObjects">
-        SELECT dc.id          AS id,
-               dc.name        AS name,
-               dc.valid_until AS valid_until,
-               dcn.type       AS object_type,
-               dcn.object_id  AS object_id
+        SELECT dc.id                    AS id,
+               dc.name                  AS name,
+               dc.valid_until           AS valid_until,
+               dc.env_id                AS env_id,
+               dcn.type                 AS object_type,
+               dcn.object_id            AS object_id,
+               dc.object_version_number AS object_version_number,
+               dc.advance_days          AS advance_days,
+               de.project_id            AS project_id,
+               de.name                  AS env_name
         FROM devops_certification dc
                  INNER JOIN devops_certification_notice dcn ON dc.id = dcn.certification_id
+                 INNER JOIN devops_env de ON de.id = dc.env_id
         WHERE dc.advance_days IS NOT NULL
           AND dc.notice_send_flag = 0
           AND dc.valid_until IS NOT NULL

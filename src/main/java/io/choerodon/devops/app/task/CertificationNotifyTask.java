@@ -4,7 +4,6 @@ import java.util.Map;
 
 import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.schedule.annotation.JobTask;
@@ -15,10 +14,9 @@ import io.choerodon.devops.app.service.CertificationService;
  * 每天0点定时遍历证书，发送消息
  * 〈〉
  *
- * @author wanghao
- * @since 2022/11/23 17:22
+ * @author lihao
+ * @since 2023/03/29 17:22
  */
-@ConditionalOnProperty(value = "local.test", havingValue = "false", matchIfMissing = true)
 @Component
 public class CertificationNotifyTask {
     private static final String FIND_AND_SEND_CERTIFICATION_EXPIRE_NOTICE = "findAndSendCertificationExpireNotice";

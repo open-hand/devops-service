@@ -82,7 +82,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     private static final String INSTANCE_URL = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&envId=%s&activeKey=resource&itemType=instances";
 
-    private static final String ENV_AND_CERTIFICATION_LINK = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&searchName=%s&searchId=%s";
+    public static final String ENV_AND_CERTIFICATION_LINK = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&searchName=%s&searchId=%s";
 
     @Value(value = "${services.front.url: http://app.example.com}")
     private String frontUrl;
@@ -1486,6 +1486,15 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     params.put("errorMsg", errorMsg);
 
                     sendNotices(MessageCodeConstants.ENV_DEPLOY_FAIL, receivers, params, projectDTO.getId());
+                },
+                ex -> LOGGER.info("Failed to send env deploy fail message", ex));
+    }
+
+    @Override
+    public void sendCertificationExpireNotice(List<Receiver> receivers, Map<String, String> params, Long projectId) {
+        doWithTryCatchAndLog(
+                () -> {
+                    sendNotices(MessageCodeConstants.CERTIFICATION_EXPIRE, receivers, params, projectId);
                 },
                 ex -> LOGGER.info("Failed to send env deploy fail message", ex));
     }
