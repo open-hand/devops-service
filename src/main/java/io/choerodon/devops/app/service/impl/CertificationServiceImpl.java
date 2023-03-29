@@ -592,6 +592,8 @@ public class CertificationServiceImpl implements CertificationService {
             CertificationDTO orgCertificationDTO = devopsCertificationMapper.queryById(certificationDTO.getOrgCertId());
             respVO.setDomains(getPrefixDomains(JsonHelper.unmarshalByJackson(orgCertificationDTO.getDomains(), new TypeReference<List<String>>() {
             }).get(0), domains));
+        } else {
+            respVO.setDomains(domains);
         }
         respVO.setCommonName(domains.isEmpty() ? null : domains.get(0));
         respVO.setIngresses(listIngressNamesByCertId(certId));
