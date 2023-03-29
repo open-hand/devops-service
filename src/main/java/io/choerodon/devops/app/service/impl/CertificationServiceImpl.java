@@ -694,6 +694,9 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public void updateNotifyInfo(CertificationDTO certificationDTO) {
+        if (certificationDTO.getAdvanceDays() == null) {
+            devopsCertificationMapper.updateAdvanceDaysToNull(certificationDTO.getId());
+        }
         devopsCertificationNoticeService.batchUpdate(certificationDTO.getId(), certificationDTO.getNotifyObjects());
     }
 
