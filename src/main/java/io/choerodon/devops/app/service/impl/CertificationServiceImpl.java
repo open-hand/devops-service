@@ -13,6 +13,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.netflix.servo.util.Strings;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.MessageSender;
+import org.hzero.boot.message.entity.Receiver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -24,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
@@ -31,6 +38,7 @@ import io.choerodon.devops.api.vo.kubernetes.certification.*;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
+import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -66,6 +74,7 @@ public class CertificationServiceImpl implements CertificationService {
     private static final String DEVOPS_INSERT_CERTIFICATION_FILE = "devops.insert.certification.file";
 
     private static final String DEVOPS_UPDATE_CERTIFICATION_FILE = "devops.update.certification.file";
+    private static final Logger LOGGER = LoggerFactory.getLogger(CertificationServiceImpl.class);
 
 
     @Autowired
@@ -103,6 +112,8 @@ public class CertificationServiceImpl implements CertificationService {
     private DevopsCertificationNoticeService devopsCertificationNoticeService;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private MessageClient messageClient;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -731,6 +742,80 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public int updateStatusIfOperating(Long certId, CertificationStatus certificationStatus) {
         return devopsCertificationMapper.updateStatusIfOperating(Objects.requireNonNull(certId), certificationStatus.getStatus());
+    }
+
+    @Override
+    public void findAndSendCertificationExpireNotice() {
+        // 查询开启到期前通知的证书
+        List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listExpireCertificate();
+        Set<Long> roleIds = new HashSet<>();
+        Set<Long> userIds = new HashSet<>();
+        Calendar nowCalendar = Calendar.getInstance();
+        nowCalendar.setTime(new Date());
+        certificationDTOS.stream().filter(c -> {
+            if (Boolean.TRUE.equals(c.getNoticeSendFlag())) {
+                return false;
+            }
+            Date validUntil = c.getValidUntil();
+            if (validUntil == null) {
+                return false;
+            }
+            Calendar validUtilCalendar = Calendar.getInstance();
+            validUtilCalendar.setTime(validUntil);
+            validUtilCalendar.add(Calendar.DATE, -c.getAdvanceDays());
+            if (nowCalendar.after(validUtilCalendar)) {
+                LOGGER.info("Certification:{} will expire.Expire Date:{}", c.getName(), validUntil);
+                return true;
+            }
+            return false;
+        }).forEach(certificationDTO -> {
+            for (C7nCertificationCreateOrUpdateVO.NotifyObject notifyObject : certificationDTO.getNotifyObjects()) {
+                if (notifyObject.getType().equals("user")) {
+                    userIds.add(notifyObject.getId());
+                } else {
+                    roleIds.add(notifyObject.getId());
+                }
+            }
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(certificationDTO.getProjectId());
+            StringMapBuilder params = StringMapBuilder.newBuilder();
+            params.put("envId", certificationDTO.getEnvId());
+            params.put("projectId", projectDTO.getId());
+            params.put("organizationId", projectDTO.getOrganizationId());
+            params.put("projectName", projectDTO.getName());
+            params.put("certId", certificationDTO.getId());
+            params.put("certName", certificationDTO.getName());
+
+
+            List<IamUserDTO> iamUserDTOS = new ArrayList<>();
+            iamUserDTOS.addAll(baseServiceClientOperator.listUsersByIds(new ArrayList<>(userIds)));
+            iamUserDTOS.addAll(baseServiceClientOperator.listUsersUnderRoleByIds(certificationDTO.getProjectId(), Strings.join(",", roleIds.iterator())));
+
+            List<Receiver> receivers = new ArrayList<>();
+
+            iamUserDTOS.forEach(user -> {
+                Receiver receiver = new Receiver();
+                receiver.setEmail(GitUserNameUtil.getEmail());
+                receiver.setUserId(GitUserNameUtil.getUserId());
+                receiver.setTargetUserTenantId(DetailsHelper.getUserDetails().getTenantId());
+                receiver.setPhone(user.getPhone());
+                receivers.add(receiver);
+            });
+
+            MessageSender messageSender = new MessageSender();
+            messageSender.setTenantId(0L);
+            messageSender.setMessageCode(MessageCodeConstants.CERTIFICATION_EXPIRE);
+            messageSender.setArgs(params.build());
+            messageSender.setAdditionalInformation(new HashMap<>());
+            messageSender.setReceiverAddressList(receivers);
+            try {
+                messageClient.async().sendMessage(messageSender);
+                certificationDTO.setNoticeSendFlag(true);
+                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCertificationMapper, certificationDTO, "error.devops.certification.expire.notice.flag.update");
+            } catch (Exception e) {
+                throw new CommonException("devops.certification.expire.notice.send");
+            }
+        });
+
     }
 
     @Override
