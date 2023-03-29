@@ -180,7 +180,7 @@ public class BaseServiceClientOperator {
                     .listUsersUnderRoleByIds(projectId, roleIds), new TypeReference<List<IamUserDTO>>() {
             });
         } catch (Exception e) {
-            throw new CommonException("Failed to query user based on the role id");
+            throw new CommonException("Failed to query user based on the role id", e);
         }
     }
 

@@ -60,6 +60,8 @@ public class CertificationDTO extends AuditDomain {
     private String error;
     @Transient
     private List<CertificationNotifyObject> notifyObjects;
+    @Transient
+    private String envName;
 
 
     public CertificationDTO() {
@@ -329,5 +331,13 @@ public class CertificationDTO extends AuditDomain {
 
     public void setNoticeSendFlag(Boolean noticeSendFlag) {
         this.noticeSendFlag = noticeSendFlag;
+    }
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
     }
 }

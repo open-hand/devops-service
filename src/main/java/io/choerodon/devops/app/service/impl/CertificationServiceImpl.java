@@ -1,9 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
+import static io.choerodon.devops.app.service.impl.SendNotificationServiceImpl.ENV_AND_CERTIFICATION_LINK;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL;
 
 import java.io.File;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -14,13 +17,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.netflix.servo.util.Strings;
-import org.hzero.boot.message.MessageClient;
-import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
@@ -38,7 +39,6 @@ import io.choerodon.devops.api.vo.kubernetes.certification.*;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
-import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -76,6 +76,10 @@ public class CertificationServiceImpl implements CertificationService {
     private static final String DEVOPS_UPDATE_CERTIFICATION_FILE = "devops.update.certification.file";
     private static final Logger LOGGER = LoggerFactory.getLogger(CertificationServiceImpl.class);
 
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    @Value(value = "${services.front.url: http://app.example.com}")
+    private String frontUrl;
 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -112,9 +116,6 @@ public class CertificationServiceImpl implements CertificationService {
     private DevopsCertificationNoticeService devopsCertificationNoticeService;
     @Autowired
     private ObjectMapper objectMapper;
-    @Autowired
-    private MessageClient messageClient;
-
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -759,14 +760,14 @@ public class CertificationServiceImpl implements CertificationService {
                 return false;
             }
             Date validUntil = c.getValidUntil();
-            if (validUntil == null) {
+            if (validUntil == null || c.getAdvanceDays() == null) {
                 return false;
             }
             Calendar validUtilCalendar = Calendar.getInstance();
             validUtilCalendar.setTime(validUntil);
             validUtilCalendar.add(Calendar.DATE, -c.getAdvanceDays());
             if (nowCalendar.after(validUtilCalendar)) {
-                LOGGER.info("Certification:{} will expire.Expire Date:{}", c.getName(), validUntil);
+                LOGGER.info("Certification:{} will expire.Expire Date:{}", c.getName(), validUntil.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().format(DATE_TIME_FORMATTER));
                 return true;
             }
             return false;
@@ -786,6 +787,11 @@ public class CertificationServiceImpl implements CertificationService {
             params.put("projectName", projectDTO.getName());
             params.put("certId", certificationDTO.getId());
             params.put("certName", certificationDTO.getName());
+            params.put("searchName", certificationDTO.getName());
+            params.put("searchId", certificationDTO.getId());
+            params.put("envName", certificationDTO.getEnvName());
+            params.put("date", certificationDTO.getValidUntil().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().format(DATE_TIME_FORMATTER));
+            params.put("link", String.format(ENV_AND_CERTIFICATION_LINK, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), certificationDTO.getName(), certificationDTO.getId()));
 
 
             List<IamUserDTO> iamUserDTOS = new ArrayList<>();
@@ -796,21 +802,15 @@ public class CertificationServiceImpl implements CertificationService {
 
             iamUserDTOS.forEach(user -> {
                 Receiver receiver = new Receiver();
-                receiver.setEmail(GitUserNameUtil.getEmail());
-                receiver.setUserId(GitUserNameUtil.getUserId());
-                receiver.setTargetUserTenantId(DetailsHelper.getUserDetails().getTenantId());
+                receiver.setEmail(user.getEmail());
+                receiver.setUserId(user.getId());
+                receiver.setTargetUserTenantId(user.getOrganizationId());
                 receiver.setPhone(user.getPhone());
                 receivers.add(receiver);
             });
 
-            MessageSender messageSender = new MessageSender();
-            messageSender.setTenantId(0L);
-            messageSender.setMessageCode(MessageCodeConstants.CERTIFICATION_EXPIRE);
-            messageSender.setArgs(params.build());
-            messageSender.setAdditionalInformation(new HashMap<>());
-            messageSender.setReceiverAddressList(receivers);
             try {
-                messageClient.async().sendMessage(messageSender);
+                sendNotificationService.sendCertificationExpireNotice(receivers, params.build(), certificationDTO.getProjectId());
                 certificationDTO.setNoticeSendFlag(true);
                 MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCertificationMapper, certificationDTO, "error.devops.certification.expire.notice.flag.update");
             } catch (Exception e) {
