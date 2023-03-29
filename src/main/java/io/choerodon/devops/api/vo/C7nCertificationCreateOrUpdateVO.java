@@ -3,7 +3,6 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class C7nCertificationCreateOrUpdateVO {
     private String id;
@@ -22,7 +21,7 @@ public class C7nCertificationCreateOrUpdateVO {
     @ApiModelProperty("操作类型 create/update")
     private String operateType;
 
-    private List<NotifyObject> notifyObjects;
+    private List<CertificationNotifyObject> certificationNotifyObjects;
 
     private String notifyObjectsJsonStr;
 
@@ -40,62 +39,6 @@ public class C7nCertificationCreateOrUpdateVO {
         this.objectVersionNumber = objectVersionNumber;
     }
 
-    /**
-     * 通知对象类
-     */
-    public static class NotifyObject {
-        @ApiModelProperty("通知对象类型 user/role")
-        private String type;
-        @ApiModelProperty("id")
-        @Encrypt
-        private Long id;
-        @Encrypt
-        private Long certificationId;
-        private String realName;
-
-        public String getRealName() {
-            return realName;
-        }
-
-        public void setRealName(String realName) {
-            this.realName = realName;
-        }
-
-        public NotifyObject() {
-
-        }
-
-        public NotifyObject(String type, Long id, Long certificationId) {
-            this.type = type;
-            this.id = id;
-            this.certificationId = certificationId;
-        }
-
-        public Long getCertificationId() {
-            return certificationId;
-        }
-
-        public void setCertificationId(Long certificationId) {
-            this.certificationId = certificationId;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-    }
-
     public String getOperateType() {
         return operateType;
     }
@@ -104,12 +47,12 @@ public class C7nCertificationCreateOrUpdateVO {
         this.operateType = operateType;
     }
 
-    public List<NotifyObject> getNotifyObjects() {
-        return notifyObjects;
+    public List<CertificationNotifyObject> getNotifyObjects() {
+        return certificationNotifyObjects;
     }
 
-    public void setNotifyObjects(List<NotifyObject> notifyObjects) {
-        this.notifyObjects = notifyObjects;
+    public void setNotifyObjects(List<CertificationNotifyObject> certificationNotifyObjects) {
+        this.certificationNotifyObjects = certificationNotifyObjects;
     }
 
     public String getNotifyObjectsJsonStr() {

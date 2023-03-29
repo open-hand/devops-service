@@ -204,5 +204,5 @@ public interface BaseServiceClient {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目层根据角色id集合查询角色下的用户")
     @PostMapping(value = "/choerodon/projects/{project_id}/role_members/users/by_role_ids")
-    ResponseEntity<String> listUsersUnderRoleByIds(Long projectId, String roleIds);
+    ResponseEntity<String> listUsersUnderRoleByIds(@PathVariable(name = "project_id") Long projectId, @RequestParam String roleIdString);
 }
