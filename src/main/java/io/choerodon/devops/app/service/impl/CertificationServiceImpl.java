@@ -576,7 +576,7 @@ public class CertificationServiceImpl implements CertificationService {
         }
 
         if (certificationDTO.getCertificationFileId() != null) {
-            CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationDTO.getCertificationFileId());
+            CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationDTO.getId());
             if (certificationFileDTO != null) {
                 certificationDTO.setKeyValue(certificationFileDTO.getKeyFile());
                 certificationDTO.setCertValue(certificationFileDTO.getCertFile());
@@ -593,9 +593,10 @@ public class CertificationServiceImpl implements CertificationService {
             respVO.setDomains(getPrefixDomains(JsonHelper.unmarshalByJackson(orgCertificationDTO.getDomains(), new TypeReference<List<String>>() {
             }).get(0), domains));
         }
-        respVO.setCommonName(domains.isEmpty() ? null : domains.remove(0));
+        respVO.setCommonName(domains.isEmpty() ? null : domains.get(0));
         respVO.setIngresses(listIngressNamesByCertId(certId));
         respVO.setCertId(certificationDTO.getOrgCertId());
+        respVO.setCertName(respVO.getName());
 
         List<CertificationNoticeDTO> certificationNoticeDTOList = devopsCertificationNoticeService.listByCertificationId(certId);
         if (!CollectionUtils.isEmpty(certificationNoticeDTOList)) {

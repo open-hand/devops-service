@@ -16,8 +16,11 @@ public class CertificationRespVO extends DevopsResourceDataInfoVO {
     @Encrypt
     @ApiModelProperty("证书id")
     private Long id;
+    @Deprecated
     @ApiModelProperty("证书名称")
     private String name;
+    @ApiModelProperty("证书名称")
+    private String certName;
     @ApiModelProperty("泛域名")
     private String commonName;
     @ApiModelProperty("DNS名称")
@@ -57,8 +60,77 @@ public class CertificationRespVO extends DevopsResourceDataInfoVO {
     private String type;
     private String certValue;
     private String keyValue;
+    private String status;
 
     private Long objectVersionNumber;
+
+    @ApiModelProperty("组织id")
+    private Long organizationId;
+    @Encrypt
+    @ApiModelProperty("环境id")
+    private Long envId;
+    @ApiModelProperty("环境名称")
+    private String envName;
+    @ApiModelProperty("环境是否连接")
+    private Boolean envConnected;
+    @ApiModelProperty("是否跳过权限校验")
+    private Boolean skipCheckProjectPermission;
+
+    public String getCertName() {
+        return certName;
+    }
+
+    public void setCertName(String certName) {
+        this.certName = certName;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
+
+    public Boolean getEnvConnected() {
+        return envConnected;
+    }
+
+    public void setEnvConnected(Boolean envConnected) {
+        this.envConnected = envConnected;
+    }
+
+    public Boolean getSkipCheckProjectPermission() {
+        return skipCheckProjectPermission;
+    }
+
+    public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
+        this.skipCheckProjectPermission = skipCheckProjectPermission;
+    }
 
     public List<String> getDomains() {
         return domains;
