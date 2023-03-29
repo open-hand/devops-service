@@ -37,10 +37,10 @@ public class DevopsCertificationNoticeServiceImpl implements DevopsCertification
     @Transactional
     @Override
     public void batchUpdate(Long certificationId, List<CertificationNotifyObject> notifyObjects) {
+        devopsCertificationNoticeMapper.deleteByCertificationId(certificationId);
         if (ObjectUtils.isEmpty(notifyObjects)) {
             return;
         }
-        devopsCertificationNoticeMapper.deleteByCertificationId(certificationId);
         batchCreate(certificationId, notifyObjects);
     }
 
