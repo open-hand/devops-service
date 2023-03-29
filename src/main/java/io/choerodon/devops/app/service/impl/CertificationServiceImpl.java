@@ -893,9 +893,9 @@ public class CertificationServiceImpl implements CertificationService {
                     CertificationFileDTO orgCertificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationVO.getCertId());
                     if (!org.apache.commons.collections.CollectionUtils.isEqualCollection(JsonHelper.unmarshalByJackson(oldCertification.getDomains(), new TypeReference<List<String>>() {
                     }), certificationVO.getDomains()) || !oldCertificationFileDTO.getKeyFile().equals(orgCertificationFileDTO.getKeyFile()) || !oldCertificationFileDTO.getCertFile().equals(orgCertificationFileDTO.getCertFile())) {
-                        certificationVO.setStatus(oldCertification.getStatus());
                         return true;
                     } else {
+                        certificationVO.setStatus(oldCertification.getStatus());
                         return false;
                     }
                 default:
