@@ -19,7 +19,6 @@ import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -27,7 +26,9 @@ import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.mapper.CiTemplateStageBusMapper;
+import io.choerodon.devops.infra.mapper.CiTemplateStageJobRelBusMapper;
+import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -67,14 +68,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private AppServiceHelmVersionService appServiceHelmVersionService;
     @Autowired
-    private AppServiceHelmVersionMapper appServiceHelmVersionMapper;
-    @Autowired
     private AppServiceHelmRelService appServiceHelmRelService;
-    @Autowired
-    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
-    @Autowired
-    private DevopsCdApiTestInfoService devopsCdApiTestInfoService;
-
 
     static {
         jobTypeMapping.put(JobTypeEnum.CD_AUDIT.value(), CiJobTypeEnum.AUDIT.value());
@@ -84,37 +78,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         jobTypeMapping.put(JobTypeEnum.CD_HOST.value(), CiJobTypeEnum.HOST_DEPLOY.value());
     }
 
-    @Autowired
-    private DevopsCdStageService devopsCdStageService;
-    @Autowired
-    private DevopsCdStageMapper devopsCdStageMapper;
-    @Autowired
-    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
-    @Autowired
-    private DevopsCiStageService devopsCiStageService;
-    @Autowired
-    private DevopsCdJobService devopsCdJobService;
-    @Autowired
-    private DevopsCdAuditMapper devopsCdAuditMapper;
-    @Autowired
-    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
-    @Autowired
-    private JobOperator jobOperator;
 
     @Autowired
     private HarborService harborService;
 
     @Autowired
-    private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper;
-    @Autowired
-    private AppServiceMapper appServiceMapper;
-    @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
-    @Autowired
-    private PipelineService pipelineService;
 
-    @Autowired
-    private DevopsCiPipelineService devopsCiPipelineService;
 
     @Autowired
     private CiTemplateStageBusMapper ciTemplateStageBusMapper;
@@ -148,9 +118,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 break;
             case FIX_HELM_IMAGE_VERSION_OF_NULL_DATA:
                 fixIHelmImageVersionOfNullData();
-            case MIGRATION_CD_PIPELINE_DATE:
-                migrationCdPipelineDate();
-                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -160,44 +127,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
     }
 
-    /**
-     * 迁移cd流水线数据
-     * 1. 包含ci阶段的cd数据迁移到到ci
-     * 2. 不包含ci阶段的cd数据迁移到新的部署流水线
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void migrationCdPipelineDate() {
-        // 查询所有的cd阶段
-        List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageMapper.selectAll();
-        if (!CollectionUtils.isEmpty(devopsCdStageDTOS)) {
-            // 按流水线id分组
-            List<Long> errorIds = new ArrayList<>();
-            Map<Long, List<DevopsCdStageDTO>> stageMap = devopsCdStageDTOS.stream().collect(Collectors.groupingBy(DevopsCdStageDTO::getPipelineId));
-            stageMap.forEach((pipelineId, cdStageDTOS) -> {
-                //
-                try {
-                    devopsCiPipelineService.migrationPipelineData(pipelineId, cdStageDTOS);
-                } catch (Exception e) {
-                    errorIds.add(pipelineId);
-                    LOGGER.error("==================================[CICD]迁移cd数据失败，pipelineId: {}.==================================", pipelineId, e);
-                }
-            });
-            if (CollectionUtils.isEmpty(errorIds)) {
-                LOGGER.info("=====================================[CICD]迁移cd数据成功================================================");
-            } else {
-                LOGGER.info("=====================================[CICD]迁移cd数据成功，存在失败数据。PipelineIds:{}================================================", JsonHelper.marshalByJackson(errorIds));
-            }
-        }
-    }
-
-    @Override
-    public void fixPipeline(Long pipelineId) {
-        DevopsCdStageDTO devopsCdStageDTOToSearch = new DevopsCdStageDTO();
-        devopsCdStageDTOToSearch.setPipelineId(pipelineId);
-
-        List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageMapper.select(devopsCdStageDTOToSearch);
-        devopsCiPipelineService.migrationPipelineData(pipelineId, devopsCdStageDTOList);
-    }
 
     @Override
     public void fixCiTemplateStageJobRelSequence() {
