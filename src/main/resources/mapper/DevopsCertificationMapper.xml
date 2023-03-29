@@ -193,4 +193,10 @@
           AND dc.notice_send_flag = 0
           AND dc.valid_until IS NOT NULL
     </select>
+
+    <update id="updateAdvanceDaysToNull">
+        UPDATE devops_certification
+        SET advance_days = NULL
+        WHERE id = #{id}
+    </update>
 </mapper>

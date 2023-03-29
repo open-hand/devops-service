@@ -52,4 +52,6 @@ public interface DevopsCertificationMapper extends BaseMapper<CertificationDTO> 
     Boolean checkNameUnique(@Param("envId") Long envId, @Param("certName") String certName, @Param("certId") Long certId);
 
     List<CertificationDTO> listExpireCertificate();
+
+    void updateAdvanceDaysToNull(@Param("id") Long id);
 }
