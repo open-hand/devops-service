@@ -1,5 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_CI_PIPELINE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_UPDATE_CI_JOB_RECORD;
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,16 +32,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_CI_PIPELINE;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_UPDATE_CI_JOB_RECORD;
-import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -116,9 +116,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private final CiPipelineSyncHandler ciPipelineSyncHandler;
     private final CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     private final AppServiceMapper appServiceMapper;
-    //    private DevopsCdPipelineService devopsCdPipelineService;
-//    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-//    private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     private SendNotificationService sendNotificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -176,13 +173,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Autowired
     protected DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
-
-    @Autowired
-    protected DevopsCdAuditService devopsCdAuditService;
-
-    @Autowired
-    protected DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
-
     @Autowired
     protected TestServiceClientOperator testServiceClientoperator;
 
@@ -202,11 +192,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Autowired
     protected DevopsHostAppInstanceService devopsHostAppInstanceService;
-    @Autowired
-    protected DevopsCdJobService devopsCdJobService;
-    @Autowired
-    protected DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
-
     @Autowired
     protected HostConnectionHandler hostConnectionHandler;
     @Autowired
@@ -240,7 +225,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              GitlabServiceClientOperator gitlabServiceClientOperator,
                                              @Lazy CiPipelineSyncHandler ciPipelineSyncHandler,
                                              DevopsGitlabCommitService devopsGitlabCommitService,
-//                                             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
                                              SendNotificationService sendNotificationService
     ) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
@@ -258,8 +242,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.ciPipelineSyncHandler = ciPipelineSyncHandler;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
         this.appServiceMapper = appServiceMapper;
-//        this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
-//        this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
         this.sendNotificationService = sendNotificationService;
     }
 
