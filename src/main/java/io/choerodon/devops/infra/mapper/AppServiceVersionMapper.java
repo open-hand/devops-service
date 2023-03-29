@@ -97,5 +97,6 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
     Integer queryCountVersionsWithHelmConfigNullOrImageConfigNull();
 
     List<AppServiceVersionDTO> listAllVersionsWithHelmConfigNullOrImageConfigNull();
-    AppServiceVersionDTO queryLatestByAppServiceIdVersionType(@Param("appServiceId") Long appServiceId, @Param("version") String version);
+
+    AppServiceVersionDTO queryLatestByAppServiceIdVersionType(@Param("appServiceId") Long appServiceId, @Param("versions") Set<String> versions);
 }

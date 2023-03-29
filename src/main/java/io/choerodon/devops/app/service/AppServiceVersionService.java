@@ -253,5 +253,5 @@ public interface AppServiceVersionService {
 
     List<AppServiceVersionDTO> listAllVersionsWithHelmConfigNullOrImageConfigNull();
 
-    AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, String version);
+    AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, Set<String> version);
 }
