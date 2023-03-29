@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCertificationMapper">
+    <resultMap id="certificationDTOWithNoticeObjects" type="io.choerodon.devops.infra.dto.CertificationDTO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <collection property="notifyObjects"
+                    ofType="io.choerodon.devops.api.vo.C7nCertificationCreateOrUpdateVO.NotifyObject">
+            <id column="object_id" property="id"/>
+            <result column="object_type" property="type"/>
+        </collection>
+    </resultMap>
     <select id="listCertificationByOptions" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
         SELECT
         dc.id,
@@ -159,5 +167,18 @@
         <if test="certId != null">
             AND id != #{certId}
         </if>
+    </select>
+
+    <select id="listExpireCertificate" resultMap="certificationDTOWithNoticeObjects">
+        SELECT dc.id          AS id,
+               dc.name        AS name,
+               dc.valid_until AS valid_until,
+               dcn.type       AS object_type,
+               dcn.object_id  AS object_id
+        FROM devops_certification dc
+                 INNER JOIN devops_certification_notice dcn ON dc.id = dcn.certification_id
+        WHERE dc.advance_days IS NOT NULL
+          AND dc.notice_send_flag = 0
+          AND dc.valid_until IS NOT NULL
     </select>
 </mapper>

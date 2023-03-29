@@ -85,4 +85,10 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification.groovy') {
         }
     }
 
+    changeSet(author: 'lihao', id: '2023-03-29-add-column') {
+        addColumn(tableName: 'devops_certification') {
+            column(name: 'notice_send_flag', type: 'TINYINT(1)', remarks: '证书过期通知发送标识 0 未发送 1 已发送', defaultValue: 0)
+        }
+    }
+
 }

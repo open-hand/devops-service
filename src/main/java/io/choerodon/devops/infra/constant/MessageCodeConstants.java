@@ -31,6 +31,7 @@ public class MessageCodeConstants {
      */
     public static final String CERTIFICATION_CREATION_FAILURE = "CERTIFICATIONFAILURE";
     public static final String GITLAB_CONTINUOUS_DELIVERY_FAILURE = "GITLABCONTINUOUSDELIVERYFAILURE";
+    public static final String CERTIFICATION_EXPIRE = "CERTIFICATIONEXPIRE";
     /**
      * 创建域名失败
      */
@@ -81,7 +82,7 @@ public class MessageCodeConstants {
     public static final String PIPELINE_PASS = "PIPELINEPASS";
     public static final String CREATE_INSTANCE_SUCCESS = "CREATEINSTANCESUCCESS";
     /**
-     *  新建实例失败
+     * 新建实例失败
      */
     public static final String CREATE_INSTANCE_FAIL = "CREATEINSTANCEFAIL";
     public static final String UPDATE_INSTANCE_SUCCESS = "UPDATEINSTANCESUCCESS";

@@ -115,4 +115,6 @@ public interface CertificationService {
     void updateStatus(CertificationDTO certificationDTO);
 
     int updateStatusIfOperating(Long certId, CertificationStatus certificationStatus);
+
+    void findAndSendCertificationExpireNotice();
 }

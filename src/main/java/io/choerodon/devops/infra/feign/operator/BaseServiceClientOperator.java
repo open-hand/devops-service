@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
@@ -72,7 +73,6 @@ public class BaseServiceClientOperator {
             throw new CommonException(DEVOPS_ORGANIZATION_ROLE_ID_GET, code);
         }
     }
-
 
 
     public ProjectDTO queryIamProjectBasicInfoById(Long projectId) {
@@ -169,6 +169,19 @@ public class BaseServiceClientOperator {
             }
         }
         return userDTOS;
+    }
+
+    public List<IamUserDTO> listUsersUnderRoleByIds(Long projectId, String roleIds) {
+        if (ObjectUtils.isEmpty(roleIds)) {
+            return new ArrayList<>();
+        }
+        try {
+            return ResponseUtils.getResponse(baseServiceClient
+                    .listUsersUnderRoleByIds(projectId, roleIds), new TypeReference<List<IamUserDTO>>() {
+            });
+        } catch (Exception e) {
+            throw new CommonException("Failed to query user based on the role id");
+        }
     }
 
     public Boolean checkSiteAccess(Long userId) {
@@ -332,7 +345,8 @@ public class BaseServiceClientOperator {
         return this.listUsersByIds(ids);
     }
 
-    public Page<IamUserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, int page, int size, String params) {
+    public Page<IamUserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, int page, int size, String
+            params) {
         return baseServiceClient.pagingQueryUsersWithRolesOnProjectLevel(projectId, page, size, params).getBody();
     }
 
@@ -416,10 +430,10 @@ public class BaseServiceClientOperator {
         // 项目下所有项目所有者
         this.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue())
                 .stream().filter(IamUserDTO::getEnabled).forEach(t -> {
-            if (!memberIds.contains(t.getId())) {
-                list.add(t);
-            }
-        });
+                    if (!memberIds.contains(t.getId())) {
+                        list.add(t);
+                    }
+                });
         return list;
     }
 

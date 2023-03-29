@@ -11,10 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by younger on 2018/3/29.
@@ -198,4 +200,9 @@ public interface BaseServiceClient {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "角色标签", required = true)
             @PathVariable("role_lable") String roleLable);
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目层根据角色id集合查询角色下的用户")
+    @PostMapping(value = "/choerodon/projects/{project_id}/role_members/users/by_role_ids")
+    ResponseEntity<String> listUsersUnderRoleByIds(Long projectId, String roleIds);
 }

@@ -159,4 +159,9 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<List<IamUserDTO>> listProjectUsersByProjectIdAndRoleLabel(Long projectId, String roleLable) {
         throw new CommonException("devops.query.gitlab.owner.user");
     }
+
+    @Override
+    public ResponseEntity<String> listUsersUnderRoleByIds(Long projectId, String roleIds) {
+        throw new CommonException("devops.list.users.by.role.ids");
+    }
 }

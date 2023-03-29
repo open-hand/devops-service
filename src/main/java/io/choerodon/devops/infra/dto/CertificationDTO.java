@@ -44,6 +44,7 @@ public class CertificationDTO extends AuditDomain {
     private Boolean expireNotice;
     private Integer advanceDays;
     private String type;
+    private Boolean noticeSendFlag;
 
     @Transient
     @ApiModelProperty("key文件内容")
@@ -135,6 +136,7 @@ public class CertificationDTO extends AuditDomain {
     public void setValid(Date from, Date until) {
         this.setValidFrom(from);
         this.setValidUntil(until);
+        this.setNoticeSendFlag(false);
     }
 
     public String getType() {
@@ -319,5 +321,13 @@ public class CertificationDTO extends AuditDomain {
 
     public void setNotifyObjects(List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
         this.notifyObjects = notifyObjects;
+    }
+
+    public Boolean getNoticeSendFlag() {
+        return noticeSendFlag;
+    }
+
+    public void setNoticeSendFlag(Boolean noticeSendFlag) {
+        this.noticeSendFlag = noticeSendFlag;
     }
 }
