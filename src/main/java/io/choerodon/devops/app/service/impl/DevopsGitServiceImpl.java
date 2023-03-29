@@ -154,6 +154,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private DevopsBranchMapper devopsBranchMapper;
     @Autowired
     private DevopsIngressService devopsIngressService;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     /**
      * 初始化转换类和处理关系的类
@@ -737,6 +739,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             //向agent发送同步指令
             agentCommandService.sendCommand(devopsEnvironmentDTO);
             LOGGER.info("发送GitOps同步成功指令成功");
+            sendNotificationService.sendEnvDeploySuccessMessage(devopsEnvironmentDTO);
         } catch (CommonException e) {
             String filePath = "";
             String errorCode = "";
@@ -757,6 +760,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
             devopsEnvFileErrorDTO.setError(error + ":" + errorCode);
             devopsEnvFileErrorService.baseCreateOrUpdate(devopsEnvFileErrorDTO);
+            sendNotificationService.sendEnvDeployFailMessage(devopsEnvironmentDTO, devopsEnvFileErrorDTO.getError());
             LOGGER.info(e.getMessage(), e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return;

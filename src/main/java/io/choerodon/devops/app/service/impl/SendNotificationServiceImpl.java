@@ -82,6 +82,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     private static final String INSTANCE_URL = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&envId=%s&activeKey=resource&itemType=instances";
 
+    private static final String ENV_AND_CERTIFICATION_LINK = "%s/#/devops/resource?type=project&id=%s&name=%s&organizationId=%s&searchName=%s&searchId=%s";
+
     @Value(value = "${services.front.url: http://app.example.com}")
     private String frontUrl;
     @Value("${services.gitlab.url}")
@@ -1438,6 +1440,62 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     sendNotices(MessageCodeConstants.PIPELINE_API_SUITE_WARNING, receivers, params, projectId);
                 },
                 ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
+    }
+
+    @Override
+    public void sendEnvDeploySuccessMessage(DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        doWithTryCatchAndLog(
+                () -> {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
+                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listProjectOwnerByProjectId(devopsEnvironmentDTO.getProjectId());
+                    List<Receiver> receivers = constructReceivers(iamUserDTOS);
+
+                    Map<String, String> params = new HashMap<>();
+                    String link = String.format(ENV_AND_CERTIFICATION_LINK, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsEnvironmentDTO.getName(), devopsEnvironmentDTO.getId());
+                    params.put("projectName", projectDTO.getName());
+                    params.put("projectId", projectDTO.getId().toString());
+                    params.put("organizationId", projectDTO.getOrganizationId().toString());
+                    params.put("searchId", devopsEnvironmentDTO.getId().toString());
+                    params.put("searchName", devopsEnvironmentDTO.getName());
+                    params.put("envName", devopsEnvironmentDTO.getName());
+                    params.put("link", link);
+
+                    sendNotices(MessageCodeConstants.ENV_DEPLOY_SUCCESS, receivers, params, projectDTO.getId());
+                },
+                ex -> LOGGER.info("Failed to send env deploy success message", ex));
+    }
+
+
+    @Override
+    public void sendEnvDeployFailMessage(DevopsEnvironmentDTO devopsEnvironmentDTO, String errorMsg) {
+        doWithTryCatchAndLog(
+                () -> {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
+                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listProjectOwnerByProjectId(devopsEnvironmentDTO.getProjectId());
+                    List<Receiver> receivers = constructReceivers(iamUserDTOS);
+
+                    Map<String, String> params = new HashMap<>();
+                    String link = String.format(ENV_AND_CERTIFICATION_LINK, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsEnvironmentDTO.getName(), devopsEnvironmentDTO.getId());
+                    params.put("projectName", projectDTO.getName());
+                    params.put("projectId", projectDTO.getId().toString());
+                    params.put("organizationId", projectDTO.getOrganizationId().toString());
+                    params.put("searchId", devopsEnvironmentDTO.getId().toString());
+                    params.put("searchName", devopsEnvironmentDTO.getName());
+                    params.put("envName", devopsEnvironmentDTO.getName());
+                    params.put("link", link);
+                    params.put("errorMsg", errorMsg);
+
+                    sendNotices(MessageCodeConstants.ENV_DEPLOY_FAIL, receivers, params, projectDTO.getId());
+                },
+                ex -> LOGGER.info("Failed to send env deploy fail message", ex));
+    }
+
+    private List<Receiver> constructReceivers(List<IamUserDTO> iamUserDTOS) {
+        List<Receiver> receivers = new ArrayList<>();
+        iamUserDTOS.forEach(iamUserDTO -> {
+            receivers.add(constructReceiver(iamUserDTO.getId(), iamUserDTO.getEmail(), iamUserDTO.getPhone(), iamUserDTO.getOrganizationId()));
+        });
+        return receivers;
     }
 
     private Receiver constructReceiver(Long userId) {

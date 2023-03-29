@@ -21,6 +21,10 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
  */
 public interface SendNotificationService {
 
+    void sendEnvDeploySuccessMessage(DevopsEnvironmentDTO devopsEnvironmentDTO);
+
+    void sendEnvDeployFailMessage(DevopsEnvironmentDTO devopsEnvironmentDTO, String errorMsg);
+
     /**
      * 发送通知
      *
