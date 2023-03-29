@@ -164,4 +164,26 @@ public class C7nCertificationVO {
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
     }
+
+    @Override
+    public String toString() {
+        return "C7nCertificationVO{" +
+                "id=" + id +
+                ", certName='" + certName + '\'' +
+                ", commonName='" + commonName + '\'' +
+                ", domains=" + domains +
+                ", type='" + type + '\'' +
+                ", certId=" + certId +
+                ", keyValue='" + keyValue + '\'' +
+                ", certValue='" + certValue + '\'' +
+                ", status='" + status + '\'' +
+                ", envId=" + envId +
+                ", envName='" + envName + '\'' +
+                ", envConnected=" + envConnected +
+                ", objectVersionNumber=" + objectVersionNumber +
+                ", notifyObjects=" + notifyObjects +
+                ", expireNotice=" + expireNotice +
+                ", advanceDays=" + advanceDays +
+                '}';
+    }
 }
