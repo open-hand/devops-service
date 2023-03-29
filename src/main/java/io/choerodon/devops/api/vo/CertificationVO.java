@@ -53,7 +53,7 @@ public class CertificationVO {
     @Encrypt
     private Long certId;
 
-    private List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects;
+    private List<CertificationNotifyObject> notifyObjects;
 
     private String notifyObjectsJsonStr;
 
@@ -97,11 +97,11 @@ public class CertificationVO {
         this.certValue = certValue;
     }
 
-    public List<C7nCertificationCreateOrUpdateVO.NotifyObject> getNotifyObjects() {
+    public List<CertificationNotifyObject> getNotifyObjects() {
         return notifyObjects;
     }
 
-    public void setNotifyObjects(List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+    public void setNotifyObjects(List<CertificationNotifyObject> notifyObjects) {
         this.notifyObjects = notifyObjects;
     }
 

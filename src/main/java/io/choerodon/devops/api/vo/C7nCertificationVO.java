@@ -29,7 +29,7 @@ public class C7nCertificationVO {
     private Boolean envConnected;
     private Long objectVersionNumber;
 
-    private List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects;
+    private List<CertificationNotifyObject> notifyObjects;
 
     @ApiModelProperty("是否设置到期前通知")
     private Boolean expireNotice;
@@ -37,11 +37,11 @@ public class C7nCertificationVO {
     @ApiModelProperty("到期提前多长时间通知")
     private Integer advanceDays;
 
-    public List<C7nCertificationCreateOrUpdateVO.NotifyObject> getNotifyObjects() {
+    public List<CertificationNotifyObject> getNotifyObjects() {
         return notifyObjects;
     }
 
-    public void setNotifyObjects(List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+    public void setNotifyObjects(List<CertificationNotifyObject> notifyObjects) {
         this.notifyObjects = notifyObjects;
     }
 

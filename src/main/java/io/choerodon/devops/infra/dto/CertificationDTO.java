@@ -6,7 +6,7 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.devops.api.vo.C7nCertificationCreateOrUpdateVO;
+import io.choerodon.devops.api.vo.CertificationNotifyObject;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -59,7 +59,7 @@ public class CertificationDTO extends AuditDomain {
     @Transient
     private String error;
     @Transient
-    private List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects;
+    private List<CertificationNotifyObject> notifyObjects;
 
 
     public CertificationDTO() {
@@ -89,7 +89,7 @@ public class CertificationDTO extends AuditDomain {
         this.orgCertId = orgCertId;
     }
 
-    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId, String type, Boolean expireNotice, Integer advanceDays, List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId, String type, Boolean expireNotice, Integer advanceDays, List<CertificationNotifyObject> notifyObjects) {
         this.type = type;
         this.id = id;
         this.name = name;
@@ -102,7 +102,7 @@ public class CertificationDTO extends AuditDomain {
         this.notifyObjects = notifyObjects;
     }
 
-    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId, String type, Boolean expireNotice, Integer advanceDays, List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects, Long objectVersionNumber) {
+    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId, String type, Boolean expireNotice, Integer advanceDays, List<CertificationNotifyObject> notifyObjects, Long objectVersionNumber) {
         this.type = type;
         this.id = id;
         this.name = name;
@@ -315,11 +315,11 @@ public class CertificationDTO extends AuditDomain {
         this.certValue = certValue;
     }
 
-    public List<C7nCertificationCreateOrUpdateVO.NotifyObject> getNotifyObjects() {
+    public List<CertificationNotifyObject> getNotifyObjects() {
         return notifyObjects;
     }
 
-    public void setNotifyObjects(List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+    public void setNotifyObjects(List<CertificationNotifyObject> notifyObjects) {
         this.notifyObjects = notifyObjects;
     }
 

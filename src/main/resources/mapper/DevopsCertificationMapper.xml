@@ -5,7 +5,7 @@
         <id column="id" property="id"/>
         <result column="name" property="name"/>
         <collection property="notifyObjects"
-                    ofType="io.choerodon.devops.api.vo.C7nCertificationCreateOrUpdateVO.NotifyObject">
+                    ofType="io.choerodon.devops.api.vo.CertificationNotifyObject">
             <id column="object_id" property="id"/>
             <result column="object_type" property="type"/>
         </collection>

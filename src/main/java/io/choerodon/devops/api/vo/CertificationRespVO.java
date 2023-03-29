@@ -41,7 +41,7 @@ public class CertificationRespVO extends DevopsResourceDataInfoVO {
     @ApiModelProperty("命令错误")
     private String error;
 
-    private List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects;
+    private List<CertificationNotifyObject> notifyObjects;
 
     @ApiModelProperty("是否设置到期前通知")
     private Boolean expireNotice;
@@ -188,11 +188,11 @@ public class CertificationRespVO extends DevopsResourceDataInfoVO {
         this.keyValue = keyValue;
     }
 
-    public List<C7nCertificationCreateOrUpdateVO.NotifyObject> getNotifyObjects() {
+    public List<CertificationNotifyObject> getNotifyObjects() {
         return notifyObjects;
     }
 
-    public void setNotifyObjects(List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjects) {
+    public void setNotifyObjects(List<CertificationNotifyObject> notifyObjects) {
         this.notifyObjects = notifyObjects;
     }
 

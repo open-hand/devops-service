@@ -144,7 +144,7 @@ public class CertificationServiceImpl implements CertificationService {
         }
         if (!ObjectUtils.isEmpty(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr())) {
             try {
-                c7NCertificationCreateOrUpdateVO.setNotifyObjects(objectMapper.readValue(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr(), new TypeReference<List<C7nCertificationCreateOrUpdateVO.NotifyObject>>() {
+                c7NCertificationCreateOrUpdateVO.setNotifyObjects(objectMapper.readValue(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr(), new TypeReference<List<CertificationNotifyObject>>() {
                 }));
             } catch (Exception e) {
                 throw new CommonException(ExceptionConstants.CertificationExceptionCode.ERROR_DEVOPS_CERTIFICATION_READ_NOTIFY_OBJECTS);
@@ -510,20 +510,20 @@ public class CertificationServiceImpl implements CertificationService {
             }
         }
 
-        Map<Long, List<C7nCertificationCreateOrUpdateVO.NotifyObject>> notifyObjectMap = new HashMap<>();
+        Map<Long, List<CertificationNotifyObject>> notifyObjectMap = new HashMap<>();
         if (!ObjectUtils.isEmpty(certificationIds)) {
             List<CertificationNoticeDTO> certificationNoticeDTOS = devopsCertificationNoticeService.listByCertificationIds(certificationIds);
             Set<Long> userIds = certificationNoticeDTOS.stream().filter(certificationNoticeDTO -> certificationNoticeDTO.getType().equals("user")).map(CertificationNoticeDTO::getObjectId).collect(Collectors.toSet());
             Map<Long, IamUserDTO> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(new ArrayList<>(userIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
             notifyObjectMap = certificationNoticeDTOS.stream().map(certificationNoticeDTO -> {
-                C7nCertificationCreateOrUpdateVO.NotifyObject notifyObject = new C7nCertificationCreateOrUpdateVO.NotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId());
+                CertificationNotifyObject notifyObject = new CertificationNotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId());
                 if (notifyObject.getType().equals("user")) {
                     if (iamUserDTOMap.get(notifyObject.getId()) != null) {
                         notifyObject.setRealName(iamUserDTOMap.get(notifyObject.getId()).getRealName());
                     }
                 }
                 return notifyObject;
-            }).collect(Collectors.groupingBy(C7nCertificationCreateOrUpdateVO.NotifyObject::getCertificationId));
+            }).collect(Collectors.groupingBy(CertificationNotifyObject::getCertificationId));
         }
 
         Map<Long, CertificationFileDTO> certificationFileMap = new HashMap<>();
@@ -538,7 +538,7 @@ public class CertificationServiceImpl implements CertificationService {
 
 
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
-        Map<Long, List<C7nCertificationCreateOrUpdateVO.NotifyObject>> finalNotifyObjectMap = notifyObjectMap;
+        Map<Long, List<CertificationNotifyObject>> finalNotifyObjectMap = notifyObjectMap;
         Map<Long, CertificationFileDTO> finalCertificationFileMap = certificationFileMap;
         Map<Long, CertificationDTO> finalOrgCertificationDTOMap = orgCertificationDTOMap;
         certificationDTOPage.getContent().stream().filter(certificationDTO -> certificationDTO.getOrganizationId() == null).forEach(certificationDTO -> {
@@ -615,9 +615,9 @@ public class CertificationServiceImpl implements CertificationService {
         if (!CollectionUtils.isEmpty(certificationNoticeDTOList)) {
             Set<Long> userIds = certificationNoticeDTOList.stream().filter(certificationNoticeDTO -> certificationNoticeDTO.getType().equals("user")).map(CertificationNoticeDTO::getObjectId).collect(Collectors.toSet());
             Map<Long, IamUserDTO> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(new ArrayList<>(userIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
-            List<C7nCertificationCreateOrUpdateVO.NotifyObject> notifyObjectList = certificationNoticeDTOList.stream()
+            List<CertificationNotifyObject> notifyObjectList = certificationNoticeDTOList.stream()
                     .map(certificationNoticeDTO -> {
-                        C7nCertificationCreateOrUpdateVO.NotifyObject notifyObject = new C7nCertificationCreateOrUpdateVO.NotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId());
+                        CertificationNotifyObject notifyObject = new CertificationNotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId());
                         if (notifyObject.getType().equals("user")) {
                             if (iamUserDTOMap.get(notifyObject.getId()) != null) {
                                 notifyObject.setRealName(iamUserDTOMap.get(notifyObject.getId()).getRealName());
@@ -769,7 +769,7 @@ public class CertificationServiceImpl implements CertificationService {
             }
             return false;
         }).forEach(certificationDTO -> {
-            for (C7nCertificationCreateOrUpdateVO.NotifyObject notifyObject : certificationDTO.getNotifyObjects()) {
+            for (CertificationNotifyObject notifyObject : certificationDTO.getNotifyObjects()) {
                 if (notifyObject.getType().equals("user")) {
                     userIds.add(notifyObject.getId());
                 } else {
