@@ -2808,10 +2808,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (valueDTO == null) {
             throw new CommonException("devops.value.not.exist");
         }
-        AppServiceInstanceDTO queryDTO = new AppServiceInstanceDTO();
-        queryDTO.setEnvId(valueDTO.getEnvId());
-        queryDTO.setAppServiceId(valueDTO.getAppServiceId());
-        return appServiceInstanceMapper.select(queryDTO);
+        return appServiceInstanceMapper.listInstanceByValueId(valueDTO.getEnvId(), valueDTO.getAppServiceId());
     }
 
     private String[] parseMarketRepo(String harborRepo) {
