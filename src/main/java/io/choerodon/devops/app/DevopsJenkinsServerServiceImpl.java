@@ -84,7 +84,7 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
             JenkinsClient client = JenkinsClient.builder().endPoint(devopsJenkinsServerVO.getUrl()).credentials(String.format("%s:%s", devopsJenkinsServerVO.getUsername(), devopsJenkinsServerVO.getPassword())).build();
             SystemInfo systemInfo = client.api().systemApi().systemInfo();
             if (systemInfo != null) {
-                if (systemInfo.errors().size() == 0) {
+                if (CollectionUtils.isEmpty(systemInfo.errors())) {
                     devopsJenkinsServerStatusCheckResponseVO.setSuccess(true);
                 } else {
                     devopsJenkinsServerStatusCheckResponseVO.setMessage(systemInfo.errors().get(0).exceptionName());
