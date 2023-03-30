@@ -49,4 +49,6 @@ public interface DevopsEnvCommandMapper extends BaseMapper<DevopsEnvCommandDTO> 
     void updateOperatingToSuccessBeforeDate(@Param("objectType") String objectType, @Param("objectId") Long objectId, @Param("beforeTime") java.util.Date beforeTime);
 
     Long queryWorkloadEffectCommandId(@Param("workloadType") String workloadType, @Param("workloadId") Long workloadId);
+
+    List<DevopsEnvCommandDTO> listByInstanceIdAndCommitSha(@Param("instanceId") Long instanceId, @Param("sha") String sha);
 }
