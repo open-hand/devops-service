@@ -48,7 +48,7 @@ public interface C7nJobsApi {
     C7nBuildInfo lastBuild(@Nullable @PathParam("optionalFolderPath") @ParamParser(OptionalFolderPathParser.class) String optionalFolderPath,
                            @PathParam("name") String jobName);
 
-    @Named("jobs:buildHisttory")
+    @Named("jobs:buildHistory")
     @Path("{optionalFolderPath}job/{name}/choerodon/buildHistory")
     @Fallback(CustomFallback.class)
     @ResponseParser(CustomResponseParser.class)
