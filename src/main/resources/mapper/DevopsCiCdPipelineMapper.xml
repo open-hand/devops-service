@@ -31,10 +31,11 @@
                dcp.app_service_id,
                dcp.object_version_number,
                dcp.created_by,
+               dcp.is_interruptible as interruptible,
                dcp.creation_date,
                dcp.last_updated_by,
                dcp.last_update_date,
-               dcp.is_enabled as enabled,
+               dcp.is_enabled       as enabled,
                dcp.token,
                dcp.image,
                dcp.version_name
