@@ -7,7 +7,7 @@ import com.cdancy.jenkins.rest.JenkinsClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.app.DevopsJenkinsServerService;
+import io.choerodon.devops.app.service.DevopsJenkinsServerService;
 import io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO;
 import io.choerodon.devops.infra.dto.JenkinsClientWrapper;
 

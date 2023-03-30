@@ -16,7 +16,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerStatusCheckResponseVO;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerVO;
 import io.choerodon.devops.api.vo.SearchVO;
-import io.choerodon.devops.app.DevopsJenkinsServerService;
+import io.choerodon.devops.app.service.DevopsJenkinsServerService;
 import io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;

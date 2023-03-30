@@ -21,7 +21,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.jenkins.*;
-import io.choerodon.devops.app.DevopsJenkinsServerService;
+import io.choerodon.devops.app.service.DevopsJenkinsServerService;
 import io.choerodon.devops.app.service.JenkinsJobService;
 import io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO;
 import io.choerodon.devops.infra.enums.DevopsJenkinsServerStatusEnum;

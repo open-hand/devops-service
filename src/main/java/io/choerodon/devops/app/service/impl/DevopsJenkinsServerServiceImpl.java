@@ -1,4 +1,4 @@
-package io.choerodon.devops.app;
+package io.choerodon.devops.app.service.impl;
 
 import java.io.InputStream;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.Optional;
 import com.cdancy.jenkins.rest.JenkinsClient;
 import com.cdancy.jenkins.rest.domain.plugins.Plugin;
 import com.cdancy.jenkins.rest.domain.plugins.Plugins;
-import com.cdancy.jenkins.rest.domain.system.SystemInfo;
+import com.cdancy.jenkins.rest.domain.statistics.OverallLoad;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +28,7 @@ import io.choerodon.devops.api.vo.DevopsJenkinsServerStatusCheckResponseVO;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerVO;
 import io.choerodon.devops.api.vo.SearchVO;
 import io.choerodon.devops.api.vo.jenkins.JenkinsPluginInfo;
+import io.choerodon.devops.app.service.DevopsJenkinsServerService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO;
 import io.choerodon.devops.infra.enums.DevopsJenkinsServerStatusEnum;
@@ -82,13 +83,9 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
         devopsJenkinsServerStatusCheckResponseVO.setSuccess(false);
         try {
             JenkinsClient client = JenkinsClient.builder().endPoint(devopsJenkinsServerVO.getUrl()).credentials(String.format("%s:%s", devopsJenkinsServerVO.getUsername(), devopsJenkinsServerVO.getPassword())).build();
-            SystemInfo systemInfo = client.api().systemApi().systemInfo();
-            if (systemInfo != null) {
-                if (CollectionUtils.isEmpty(systemInfo.errors())) {
-                    devopsJenkinsServerStatusCheckResponseVO.setSuccess(true);
-                } else {
-                    devopsJenkinsServerStatusCheckResponseVO.setMessage(systemInfo.errors().get(0).exceptionName());
-                }
+            OverallLoad overallLoad = client.api().statisticsApi().overallLoad();
+            if (overallLoad != null) {
+                devopsJenkinsServerStatusCheckResponseVO.setSuccess(true);
             }
         } catch (Exception e) {
             devopsJenkinsServerStatusCheckResponseVO.setMessage(e.getMessage());
