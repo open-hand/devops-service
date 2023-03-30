@@ -1,5 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_RESOURCE_INSERT;
+import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
+import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
+import static org.springframework.transaction.annotation.Isolation.READ_COMMITTED;
+
+import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
@@ -16,21 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_RESOURCE_INSERT;
-import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
-import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
-import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
-import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
-import static org.springframework.transaction.annotation.Isolation.READ_COMMITTED;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -923,8 +923,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
 
         // 更新command的状态
-        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
-                .baseQueryByObject(ObjectType.INSTANCE.getType(), instanceDTO.getId());
+        // 先根据commit查询，查不到再根据实例id查询
+        String commit = KeyParseUtil.getCommit(key);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.queryByInstanceIdAndCommitSha(instanceDTO.getId(), commit);
+        if (devopsEnvCommandDTO == null) {
+            devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.INSTANCE.getType(), instanceDTO.getId());
+        }
         devopsEnvCommandDTO.setStatus(commandStatus);
         devopsEnvCommandDTO.setError(msg);
         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);

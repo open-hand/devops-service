@@ -76,6 +76,10 @@ public class KeyParseUtil {
         return getValue(key, "env");
     }
 
+    public static String getCommit(String key) {
+        return getValue(key, "commit");
+    }
+
     public static String getReleaseName(String key) {
         return getValue(key, "release");
     }
