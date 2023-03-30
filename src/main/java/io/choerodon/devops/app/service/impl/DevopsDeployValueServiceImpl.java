@@ -1,17 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_NOT_IN_THIS_PROJECT;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_ID_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_NOT_IN_THIS_PROJECT;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -305,7 +305,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         if (Objects.isNull(mapValue.get("value"))) {
             throw new CommonException("devops.value.is.null");
         }
-        List<DevopsDeployValueDTO> list = devopsDeployValueMapper.listByInstanceId(instanceId);
+        List<DevopsDeployValueDTO> list = listValueByInstanceId(projectId, instanceId);
         if (CollectionUtils.isEmpty(list)) {
             throw new CommonException("devops.instance.not.bind.values");
         }
