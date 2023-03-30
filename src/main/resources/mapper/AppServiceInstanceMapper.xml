@@ -746,7 +746,7 @@
         WHERE id = #{instanceId}
     </update>
 
-    <select id="listInstanceByValueId" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceDTO">
+    <select id="listInstanceByValueId" resultType="io.choerodon.devops.api.vo.AppServiceInstanceVO">
         SELECT
             dasi.*,
             ddace.NAME
