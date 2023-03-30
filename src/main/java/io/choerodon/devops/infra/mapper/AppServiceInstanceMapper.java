@@ -171,4 +171,7 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
 
     void updateSyncDeployValueId(@Param("instanceId") Long instanceId,
                                  @Param("syncDeployValueId") Long syncDeployValueId);
+
+    List<AppServiceInstanceDTO> listInstanceByValueId(@Param("envId") Long envId,
+                                                      @Param("appServiceId") Long appServiceId);
 }

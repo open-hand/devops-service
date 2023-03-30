@@ -90,6 +90,9 @@ public class AppServiceInstanceDTO extends AuditDomain {
     private String appServiceCode;
     @Transient
     private String applicationType;
+    @Transient
+    @ApiModelProperty("应用实例的name")
+    private String name;
 
     public Long getSyncDeployValueId() {
         return syncDeployValueId;
@@ -346,5 +349,13 @@ public class AppServiceInstanceDTO extends AuditDomain {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
