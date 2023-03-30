@@ -477,5 +477,5 @@ public interface AppServiceInstanceService {
 
     void syncValueToDeploy(Long projectId, AppServiceSyncValueDeployVO syncValueDeployVO);
 
-    List<AppServiceInstanceDTO> listInstanceByValueId(Long projectId, Long valueId);
+    List<AppServiceInstanceVO> listInstanceByValueId(Long projectId, Long valueId);
 }

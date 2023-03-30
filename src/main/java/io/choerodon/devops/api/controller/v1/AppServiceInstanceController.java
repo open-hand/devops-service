@@ -973,7 +973,7 @@ public class AppServiceInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @GetMapping("/list_instance_by_value_id")
-    public ResponseEntity<List<AppServiceInstanceDTO>> listInstanceByValueId(
+    public ResponseEntity<List<AppServiceInstanceVO>> listInstanceByValueId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置ID", required = true)

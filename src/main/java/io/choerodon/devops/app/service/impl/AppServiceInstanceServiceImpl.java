@@ -2803,7 +2803,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public List<AppServiceInstanceDTO> listInstanceByValueId(Long projectId, Long valueId) {
+    public List<AppServiceInstanceVO> listInstanceByValueId(Long projectId, Long valueId) {
         DevopsDeployValueDTO valueDTO = devopsDeployValueService.baseQueryById(valueId);
         if (valueDTO == null) {
             throw new CommonException("devops.value.not.exist");
