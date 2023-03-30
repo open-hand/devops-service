@@ -1,4 +1,4 @@
-package io.choerodon.devops.app;
+package io.choerodon.devops.app.service;
 
 import java.util.List;
 
