@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -27,6 +24,15 @@ public class CertificationFileDTO extends AuditDomain {
     private String certFile;
     private String keyFile;
 
+    @Transient
+    private Long certificationId;
+
+    public CertificationFileDTO(Long id, String certFile, String keyFile) {
+        this.id = id;
+        this.certFile = certFile;
+        this.keyFile = keyFile;
+    }
+
     /**
      * construct cert file
      *
@@ -42,6 +48,13 @@ public class CertificationFileDTO extends AuditDomain {
 
     }
 
+    public Long getCertificationId() {
+        return certificationId;
+    }
+
+    public void setCertificationId(Long certificationId) {
+        this.certificationId = certificationId;
+    }
 
     public Long getId() {
         return id;

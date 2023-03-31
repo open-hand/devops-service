@@ -1,30 +1,47 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
+import static io.choerodon.devops.app.service.impl.SendNotificationServiceImpl.ENV_AND_CERTIFICATION_LINK;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL;
 
 import java.io.File;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.netflix.servo.util.Strings;
+import org.hzero.boot.message.entity.Receiver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.*;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -47,14 +64,22 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class CertificationServiceImpl implements CertificationService {
 
-    private static final String UPLOAD = "upload";
     private static final String CERT_PREFIX = "cert-";
     private static final String MASTER = "master";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     private static final String DEVOPS_CERT_MANAGER_NOT_INSTALLED = "devops.cert.manager.not.installed";
     private static final String DEVOPS_CERTIFICATION_CREATE = "devops.certification.create";
+
+    private static final String DEVOPS_CERTIFICATION_UPDATE = "devops.certification.update";
     private static final String DEVOPS_INSERT_CERTIFICATION_FILE = "devops.insert.certification.file";
 
+    private static final String DEVOPS_UPDATE_CERTIFICATION_FILE = "devops.update.certification.file";
+    private static final Logger LOGGER = LoggerFactory.getLogger(CertificationServiceImpl.class);
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    @Value(value = "${services.front.url: http://app.example.com}")
+    private String frontUrl;
 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -87,7 +112,10 @@ public class CertificationServiceImpl implements CertificationService {
     private PermissionHelper permissionHelper;
     @Autowired
     private DevopsClusterResourceService devopsClusterResourceService;
-
+    @Autowired
+    private DevopsCertificationNoticeService devopsCertificationNoticeService;
+    @Autowired
+    private ObjectMapper objectMapper;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -110,10 +138,21 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createCertification(Long projectId, C7nCertificationCreateVO c7nCertificationCreateVO,
-                                    MultipartFile key, MultipartFile cert) {
-        C7nCertificationVO certificationDTO = processEncryptCertification(c7nCertificationCreateVO);
-        Long envId = certificationDTO.getEnvId();
+    public void createOrUpdateCertification(Long projectId, C7nCertificationCreateOrUpdateVO c7NCertificationCreateOrUpdateVO,
+                                            MultipartFile key, MultipartFile cert) {
+        if (ObjectUtils.isEmpty(c7NCertificationCreateOrUpdateVO.getOperateType())) {
+            throw new CommonException(DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL);
+        }
+        if (!ObjectUtils.isEmpty(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr())) {
+            try {
+                c7NCertificationCreateOrUpdateVO.setNotifyObjects(objectMapper.readValue(c7NCertificationCreateOrUpdateVO.getNotifyObjectsJsonStr(), new TypeReference<List<CertificationNotifyObject>>() {
+                }));
+            } catch (Exception e) {
+                throw new CommonException(ExceptionConstants.CertificationExceptionCode.ERROR_DEVOPS_CERTIFICATION_READ_NOTIFY_OBJECTS);
+            }
+        }
+        C7nCertificationVO certificationVO = processEncryptCertification(c7NCertificationCreateOrUpdateVO);
+        Long envId = certificationVO.getEnvId();
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //校验环境相关信息
@@ -132,17 +171,15 @@ public class CertificationServiceImpl implements CertificationService {
         String keyFileName;
 
         //如果是选择上传文件方式
-        if (certificationDTO.getType().equals(UPLOAD)) {
+        if (certificationVO.getType().equals(CertificationType.UPLOAD.getType())) {
             if (key != null && cert != null) {
-                certFileName = cert.getOriginalFilename();
-                keyFileName = key.getOriginalFilename();
-                certificationDTO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
-                certificationDTO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
+                certificationVO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
+                certificationVO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
             } else {
                 certFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "crt");
                 keyFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "key");
-                FileUtil.saveDataToFile(path, certFileName, certificationDTO.getCertValue());
-                FileUtil.saveDataToFile(path, keyFileName, certificationDTO.getKeyValue());
+                FileUtil.saveDataToFile(path, certFileName, certificationVO.getCertValue());
+                FileUtil.saveDataToFile(path, keyFileName, certificationVO.getKeyValue());
             }
             // 因为放开了证书格式限制，所以不同格式有不同的校验逻辑。但是证书内容都是文本，无法正确判断当前上传的证书是什么格式，所以将证书校验这块交给用户自己来控制
 //        File certPath = new File(path + FILE_SEPARATOR + certFileName);
@@ -159,33 +196,32 @@ public class CertificationServiceImpl implements CertificationService {
 //        FileUtil.deleteFile(keyPath);
         }
 
-        String certName = certificationDTO.getCertName();
-        String type = certificationDTO.getType();
-        List<String> domains = certificationDTO.getDomains();
+        String certName = certificationVO.getCertName();
+        String type = certificationVO.getType();
+        List<String> domains = certificationVO.getDomains();
 
 
         CertificationFileDTO certificationFileDTO = null;
         //如果创建的时候选择证书
-        if (certificationDTO.getCertId() != null) {
-            CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCert(certificationDTO.getCertId(), projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-
-            certificationDTO.setType(UPLOAD);
-            type = certificationDTO.getType();
-            certificationFileDTO = baseQueryCertFile(baseQueryById(certificationDTO.getCertId()).getId());
+        if (CertificationType.CHOOSE.getType().equals(type) && certificationVO.getCertId() != null) {
+            CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCert(certificationVO.getCertId(), projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+            certificationFileDTO = baseQueryCertFile(baseQueryById(certificationVO.getCertId()).getId());
         }
 
-        devopsCertificationValidator.checkCertification(envId, certName);
+        if (c7NCertificationCreateOrUpdateVO.getOperateType().equals("create")) {
+            devopsCertificationValidator.checkCertification(envId, certName);
+        }
 
+        boolean needToUpdateGitOps = checkNeedToUpdateGitOpsAndSetStatus(certificationVO, c7NCertificationCreateOrUpdateVO.getOperateType());
 
         // status operating
-        CertificationDTO newCertificationDTO = new CertificationDTO(null,
-                certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationDTO.getCertId());
+        CertificationDTO newCertificationDTO = new CertificationDTO(certificationVO.getId(), certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), certificationVO.getStatus(), certificationVO.getCertId(), type, certificationVO.getExpireNotice(), certificationVO.getAdvanceDays(), certificationVO.getNotifyObjects(), certificationVO.getObjectVersionNumber());
 
         String keyContent;
         String certContent;
         if (certificationFileDTO == null) {
-            keyContent = certificationDTO.getKeyValue();
-            certContent = certificationDTO.getCertValue();
+            keyContent = certificationVO.getKeyValue();
+            certContent = certificationVO.getCertValue();
         } else {
             keyContent = certificationFileDTO.getKeyFile();
             certContent = certificationFileDTO.getCertFile();
@@ -195,29 +231,35 @@ public class CertificationServiceImpl implements CertificationService {
         newCertificationDTO.setApiVersion(apiVersion);
 
         // 存入数据库
-        createAndStore(newCertificationDTO, keyContent, certContent);
+        if (c7NCertificationCreateOrUpdateVO.getOperateType().equals("create")) {
+            createAndStore(newCertificationDTO, keyContent, certContent);
+        } else {
+            updateAndStore(newCertificationDTO, keyContent, certContent, needToUpdateGitOps);
+        }
 
         // 将资源对象生成yaml提交到gitlab
-        handleCertificationToGitlab(certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO);
-    }
-
-    private void handleCertificationToGitlab(String certManagerVersion, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
-        if (CertManagerConstants.OLD_V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
-            handleAlpha1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO);
-        } else {
-            handleV1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO);
+        if (needToUpdateGitOps) {
+            handleCertificationToGitlab(newCertificationDTO.getId(), certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO, c7NCertificationCreateOrUpdateVO.getOperateType(), clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode()));
         }
     }
 
-    private void handleAlpha1Certification(String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
-        C7nCertification c7nCertification = getV1Alpha1C7nCertification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO.getCode());
-        // sent certification to agent
-        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification);
+    private void handleCertificationToGitlab(Long certificationId, String certManagerVersion, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType, String filePath) {
+        if (CertManagerConstants.OLD_V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
+            handleAlpha1Certification(certificationId, certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO, operateType, filePath);
+        } else {
+            handleV1Certification(certificationId, certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO, operateType, filePath);
+        }
     }
 
-    private void handleV1Certification(String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+    private void handleAlpha1Certification(Long certificationId, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType, String filePath) {
+        C7nCertification c7nCertification = getV1Alpha1C7nCertification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO.getCode());
+        // sent certification to agent
+        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification, operateType, devopsEnvironmentDTO.getId(), certificationId, filePath);
+    }
+
+    private void handleV1Certification(Long certificationId, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO, String operateType, String filePath) {
         C7nCertification c7nCertification = getV1C7nCertification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO.getCode());
-        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification);
+        operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification, operateType, devopsEnvironmentDTO.getId(), certificationId, filePath);
     }
 
     /**
@@ -237,6 +279,33 @@ public class CertificationServiceImpl implements CertificationService {
         baseUpdateCommandId(updateCertificationDTO);
         // store crt & key if type is upload
         storeCertFile(keyContent, certContent, certId);
+        // 保存通知信息
+        storeNotifyInfo(certificationDTO);
+    }
+
+    /**
+     * update certification, command and store cert file
+     *
+     * @param certificationDTO the information of certification
+     */
+    private void updateAndStore(CertificationDTO certificationDTO, @Nullable String keyContent, @Nullable String certContent, Boolean needToUpdateGitOps) {
+        // create
+        certificationDTO.setName(null);
+        certificationDTO = baseUpdate(certificationDTO);
+        Long certId = certificationDTO.getId();
+
+        if (Boolean.TRUE.equals(needToUpdateGitOps)) {
+            CertificationDTO updateCertificationDTO = new CertificationDTO();
+            updateCertificationDTO.setId(certificationDTO.getId());
+            updateCertificationDTO.setCommandId(createCertCommand(CommandType.UPDATE.getType(), certId, null));
+            // cert command
+            baseUpdateCommandId(updateCertificationDTO);
+        }
+        // store crt & key if type is upload
+        updateCertFile(keyContent, certContent, certificationDTO);
+
+        // 保存通知信息
+        updateNotifyInfo(certificationDTO);
     }
 
 
@@ -247,6 +316,15 @@ public class CertificationServiceImpl implements CertificationService {
                     new CertificationFileDTO(certContent, keyContent)));
             certificationDTO.setId(certId);
             baseUpdateCertFileId(certificationDTO);
+        }
+    }
+
+    private void updateCertFile(String keyContent, String certContent, CertificationDTO certificationDTO) {
+        if (keyContent != null && certContent != null) {
+            CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationDTO.getId());
+            certificationFileDTO.setKeyFile(keyContent);
+            certificationFileDTO.setCertFile(certContent);
+            baseUpdateCertFile(certificationFileDTO);
         }
     }
 
@@ -262,7 +340,7 @@ public class CertificationServiceImpl implements CertificationService {
             CertificationAcme acme = new CertificationAcme();
             acme.initConfig(new CertificationConfig(domains));
             spec.setAcme(acme);
-        } else if (type.equals(CertificationType.UPLOAD.getType())) {
+        } else {
             CertificationExistCert existCert = new CertificationExistCert(keyContent, certContent);
             spec.setExistCert(existCert);
         }
@@ -278,7 +356,7 @@ public class CertificationServiceImpl implements CertificationService {
         c7nCertification.setMetadata(new CertificationMetadata(name, envCode));
         CertificationSpec spec = new CertificationSpec(type);
         // 如果是上传类型的，将证书放进去
-        if (type.equals(CertificationType.UPLOAD.getType())) {
+        if (type.equals(CertificationType.UPLOAD.getType()) || type.equals(CertificationType.CHOOSE.getType())) {
             CertificationExistCert existCert = new CertificationExistCert(keyContent, certContent);
             spec.setExistCert(existCert);
         }
@@ -290,7 +368,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     private void operateEnvGitLabFile(String certName,
                                       DevopsEnvironmentDTO devopsEnvironmentDTO,
-                                      C7nCertification c7nCertification) {
+                                      C7nCertification c7nCertification, String operateType, Long envId, Long certificationId, String filePath) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentDTO, userAttrDTO);
         clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), EnvironmentType.USER.getValue(), devopsEnvironmentDTO.getClusterCode());
@@ -298,8 +376,8 @@ public class CertificationServiceImpl implements CertificationService {
         ResourceConvertToYamlHandler<C7nCertification> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(c7nCertification);
         resourceConvertToYamlHandler.operationEnvGitlabFile(CERT_PREFIX + certName,
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "create",
-                userAttrDTO.getGitlabUserId(), null, null, null, false, null, null);
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), operateType,
+                userAttrDTO.getGitlabUserId(), certificationId, "Certificate", null, false, envId, filePath);
     }
 
     @Override
@@ -414,13 +492,77 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public Page<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageable, String params) {
         Page<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(null, envId, pageable, params), this::dtoToVo);
+        if (certificationDTOPage.getContent().isEmpty()) {
+            return new Page<>();
+        }
+
+        Set<Long> envIds = certificationDTOPage.getContent().stream().map(CertificationVO::getEnvId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, DevopsEnvironmentDTO> environmentMap = devopsEnvironmentService.baseListByIds(new ArrayList<>(envIds)).stream().collect(Collectors.toMap(DevopsEnvironmentDTO::getId, Function.identity()));
+
+        List<Long> uploadCertificationIds = new ArrayList<>();
+        List<Long> orgCertificationIds = new ArrayList<>();
+        List<Long> certificationIds = new ArrayList<>();
+
+        for (CertificationVO certificationVO : certificationDTOPage.getContent()) {
+            certificationIds.add(certificationVO.getId());
+            if (CertificationType.UPLOAD.getType().equals(certificationVO.getType())) {
+                uploadCertificationIds.add(certificationVO.getId());
+            }
+            if (CertificationType.CHOOSE.getType().equals(certificationVO.getType())) {
+                orgCertificationIds.add(certificationVO.getCertId());
+            }
+        }
+
+        Map<Long, List<CertificationNotifyObject>> notifyObjectMap = new HashMap<>();
+        if (!ObjectUtils.isEmpty(certificationIds)) {
+            List<CertificationNoticeDTO> certificationNoticeDTOS = devopsCertificationNoticeService.listByCertificationIds(certificationIds);
+            Set<Long> userIds = certificationNoticeDTOS.stream().filter(certificationNoticeDTO -> certificationNoticeDTO.getType().equals("user")).map(CertificationNoticeDTO::getObjectId).collect(Collectors.toSet());
+            Map<Long, IamUserDTO> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(new ArrayList<>(userIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+            notifyObjectMap = certificationNoticeDTOS.stream().map(certificationNoticeDTO -> {
+                CertificationNotifyObject notifyObject = new CertificationNotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId());
+                if (notifyObject.getType().equals("user")) {
+                    if (iamUserDTOMap.get(notifyObject.getId()) != null) {
+                        notifyObject.setRealName(iamUserDTOMap.get(notifyObject.getId()).getRealName());
+                    }
+                }
+                return notifyObject;
+            }).collect(Collectors.groupingBy(CertificationNotifyObject::getCertificationId));
+        }
+
+        Map<Long, CertificationFileDTO> certificationFileMap = new HashMap<>();
+        Map<Long, CertificationDTO> orgCertificationDTOMap = new HashMap<>();
+        if (!ObjectUtils.isEmpty(uploadCertificationIds)) {
+            certificationFileMap = devopsCertificationFileMapper.listByCertificationIds(uploadCertificationIds).stream().collect(Collectors.toMap(CertificationFileDTO::getCertificationId, Function.identity()));
+        }
+
+        if (!ObjectUtils.isEmpty(orgCertificationIds)) {
+            orgCertificationDTOMap = devopsCertificationMapper.listByIds(orgCertificationIds).stream().collect(Collectors.toMap(CertificationDTO::getId, Function.identity()));
+        }
+
+
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
-        certificationDTOPage.getContent().stream()
-                .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
-                .forEach(certificationDTO -> {
-                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
-                    certificationDTO.setEnvConnected(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
-                });
+        Map<Long, List<CertificationNotifyObject>> finalNotifyObjectMap = notifyObjectMap;
+        Map<Long, CertificationFileDTO> finalCertificationFileMap = certificationFileMap;
+        Map<Long, CertificationDTO> finalOrgCertificationDTOMap = orgCertificationDTOMap;
+        certificationDTOPage.getContent().stream().filter(certificationDTO -> certificationDTO.getOrganizationId() == null).forEach(certificationDTO -> {
+            certificationDTO.setFullDomains(certificationDTO.getDomains());
+            if (CertificationType.UPLOAD.getType().equals(certificationDTO.getType())) {
+                CertificationFileDTO certificationFileDTO = finalCertificationFileMap.get(certificationDTO.getId());
+                certificationDTO.setKeyValue(certificationFileDTO.getKeyFile());
+                certificationDTO.setCertValue(certificationFileDTO.getCertFile());
+            }
+            if (CertificationType.CHOOSE.getType().equals(certificationDTO.getType())) {
+                certificationDTO.setDomains(getPrefixDomains(JsonHelper.unmarshalByJackson(finalOrgCertificationDTOMap.get(certificationDTO.getCertId()).getDomains(), new TypeReference<List<String>>() {
+                }).get(0), certificationDTO.getDomains()));
+            }
+
+            DevopsEnvironmentDTO devopsEnvironmentDTO = environmentMap.get(certificationDTO.getEnvId());
+            if (devopsEnvironmentDTO != null) {
+                certificationDTO.setEnvConnected(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
+                certificationDTO.setEnvName(devopsEnvironmentDTO.getName());
+            }
+            certificationDTO.setNotifyObjects(finalNotifyObjectMap.get(certificationDTO.getId()));
+        });
         return certificationDTOPage;
     }
 
@@ -431,8 +573,8 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public Boolean checkCertNameUniqueInEnv(Long envId, String certName) {
-        return baseCheckCertNameUniqueInEnv(envId, certName);
+    public Boolean checkCertNameUniqueInEnv(Long envId, String certName, Long certId) {
+        return devopsCertificationMapper.checkNameUnique(envId, certName, certId);
     }
 
     @Override
@@ -447,13 +589,49 @@ public class CertificationServiceImpl implements CertificationService {
             return null;
         }
 
+        if (certificationDTO.getCertificationFileId() != null) {
+            CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationDTO.getId());
+            if (certificationFileDTO != null) {
+                certificationDTO.setKeyValue(certificationFileDTO.getKeyFile());
+                certificationDTO.setCertValue(certificationFileDTO.getCertFile());
+            }
+        }
+
         CertificationRespVO respVO = new CertificationRespVO();
         BeanUtils.copyProperties(certificationDTO, respVO);
         List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
         }.getType());
-        respVO.setCommonName(domains.isEmpty() ? null : domains.remove(0));
-        respVO.setDNSNames(domains);
+        respVO.setFullDomains(new ArrayList<>(domains));
+        if (respVO.getType().equals(CertificationType.CHOOSE.getType())) {
+            CertificationDTO orgCertificationDTO = devopsCertificationMapper.queryById(certificationDTO.getOrgCertId());
+            respVO.setDomains(getPrefixDomains(JsonHelper.unmarshalByJackson(orgCertificationDTO.getDomains(), new TypeReference<List<String>>() {
+            }).get(0), domains));
+        } else {
+            respVO.setDomains(domains);
+        }
+        respVO.setCommonName(domains.isEmpty() ? null : domains.get(0));
         respVO.setIngresses(listIngressNamesByCertId(certId));
+        respVO.setCertId(certificationDTO.getOrgCertId());
+        respVO.setCertName(respVO.getName());
+
+        List<CertificationNoticeDTO> certificationNoticeDTOList = devopsCertificationNoticeService.listByCertificationId(certId);
+        if (!CollectionUtils.isEmpty(certificationNoticeDTOList)) {
+            Set<Long> userIds = certificationNoticeDTOList.stream().filter(certificationNoticeDTO -> certificationNoticeDTO.getType().equals("user")).map(CertificationNoticeDTO::getObjectId).collect(Collectors.toSet());
+            Map<Long, IamUserDTO> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(new ArrayList<>(userIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+            List<CertificationNotifyObject> notifyObjectList = certificationNoticeDTOList.stream()
+                    .map(certificationNoticeDTO -> {
+                        CertificationNotifyObject notifyObject = new CertificationNotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId());
+                        if (notifyObject.getType().equals("user")) {
+                            if (iamUserDTOMap.get(notifyObject.getId()) != null) {
+                                notifyObject.setRealName(iamUserDTOMap.get(notifyObject.getId()).getRealName());
+                            }
+                        }
+                        return notifyObject;
+                    })
+                    .collect(Collectors.toList());
+            respVO.setNotifyObjects(notifyObjectList);
+        }
+
         if (certificationDTO.getCreatedBy() != null && certificationDTO.getCreatedBy() != 0) {
             respVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, certificationDTO.getCreatedBy()));
         }
@@ -479,11 +657,7 @@ public class CertificationServiceImpl implements CertificationService {
         certificationVO.setDomains(gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
         }.getType()));
         certificationVO.setCommonName(certificationVO.getDomains().get(0));
-        if (certificationDTO.getEnvId() != null) {
-            Optional.ofNullable(devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId())).ifPresent(
-                    dto -> certificationVO.setEnvName(dto.getName())
-            );
-        }
+        certificationVO.setCertId(certificationDTO.getOrgCertId());
         return certificationVO;
     }
 
@@ -511,6 +685,25 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public CertificationDTO baseCreate(CertificationDTO certificationDTO) {
         return MapperUtil.resultJudgedInsert(devopsCertificationMapper, certificationDTO, DEVOPS_CERTIFICATION_CREATE);
+    }
+
+    @Override
+    public void storeNotifyInfo(CertificationDTO certificationDTO) {
+        devopsCertificationNoticeService.batchCreate(certificationDTO.getId(), certificationDTO.getNotifyObjects());
+    }
+
+    @Override
+    public void updateNotifyInfo(CertificationDTO certificationDTO) {
+        if (certificationDTO.getAdvanceDays() == null) {
+            devopsCertificationMapper.updateAdvanceDaysToNull(certificationDTO.getId());
+        }
+        devopsCertificationNoticeService.batchUpdate(certificationDTO.getId(), certificationDTO.getNotifyObjects());
+    }
+
+    @Override
+    public CertificationDTO baseUpdate(CertificationDTO certificationDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCertificationMapper, certificationDTO, DEVOPS_CERTIFICATION_UPDATE);
+        return certificationDTO;
     }
 
     @Override
@@ -558,10 +751,84 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
+    public void findAndSendCertificationExpireNotice() {
+        // 查询开启到期前通知的证书
+        List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listExpireCertificate();
+        Set<Long> roleIds = new HashSet<>();
+        Set<Long> userIds = new HashSet<>();
+        Calendar nowCalendar = Calendar.getInstance();
+        nowCalendar.setTime(new Date());
+        certificationDTOS.stream().filter(c -> {
+            if (Boolean.TRUE.equals(c.getNoticeSendFlag())) {
+                return false;
+            }
+            Date validUntil = c.getValidUntil();
+            if (validUntil == null || c.getAdvanceDays() == null) {
+                return false;
+            }
+            Calendar validUtilCalendar = Calendar.getInstance();
+            validUtilCalendar.setTime(validUntil);
+            validUtilCalendar.add(Calendar.DATE, -c.getAdvanceDays());
+            if (nowCalendar.after(validUtilCalendar)) {
+                LOGGER.info("Certification:{} will expire.Expire Date:{}", c.getName(), validUntil.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().format(DATE_TIME_FORMATTER));
+                return true;
+            }
+            return false;
+        }).forEach(certificationDTO -> {
+            for (CertificationNotifyObject notifyObject : certificationDTO.getNotifyObjects()) {
+                if (notifyObject.getType().equals("user")) {
+                    userIds.add(notifyObject.getId());
+                } else {
+                    roleIds.add(notifyObject.getId());
+                }
+            }
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(certificationDTO.getProjectId());
+            StringMapBuilder params = StringMapBuilder.newBuilder();
+            params.put("envId", certificationDTO.getEnvId());
+            params.put("projectId", projectDTO.getId());
+            params.put("organizationId", projectDTO.getOrganizationId());
+            params.put("projectName", projectDTO.getName());
+            params.put("certId", certificationDTO.getId());
+            params.put("certName", certificationDTO.getName());
+            params.put("searchName", certificationDTO.getName());
+            params.put("searchId", certificationDTO.getId());
+            params.put("envName", certificationDTO.getEnvName());
+            params.put("date", certificationDTO.getValidUntil().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().format(DATE_TIME_FORMATTER));
+            params.put("link", String.format(ENV_AND_CERTIFICATION_LINK, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), certificationDTO.getName(), certificationDTO.getId()));
+
+
+            List<IamUserDTO> iamUserDTOS = new ArrayList<>();
+            iamUserDTOS.addAll(baseServiceClientOperator.listUsersByIds(new ArrayList<>(userIds)));
+            iamUserDTOS.addAll(baseServiceClientOperator.listUsersUnderRoleByIds(certificationDTO.getProjectId(), Strings.join(",", roleIds.iterator())));
+
+            List<Receiver> receivers = new ArrayList<>();
+
+            iamUserDTOS.forEach(user -> {
+                Receiver receiver = new Receiver();
+                receiver.setEmail(user.getEmail());
+                receiver.setUserId(user.getId());
+                receiver.setTargetUserTenantId(user.getOrganizationId());
+                receiver.setPhone(user.getPhone());
+                receivers.add(receiver);
+            });
+
+            try {
+                sendNotificationService.sendCertificationExpireNotice(receivers, params.build(), certificationDTO.getProjectId());
+                certificationDTO.setNoticeSendFlag(true);
+                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCertificationMapper, certificationDTO, "error.devops.certification.expire.notice.flag.update");
+            } catch (Exception e) {
+                throw new CommonException("devops.certification.expire.notice.send");
+            }
+        });
+
+    }
+
+    @Override
     public void baseUpdateCommandId(CertificationDTO certificationDTO) {
         CertificationDTO certificationDTOInDb = devopsCertificationMapper.selectByPrimaryKey(certificationDTO.getId());
         certificationDTOInDb.setCommandId(certificationDTO.getCommandId());
         certificationDTOInDb.setCertificationFileId(certificationDTO.getCertificationFileId());
+        certificationDTOInDb.setType(certificationDTO.getType());
         devopsCertificationMapper.updateByPrimaryKeySelective(certificationDTOInDb);
     }
 
@@ -617,13 +884,13 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public Boolean baseCheckCertNameUniqueInEnv(Long envId, String certName) {
-        return devopsCertificationMapper.select(new CertificationDTO(certName, envId)).isEmpty();
+    public Long baseStoreCertFile(CertificationFileDTO certificationFileDTO) {
+        return MapperUtil.resultJudgedInsert(devopsCertificationFileMapper, certificationFileDTO, DEVOPS_INSERT_CERTIFICATION_FILE).getId();
     }
 
     @Override
-    public Long baseStoreCertFile(CertificationFileDTO certificationFileDTO) {
-        return MapperUtil.resultJudgedInsert(devopsCertificationFileMapper, certificationFileDTO, DEVOPS_INSERT_CERTIFICATION_FILE).getId();
+    public void baseUpdateCertFile(CertificationFileDTO certificationFileDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCertificationFileMapper, certificationFileDTO, DEVOPS_UPDATE_CERTIFICATION_FILE);
     }
 
     @Override
@@ -671,12 +938,61 @@ public class CertificationServiceImpl implements CertificationService {
         }
     }
 
-    private C7nCertificationVO processEncryptCertification(C7nCertificationCreateVO c7nCertificationCreateVO) {
+    private C7nCertificationVO processEncryptCertification(C7nCertificationCreateOrUpdateVO c7NCertificationCreateOrUpdateVO) {
         // TODO hzero 主键加密组件修复后删除
-        C7nCertificationVO certificationVO = ConvertUtils.convertObject(c7nCertificationCreateVO, C7nCertificationVO.class);
-        certificationVO.setCertId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getCertId()));
-        certificationVO.setEnvId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getEnvId()));
-        certificationVO.setId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getId()));
+        C7nCertificationVO certificationVO = ConvertUtils.convertObject(c7NCertificationCreateOrUpdateVO, C7nCertificationVO.class);
+        certificationVO.setCertId(KeyDecryptHelper.decryptValue(c7NCertificationCreateOrUpdateVO.getCertId()));
+        certificationVO.setEnvId(KeyDecryptHelper.decryptValue(c7NCertificationCreateOrUpdateVO.getEnvId()));
+        certificationVO.setId(KeyDecryptHelper.decryptValue(c7NCertificationCreateOrUpdateVO.getId()));
         return certificationVO;
+    }
+
+    private List<String> getPrefixDomains(String suffix, List<String> domains) {
+        List<String> prefixDomains = new ArrayList<>();
+        domains.forEach(domain -> {
+            int i = domain.indexOf(suffix);
+            prefixDomains.add(domain.substring(0, i - 1));
+        });
+        return prefixDomains;
+    }
+
+    private boolean checkNeedToUpdateGitOpsAndSetStatus(C7nCertificationVO certificationVO, String operateType) {
+        certificationVO.setStatus(CertificationStatus.OPERATING.getStatus());
+        if (CommandType.CREATE.getType().equals(operateType)) {
+            return true;
+        } else {
+            CertificationDTO oldCertification = devopsCertificationMapper.selectByPrimaryKey(certificationVO.getId());
+            switch (CertificationType.valueOf(certificationVO.getType().toUpperCase())) {
+                case REQUEST:
+                    if (!org.apache.commons.collections.CollectionUtils.isEqualCollection(JsonHelper.unmarshalByJackson(oldCertification.getDomains(), new TypeReference<List<String>>() {
+                    }), certificationVO.getDomains())) {
+                        return true;
+                    } else {
+                        certificationVO.setStatus(oldCertification.getStatus());
+                        return false;
+                    }
+                case UPLOAD:
+                    CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationVO.getId());
+                    if (!org.apache.commons.collections.CollectionUtils.isEqualCollection(JsonHelper.unmarshalByJackson(oldCertification.getDomains(), new TypeReference<List<String>>() {
+                    }), certificationVO.getDomains()) || !certificationFileDTO.getKeyFile().equals(certificationVO.getKeyValue()) || !certificationFileDTO.getCertFile().equals(certificationVO.getCertValue())) {
+                        return true;
+                    } else {
+                        certificationVO.setStatus(oldCertification.getStatus());
+                        return false;
+                    }
+                case CHOOSE:
+                    CertificationFileDTO oldCertificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationVO.getId());
+                    CertificationFileDTO orgCertificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationVO.getCertId());
+                    if (!org.apache.commons.collections.CollectionUtils.isEqualCollection(JsonHelper.unmarshalByJackson(oldCertification.getDomains(), new TypeReference<List<String>>() {
+                    }), certificationVO.getDomains()) || !oldCertificationFileDTO.getKeyFile().equals(orgCertificationFileDTO.getKeyFile()) || !oldCertificationFileDTO.getCertFile().equals(orgCertificationFileDTO.getCertFile())) {
+                        return true;
+                    } else {
+                        certificationVO.setStatus(oldCertification.getStatus());
+                        return false;
+                    }
+                default:
+                    throw new CommonException(ExceptionConstants.CertificationExceptionCode.ERROR_DEVOPS_CERTIFICATION_TYPE_UNKNOWN);
+            }
+        }
     }
 }

@@ -29,8 +29,23 @@ public class AppServiceImageVersionServiceImpl implements AppServiceImageVersion
     private AppServiceImageVersionMapper appServiceImageVersionMapper;
 
     @Override
-    public void create(AppServiceImageVersionDTO appServiceImageVersionDTO) {
-        MapperUtil.resultJudgedInsertSelective(appServiceImageVersionMapper, appServiceImageVersionDTO, DEVOPS_SAVE_IMAGE_VERSION);
+    @Transactional(rollbackFor = Exception.class)
+    public AppServiceImageVersionDTO create(AppServiceImageVersionDTO appServiceImageVersionDTO) {
+        return MapperUtil.resultJudgedInsertSelective(appServiceImageVersionMapper, appServiceImageVersionDTO, DEVOPS_SAVE_IMAGE_VERSION);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AppServiceImageVersionDTO create(Long appServiceVersionId,
+                                            Long harborConfigId,
+                                            String repoType,
+                                            String image) {
+        AppServiceImageVersionDTO appServiceImageVersionDTO = new AppServiceImageVersionDTO();
+        appServiceImageVersionDTO.setAppServiceVersionId(appServiceVersionId);
+        appServiceImageVersionDTO.setImage(image);
+        appServiceImageVersionDTO.setHarborRepoType(repoType);
+        appServiceImageVersionDTO.setHarborConfigId(harborConfigId);
+        return create(appServiceImageVersionDTO);
     }
 
     @Override

@@ -1,10 +1,12 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.Date;
+import java.util.List;
 import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.vo.CertificationNotifyObject;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -39,6 +41,10 @@ public class CertificationDTO extends AuditDomain {
     private Boolean skipCheckProjectPermission;
     private Long orgCertId;
     private Long projectId;
+    private Boolean expireNotice;
+    private Integer advanceDays;
+    private String type;
+    private Boolean noticeSendFlag;
 
     @Transient
     @ApiModelProperty("key文件内容")
@@ -52,6 +58,11 @@ public class CertificationDTO extends AuditDomain {
     private String commandStatus;
     @Transient
     private String error;
+    @Transient
+    private List<CertificationNotifyObject> notifyObjects;
+    @Transient
+    private String envName;
+
 
     public CertificationDTO() {
     }
@@ -80,6 +91,33 @@ public class CertificationDTO extends AuditDomain {
         this.orgCertId = orgCertId;
     }
 
+    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId, String type, Boolean expireNotice, Integer advanceDays, List<CertificationNotifyObject> notifyObjects) {
+        this.type = type;
+        this.id = id;
+        this.name = name;
+        this.envId = envId;
+        this.domains = domains;
+        this.status = status;
+        this.orgCertId = orgCertId;
+        this.expireNotice = expireNotice;
+        this.advanceDays = advanceDays;
+        this.notifyObjects = notifyObjects;
+    }
+
+    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId, String type, Boolean expireNotice, Integer advanceDays, List<CertificationNotifyObject> notifyObjects, Long objectVersionNumber) {
+        this.type = type;
+        this.id = id;
+        this.name = name;
+        this.envId = envId;
+        this.domains = domains;
+        this.status = status;
+        this.orgCertId = orgCertId;
+        this.expireNotice = expireNotice;
+        this.advanceDays = advanceDays;
+        this.notifyObjects = notifyObjects;
+        this.setObjectVersionNumber(objectVersionNumber);
+    }
+
     /**
      * Certification constructor
      *
@@ -91,9 +129,40 @@ public class CertificationDTO extends AuditDomain {
         this.envId = envId;
     }
 
+    public CertificationDTO(String name, Long envId, Long certId) {
+        this.name = name;
+        this.envId = envId;
+        this.id = certId;
+    }
+
     public void setValid(Date from, Date until) {
         this.setValidFrom(from);
         this.setValidUntil(until);
+        this.setNoticeSendFlag(false);
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Boolean getExpireNotice() {
+        return expireNotice;
+    }
+
+    public void setExpireNotice(Boolean expireNotice) {
+        this.expireNotice = expireNotice;
+    }
+
+    public Integer getAdvanceDays() {
+        return advanceDays;
+    }
+
+    public void setAdvanceDays(Integer advanceDays) {
+        this.advanceDays = advanceDays;
     }
 
     public Long getId() {
@@ -246,5 +315,29 @@ public class CertificationDTO extends AuditDomain {
 
     public void setCertValue(String certValue) {
         this.certValue = certValue;
+    }
+
+    public List<CertificationNotifyObject> getNotifyObjects() {
+        return notifyObjects;
+    }
+
+    public void setNotifyObjects(List<CertificationNotifyObject> notifyObjects) {
+        this.notifyObjects = notifyObjects;
+    }
+
+    public Boolean getNoticeSendFlag() {
+        return noticeSendFlag;
+    }
+
+    public void setNoticeSendFlag(Boolean noticeSendFlag) {
+        this.noticeSendFlag = noticeSendFlag;
+    }
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
     }
 }

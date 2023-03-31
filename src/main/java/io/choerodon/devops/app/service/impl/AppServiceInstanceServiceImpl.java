@@ -2762,6 +2762,55 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return appServiceInstanceMapper.countInstanceDeploying(instanceId) > 0;
     }
 
+    @Override
+    public void deleteHelmHookJob(Long projectId, Long instanceId, Long envId, Long commandId, String jobName) {
+        // 校验用户是否拥有环境权限
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        devopsEnvironmentService.checkEnv(devopsEnvironmentService.baseQueryById(envId), userAttrDTO);
+        DevopsEnvResourceDTO job = devopsEnvResourceService.baseQueryOptions(
+                instanceId,
+                commandId,
+                envId,
+                "Job",
+                jobName);
+        if (job == null) {
+            throw new CommonException(DEVOPS_INSTANCE_JOB_MISMATCHED);
+        }
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        agentCommandService.deleteHelmHookJob(jobName, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId());
+    }
+
+    @Override
+    public void syncValueToDeploy(Long projectId, AppServiceSyncValueDeployVO syncValueDeployVO) {
+        syncValueDeployVO.getInstanceIds().forEach(t -> {
+            AppServiceInstanceDTO preInstance = baseQuery(t);
+            AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(preInstance.getAppServiceId(),
+                    preInstance.getAppServiceVersionId(),
+                    syncValueDeployVO.getEnvironmentId(),
+                    devopsDeployValueService.baseQueryById(syncValueDeployVO.getValueId()).getValue(),
+                    syncValueDeployVO.getValueId(),
+                    preInstance.getCode(),
+                    preInstance.getId(),
+                    CommandType.UPDATE.getType(),
+                    preInstance.getAppServiceName(),
+                    preInstance.getCode());
+            AppServiceInstanceVO appServiceInstanceVO = createOrUpdate(projectId,
+                    appServiceDeployVO,
+                    DeployType.MANUAL);
+            // 添加同步配置绑定字段
+            appServiceInstanceMapper.updateSyncDeployValueId(appServiceInstanceVO.getId(), syncValueDeployVO.getValueId());
+        });
+    }
+
+    @Override
+    public List<AppServiceInstanceVO> listInstanceByValueId(Long projectId, Long valueId) {
+        DevopsDeployValueDTO valueDTO = devopsDeployValueService.baseQueryById(valueId);
+        if (valueDTO == null) {
+            throw new CommonException("devops.value.not.exist");
+        }
+        return appServiceInstanceMapper.listInstanceByValueId(valueDTO.getEnvId(), valueDTO.getAppServiceId());
+    }
+
     private String[] parseMarketRepo(String harborRepo) {
         if (harborRepo.endsWith(BaseConstants.Symbol.SLASH)) {
             harborRepo = harborRepo.substring(0, harborRepo.length() - 1);

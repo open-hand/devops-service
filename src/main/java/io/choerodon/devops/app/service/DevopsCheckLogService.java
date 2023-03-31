@@ -9,10 +9,5 @@ public interface DevopsCheckLogService {
      */
     void checkLog(String version);
 
-
-    void migrationCdPipelineDate();
-
-    void fixPipeline(Long pipelineId);
-
     void fixCiTemplateStageJobRelSequence();
 }

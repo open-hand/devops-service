@@ -41,6 +41,9 @@ public class AppServiceInstanceDTO extends AuditDomain {
     private Long commandId;
     private String status;
     private Long valueId;
+
+    @ApiModelProperty("部署配置同步至应用实例部署关联关系")
+    private Long syncDeployValueId;
     @ApiModelProperty("组件所对应的实例的版本/普通实例这个值为null")
     private String componentVersion;
     @ApiModelProperty("组件对应实例的chart名称/普通实例这个值为null")
@@ -87,6 +90,17 @@ public class AppServiceInstanceDTO extends AuditDomain {
     private String appServiceCode;
     @Transient
     private String applicationType;
+    @Transient
+    @ApiModelProperty("应用实例的name")
+    private String name;
+
+    public Long getSyncDeployValueId() {
+        return syncDeployValueId;
+    }
+
+    public void setSyncDeployValueId(Long syncDeployValueId) {
+        this.syncDeployValueId = syncDeployValueId;
+    }
 
     public String getReplicasStrategy() {
         return replicasStrategy;
@@ -335,5 +349,13 @@ public class AppServiceInstanceDTO extends AuditDomain {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

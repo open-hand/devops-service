@@ -35,6 +35,17 @@ public class CiCdPipelineDTO extends AuditDomain {
     private String image;
     @ApiModelProperty("自定义版本名称")
     private String versionName;
+    @ApiModelProperty("是否可中断")
+    @Column(name = "is_interruptible")
+    private Boolean interruptible;
+
+    public Boolean getInterruptible() {
+        return interruptible;
+    }
+
+    public void setInterruptible(Boolean interruptible) {
+        this.interruptible = interruptible;
+    }
 
     public String getVersionName() {
         return versionName;

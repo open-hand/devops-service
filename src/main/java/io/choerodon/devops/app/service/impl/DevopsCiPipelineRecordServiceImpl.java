@@ -116,9 +116,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private final CiPipelineSyncHandler ciPipelineSyncHandler;
     private final CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     private final AppServiceMapper appServiceMapper;
-    //    private DevopsCdPipelineService devopsCdPipelineService;
-//    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-//    private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     private SendNotificationService sendNotificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -176,13 +173,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Autowired
     protected DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
-
-    @Autowired
-    protected DevopsCdAuditService devopsCdAuditService;
-
-    @Autowired
-    protected DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
-
     @Autowired
     protected TestServiceClientOperator testServiceClientoperator;
 
@@ -202,11 +192,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Autowired
     protected DevopsHostAppInstanceService devopsHostAppInstanceService;
-    @Autowired
-    protected DevopsCdJobService devopsCdJobService;
-    @Autowired
-    protected DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
-
     @Autowired
     protected HostConnectionHandler hostConnectionHandler;
     @Autowired
@@ -240,7 +225,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              GitlabServiceClientOperator gitlabServiceClientOperator,
                                              @Lazy CiPipelineSyncHandler ciPipelineSyncHandler,
                                              DevopsGitlabCommitService devopsGitlabCommitService,
-//                                             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
                                              SendNotificationService sendNotificationService
     ) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
@@ -258,8 +242,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.ciPipelineSyncHandler = ciPipelineSyncHandler;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
         this.appServiceMapper = appServiceMapper;
-//        this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
-//        this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
         this.sendNotificationService = sendNotificationService;
     }
 
@@ -888,6 +870,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                             if (!ObjectUtils.isEmpty(appServiceInstanceInfoVO)) {
                                 deployInfo.setAppServiceId(appServiceInstanceInfoVO.getAppServiceId());
                                 deployInfo.setStatus(appServiceInstanceInfoVO.getStatus());
+                                deployInfo.setPodCount(appServiceInstanceInfoVO.getPodCount());
+                                deployInfo.setPodRunningCount(appServiceInstanceInfoVO.getPodRunningCount());
                             }
                         }
                     }

@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -26,6 +27,39 @@ public class C7nCertificationVO {
     private Long envId;
     private String envName;
     private Boolean envConnected;
+    private Long objectVersionNumber;
+
+    private List<CertificationNotifyObject> notifyObjects;
+
+    @ApiModelProperty("是否设置到期前通知")
+    private Boolean expireNotice;
+
+    @ApiModelProperty("到期提前多长时间通知")
+    private Integer advanceDays;
+
+    public List<CertificationNotifyObject> getNotifyObjects() {
+        return notifyObjects;
+    }
+
+    public void setNotifyObjects(List<CertificationNotifyObject> notifyObjects) {
+        this.notifyObjects = notifyObjects;
+    }
+
+    public Boolean getExpireNotice() {
+        return expireNotice;
+    }
+
+    public void setExpireNotice(Boolean expireNotice) {
+        this.expireNotice = expireNotice;
+    }
+
+    public Integer getAdvanceDays() {
+        return advanceDays;
+    }
+
+    public void setAdvanceDays(Integer advanceDays) {
+        this.advanceDays = advanceDays;
+    }
 
     public Long getId() {
         return id;
@@ -123,5 +157,33 @@ public class C7nCertificationVO {
         this.certValue = certValue;
     }
 
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
 
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "C7nCertificationVO{" +
+                "id=" + id +
+                ", certName='" + certName + '\'' +
+                ", commonName='" + commonName + '\'' +
+                ", domains=" + domains +
+                ", type='" + type + '\'' +
+                ", certId=" + certId +
+                ", keyValue='" + keyValue + '\'' +
+                ", certValue='" + certValue + '\'' +
+                ", status='" + status + '\'' +
+                ", envId=" + envId +
+                ", envName='" + envName + '\'' +
+                ", envConnected=" + envConnected +
+                ", objectVersionNumber=" + objectVersionNumber +
+                ", notifyObjects=" + notifyObjects +
+                ", expireNotice=" + expireNotice +
+                ", advanceDays=" + advanceDays +
+                '}';
+    }
 }

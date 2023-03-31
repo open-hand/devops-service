@@ -602,7 +602,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     handleUpdatePvMsg(key, clusterId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
                     break;
                 case DEPLOYMENT:
-                    handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
+                    handleUpdateWorkloadMsg(key, envId, msg, null, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
                     DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, KeyParseUtil.getResourceName(key));
                     // 部署组创建的deployment，如果副本变为0则更新应用状态为停止
                     if (deploymentDTO != null && WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(deploymentDTO.getSourceType())) {
@@ -624,7 +624,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 case DAEMONSET:
                 case CRON_JOB:
                 case STATEFULSET:
-                    handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
+                    handleUpdateWorkloadMsg(key, envId, msg, appServiceInstanceDTO == null ? null : appServiceInstanceDTO.getCommandId(), devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
                     if (appServiceInstanceDTO != null) {
                         // 保存应用异常数据（采集监控报表数据）
                         appExceptionRecordService.createOrUpdateExceptionRecord(ResourceType.STATEFULSET.getType(), msg, appServiceInstanceDTO);
@@ -663,11 +663,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
     }
 
-    private void handleUpdateWorkloadMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO, DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO, AppServiceInstanceDTO appServiceInstanceDTO) {
+    private void handleUpdateWorkloadMsg(String key, Long envId, String msg, Long commandId, DevopsEnvResourceDTO devopsEnvResourceDTO, DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO, AppServiceInstanceDTO appServiceInstanceDTO) {
         DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
                 devopsEnvResourceService.baseQueryOptions(
                         appServiceInstanceDTO == null ? null : appServiceInstanceDTO.getId(),
-                        null,
+                        appServiceInstanceDTO == null ? null : commandId,
                         envId,
                         KeyParseUtil.getResourceType(key),
                         KeyParseUtil.getResourceName(key));
@@ -923,8 +923,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
 
         // 更新command的状态
-        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
-                .baseQueryByObject(ObjectType.INSTANCE.getType(), instanceDTO.getId());
+        // 先根据commit查询，查不到再根据实例id查询
+        String commit = KeyParseUtil.getCommit(key);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.queryByInstanceIdAndCommitSha(instanceDTO.getId(), commit);
+        if (devopsEnvCommandDTO == null) {
+            devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.INSTANCE.getType(), instanceDTO.getId());
+        }
         devopsEnvCommandDTO.setStatus(commandStatus);
         devopsEnvCommandDTO.setError(msg);
         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
@@ -1721,11 +1725,22 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
             devopsEnvResourceService.baseUpdate(oldDevopsEnvResourceDTO);
         }
-        if (!oldDevopsEnvResourceDTO.getReversion().equals(devopsEnvResourceDTO.getReversion())) {
-            oldDevopsEnvResourceDTO.setReversion(devopsEnvResourceDTO.getReversion());
-            devopsEnvResourceDetailDTO.setId(oldDevopsEnvResourceDTO.getResourceDetailId());
-            devopsEnvResourceService.baseUpdate(oldDevopsEnvResourceDTO);
-            devopsEnvResourceDetailService.baseUpdate(devopsEnvResourceDetailDTO);
+
+        // 这种情况是用户界面上主动停止init-job，agent将Reversion设置成了很大
+        if (oldDevopsEnvResourceDTO.getName().endsWith("init-db")) {
+            if (devopsEnvResourceDTO.getKind().equals("Job") && oldDevopsEnvResourceDTO.getReversion() < devopsEnvResourceDTO.getReversion()) {
+                oldDevopsEnvResourceDTO.setReversion(devopsEnvResourceDTO.getReversion());
+                devopsEnvResourceDetailDTO.setId(oldDevopsEnvResourceDTO.getResourceDetailId());
+                devopsEnvResourceService.baseUpdate(oldDevopsEnvResourceDTO);
+                devopsEnvResourceDetailService.baseUpdate(devopsEnvResourceDetailDTO);
+            }
+        } else {
+            if (!oldDevopsEnvResourceDTO.getReversion().equals(devopsEnvResourceDTO.getReversion())) {
+                oldDevopsEnvResourceDTO.setReversion(devopsEnvResourceDTO.getReversion());
+                devopsEnvResourceDetailDTO.setId(oldDevopsEnvResourceDTO.getResourceDetailId());
+                devopsEnvResourceService.baseUpdate(oldDevopsEnvResourceDTO);
+                devopsEnvResourceDetailService.baseUpdate(devopsEnvResourceDetailDTO);
+            }
         }
     }
 

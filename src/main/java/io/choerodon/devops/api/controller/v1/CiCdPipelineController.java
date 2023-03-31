@@ -1,5 +1,11 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.validation.Valid;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
@@ -8,12 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.validation.Valid;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -47,7 +47,7 @@ public class CiCdPipelineController {
     @Autowired
     private DevopsCiPipelineService devopsCiPipelineService;
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目下创建流水线")
     @PostMapping
     public ResponseEntity<CiCdPipelineDTO> create(
@@ -59,7 +59,7 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.create(projectId, ciCdPipelineVO));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目下更新流水线")
     @PutMapping("/{pipeline_id}")
     public ResponseEntity<CiCdPipelineDTO> update(
@@ -72,7 +72,7 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.update(projectId, pipelineId, ciCdPipelineVO));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询cicd流水线配置")
     @GetMapping("/{pipeline_id}")
     public ResponseEntity<CiCdPipelineVO> query(

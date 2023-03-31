@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
+import io.choerodon.devops.api.vo.sonar.SonarInfo;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.GitlabProjectSimple;
@@ -79,4 +80,6 @@ public interface DevopsProjectService {
     List<DevopsProjectDTO> listExistGroup(Set<Integer> groupIds);
 
     Long queryDevopsProject(Long projectId);
+
+    SonarInfo querySonarInfo(Long projectId);
 }

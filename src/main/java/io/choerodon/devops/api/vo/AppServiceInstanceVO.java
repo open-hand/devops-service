@@ -63,6 +63,9 @@ public class AppServiceInstanceVO {
     @ApiModelProperty("项目id")
     private Long projectId;
 
+    @ApiModelProperty("应用实例的name")
+    private String name;
+
     public Long getAppId() {
         return appId;
     }
@@ -263,5 +266,13 @@ public class AppServiceInstanceVO {
 
     public void setAppServiceCode(String appServiceCode) {
         this.appServiceCode = appServiceCode;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
