@@ -43,13 +43,13 @@ public class GitlabCi {
 
     @YamlProperty(value = "default")
     @JsonProperty("default")
-    private Map<String, String> defaultSection;
+    private Map<String, Object> defaultSection;
 
-    public Map<String, String> getDefaultSection() {
+    public Map<String, Object> getDefaultSection() {
         return defaultSection;
     }
 
-    public void setDefaultSection(Map<String, String> defaultSection) {
+    public void setDefaultSection(Map<String, Object> defaultSection) {
         this.defaultSection = defaultSection;
     }
 
