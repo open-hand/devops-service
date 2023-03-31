@@ -1403,6 +1403,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         Map<String, Object> defaultMap = new HashMap<>();
         defaultMap.put("interruptible", ciCdPipelineDTO.getInterruptible());
+        defaultMap.put("image", StringUtils.isEmpty(ciCdPipelineDTO.getImage()) ? defaultCiImage : ciCdPipelineDTO.getImage());
         gitlabCi.setDefaultSection(defaultMap);
 
         List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOS = ciDockerAuthConfigService.listByPipelineId(pipelineId);
@@ -1425,7 +1426,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
 
         // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
-        gitlabCi.setImage(StringUtils.isEmpty(ciCdPipelineDTO.getImage()) ? defaultCiImage : ciCdPipelineDTO.getImage());
+//        gitlabCi.setImage(StringUtils.isEmpty(ciCdPipelineDTO.getImage()) ? defaultCiImage : ciCdPipelineDTO.getImage());
 
         gitlabCi.setStages(stages);
         devopsCiStageDTOS.forEach(stageVO -> {
