@@ -55,8 +55,8 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
             if (DevopsJenkinsServerStatusEnum.ENABLED.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
                 Long serverId = devopsJenkinsServerDTO.getId();
                 String serverName = devopsJenkinsServerDTO.getName();
-                JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
                 try {
+                    JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
                     listFolderJobs(jenkinsClient, serverId, serverName, "/", jenkinsJobVOList);
                 } catch (Exception e) {
                     LOGGER.error("Query jenkins jobs failed, server name: {}", serverName, e);
