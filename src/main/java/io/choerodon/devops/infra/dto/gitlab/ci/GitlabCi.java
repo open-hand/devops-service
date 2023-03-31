@@ -22,6 +22,10 @@ public class GitlabCi {
     @ApiModelProperty("Url to include external yaml from")
     private String include;
 
+    @YamlProperty(value = "default")
+    @JsonProperty("default")
+    private Map<String, Object> defaultSection;
+
     @ApiModelProperty("The image for jobs")
     private String image;
 
@@ -41,9 +45,6 @@ public class GitlabCi {
     @ApiModelProperty("before_script")
     private List<String> beforeScript;
 
-    @YamlProperty(value = "default")
-    @JsonProperty("default")
-    private Map<String, Object> defaultSection;
 
     public Map<String, Object> getDefaultSection() {
         return defaultSection;
