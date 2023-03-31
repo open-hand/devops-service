@@ -258,7 +258,8 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
         DevopsDeploymentDTO deploymentDTO = new DevopsDeploymentDTO();
         deploymentDTO.setName(name);
         deploymentDTO.setEnvId(envId);
-        devopsDeploymentMapper.delete(deploymentDTO);
+        DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectOne(deploymentDTO);
+        baseDelete(devopsDeploymentDTO.getId());
     }
 
     @Override

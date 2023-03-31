@@ -1231,8 +1231,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, String version) {
-        return appServiceVersionMapper.queryLatestByAppServiceIdVersionType(appServiceId, version);
+    public AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, Set<String> versions) {
+        return appServiceVersionMapper.queryLatestByAppServiceIdVersionType(appServiceId, versions);
     }
 
     @Override

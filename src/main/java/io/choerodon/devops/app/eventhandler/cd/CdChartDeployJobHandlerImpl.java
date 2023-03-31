@@ -6,7 +6,10 @@ import static io.choerodon.devops.infra.constant.ExceptionConstants.DeployValueC
 import static io.choerodon.devops.infra.constant.PipelineConstants.GITLAB_ADMIN_ID;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -260,7 +263,11 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 return;
             }
         } else {
-            appServiceVersionDTO = appServiceVersionService.queryLatestByAppServiceIdVersionType(appServiceId, version);
+            Set<String> versionSet = new HashSet<>();
+            if (StringUtils.isNotBlank(version)) {
+                versionSet = Arrays.stream(version.split(",")).collect(Collectors.toSet());
+            }
+            appServiceVersionDTO = appServiceVersionService.queryLatestByAppServiceIdVersionType(appServiceId, versionSet);
             if (appServiceVersionDTO == null) {
                 log.append("当前任务不满足触发条件'应用服务版本不存在'，跳过此任务。").append("目标版本类型：").append(version).append(", 不存在");
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());

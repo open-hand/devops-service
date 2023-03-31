@@ -253,7 +253,7 @@ public interface AppServiceVersionService {
 
     List<AppServiceVersionDTO> listAllVersionsWithHelmConfigNullOrImageConfigNull();
 
-    AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, String version);
+    AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, Set<String> version);
 
     AppServiceVersionDTO saveHelmVersion(Long projectId, String code, String version, String commit, MultipartFile file);
 
