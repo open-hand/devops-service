@@ -757,5 +757,8 @@
         WHERE
             dasi.env_id = #{envId}
           AND dasi.app_service_id = #{appServiceId}
+          <if test="params!=null">
+              ddace.NAME LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+          </if>
     </select>
 </mapper>

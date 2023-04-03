@@ -1,5 +1,9 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Date;
+import java.util.List;
+import javax.validation.Valid;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -10,10 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.Date;
-import java.util.List;
-import javax.validation.Valid;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -26,7 +26,6 @@ import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.config.SwaggerApiConfig;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.DeployType;
@@ -978,7 +977,9 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置ID", required = true)
             @Encrypt
-            @RequestParam(value = "value_id") Long valueId) {
-        return Results.success(appServiceInstanceService.listInstanceByValueId(projectId, valueId));
+            @RequestParam(value = "value_id") Long valueId,
+            @ApiParam(value = "筛选参数", required = false)
+            @RequestParam(value = "params", required = false) String params) {
+        return Results.success(appServiceInstanceService.listInstanceByValueId(projectId, valueId, params));
     }
 }
