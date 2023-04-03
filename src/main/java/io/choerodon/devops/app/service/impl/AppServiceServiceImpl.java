@@ -1065,7 +1065,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             String repositoryUrl = tempUrl[0];
             externalGitUtil.cloneAppMarket(applicationDir, templateVersion, repositoryUrl, devOpsAppServiceImportPayload.getAccessToken());
             File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
-            replaceParams(appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getDevopsComponentCode(), applicationDir, null, null, true);
+            replaceParams(appServiceDTO.getProjectId(), appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getDevopsComponentCode(), applicationDir, null, null, true);
             Git newGit = gitUtil.initGit(applicationWorkDir);
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getTenantNum()
@@ -1109,7 +1109,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 String pullToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, gitlabAdminDTO);
                 git = gitUtil.cloneRepository(applicationWorkDir, appTemplateDTO.getGitlabUrl(), pullToken);
             }
-            replaceParams(appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getDevopsComponentCode(), applicationWorkPath, oldAppServiceCode, devopsAppTemplateService.getTemplateGroupPath(appTemplateDTO.getId()), false);
+            replaceParams(appServiceDTO.getProjectId(), appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getDevopsComponentCode(), applicationWorkPath, oldAppServiceCode, devopsAppTemplateService.getTemplateGroupPath(appTemplateDTO.getId()), false);
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getTenantNum()
                     + "-" + projectDTO.getDevopsComponentCode() + "/" + appServiceDTO.getCode() + ".git");
@@ -2602,7 +2602,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         String pullToken = gitlabServiceClientOperator.getAdminToken();
         String oldRepository = repoUrl + oldGroup + "/" + oldAppServiceDTO.getCode() + GIT;
         String workingDirectory = gitUtil.cloneAppMarket(applicationDir, oldAppServiceVersionDTO.getCommit(), oldRepository, pullToken);
-        replaceParams(appServiceDTO.getCode(), newGroupName, applicationDir, oldAppServiceDTO.getCode(), oldGroup, true);
+        replaceParams(appServiceDTO.getProjectId(), appServiceDTO.getCode(), newGroupName, applicationDir, oldAppServiceDTO.getCode(), oldGroup, true);
         Git git = gitUtil.initGit(new File(workingDirectory));
         //push 到远程仓库
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -3031,7 +3031,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public void replaceParams(String newServiceCode,
+    public void replaceParams(Long projectId,
+                              String newServiceCode,
                               String newGroupName,
                               String applicationDir,
                               String oldServiceCode,
@@ -3042,6 +3043,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             Map<String, String> params = new HashMap<>();
             params.put("{{group.name}}", newGroupName);
             params.put("{{service.code}}", newServiceCode);
+            if (projectId != null) {
+                params.put("{{project.id}}", projectId.toString());
+            }
             params.put("the-oldService-name", oldServiceCode);
             if (!ObjectUtils.isEmpty(oldGroupName)) {
                 params.put(oldGroupName, newGroupName);

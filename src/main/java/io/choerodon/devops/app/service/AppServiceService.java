@@ -483,7 +483,7 @@ public interface AppServiceService {
      */
     List<AppServiceVO> listServiceByVersionIds(Set<Long> ids);
 
-    void replaceParams(String newServiceCode,
+    void replaceParams(Long projectId, String newServiceCode,
                        String newGroupName,
                        String applicationDir,
                        String oldServiceCode,
