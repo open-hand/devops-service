@@ -1433,6 +1433,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByStageId(stageVO.getId());
             if (!CollectionUtils.isEmpty(devopsCiJobDTOS)) {
                 devopsCiJobDTOS.forEach(job -> {
+                    // 停用的任务不渲染
+                    if (Boolean.FALSE.equals(job.getEnabled())) {
+                        return;
+                    }
                     if (CiJobTypeEnum.CUSTOM.value().equals(job.getType())) {
                         return;
                     }

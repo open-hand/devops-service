@@ -41,5 +41,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_job.groovy') {
         addUniqueConstraint(tableName: 'devops_pipeline_job',
                 constraintName: 'devops_pipeline_job_u1', columnNames: 'stage_id,name')
     }
+    changeSet(author: 'wanghao', id: '2023-04-03-add-column') {
+        addColumn(tableName: 'devops_pipeline_job') {
+            column(name: "is_enabled", type: "TINYINT UNSIGNED", defaultValue: "1", afterColumn: 'config_id', remarks: '是否启用')
+        }
+    }
 
 }

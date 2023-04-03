@@ -97,4 +97,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
             column(name: "config_id")
         }
     }
+
+    changeSet(author: 'wanghao', id: '2023-04-03-add-column') {
+        addColumn(tableName: 'devops_ci_job') {
+            column(name: "is_enabled", type: "TINYINT UNSIGNED", defaultValue: "1", afterColumn: 'parallel', remarks: '是否启用')
+        }
+    }
 }
