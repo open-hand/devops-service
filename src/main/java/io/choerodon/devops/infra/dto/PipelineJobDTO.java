@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -64,6 +65,17 @@ public class PipelineJobDTO extends AuditDomain {
     @ApiModelProperty(value = "关联任务配置Id")
     private Long configId;
 
+
+    @Column(name = "is_enabled")
+    private Boolean enabled;
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public Long getId() {
         return id;
