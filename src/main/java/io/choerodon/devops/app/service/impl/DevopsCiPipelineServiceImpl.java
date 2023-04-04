@@ -663,9 +663,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (appServiceDTO == null) {
             throw new CommonException(ExceptionConstants.AppServiceCode.DEVOPS_APP_SERVICE_NOT_EXIST);
         }
+        ImmutableProjectInfoVO info = baseServiceClientOperator.queryImmutableProjectInfo(appServiceDTO.getProjectId());
         ciCdPipelineVO.setAppServiceCode(appServiceDTO.getCode());
         ciCdPipelineVO.setAppServiceType(appServiceDTO.getType());
         ciCdPipelineVO.setAppServiceName(appServiceDTO.getName());
+
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        ciCdPipelineVO.setGitlabUrl(
+                gitlabUrl + urlSlash + info.getTenantNum() + "-" + info.getDevopsComponentCode() + "/"
+                        + appServiceDTO.getCode() + ".git");
+
         return appServiceDTO;
     }
 
