@@ -41,6 +41,8 @@ public class CiCdPipelineVO {
     private String appServiceType;
     @ApiModelProperty("流水线关联应用服务编码")
     private String appServiceCode;
+    @ApiModelProperty("gitlab仓库地址")
+    private String gitlabUrl;
     @ApiModelProperty("gitlab项目id/nullable")
     private Long gitlabProjectId;
     @ApiModelProperty("runner镜像地址")
@@ -89,6 +91,14 @@ public class CiCdPipelineVO {
     private List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList;
     @ApiModelProperty(name = "Docker认证配置")
     private List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOList;
+
+    public String getGitlabUrl() {
+        return gitlabUrl;
+    }
+
+    public void setGitlabUrl(String gitlabUrl) {
+        this.gitlabUrl = gitlabUrl;
+    }
 
     public Boolean getInterruptible() {
         return interruptible;
