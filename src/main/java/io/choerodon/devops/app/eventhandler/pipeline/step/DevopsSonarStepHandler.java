@@ -1,8 +1,9 @@
 package io.choerodon.devops.app.eventhandler.pipeline.step;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,6 @@ import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.SonarClientOperator;
-import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
 
@@ -51,8 +51,8 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
 public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
     private static final String SAVE_SONAR_INFO_FUNCTION = "saveSonarInfo %s";
-    private static final String MVN_COMPILE_FUNCTION = "mvnCompile %s";
-    private static final String MVN_COMPILE_USE_SETTINGS_FUNCTION = "mvnCompileUseSettings %s";
+//    private static final String MVN_COMPILE_FUNCTION = "mvnCompile %s";
+//    private static final String MVN_COMPILE_USE_SETTINGS_FUNCTION = "mvnCompileUseSettings %s";
 
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
@@ -60,8 +60,6 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     private DevopsConfigService devopsConfigService;
     @Autowired
     private CiTemplateSonarService ciTemplateSonarService;
-    @Autowired
-    private DevopsCiTplSonarQualityGateConditionService devopsCiTplSonarQualityGateConditionService;
     @Autowired
     private DevopsCiTplSonarQualityGateService devopsCiTplSonarQualityGateService;
     @Autowired
@@ -212,33 +210,48 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         // 有可能为null值
         Boolean blockAfterQualityGateFail = Optional.ofNullable(devopsCiSonarQualityGateService.queryBlock(devopsCiSonarConfigDTO.getId())).orElse(Boolean.FALSE);
         scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_QUALITYGATE_WAIT_FLAG", blockAfterQualityGateFail)));
-        if (SonarScannerType.SONAR_SCANNER.value().equals(devopsCiSonarConfigDTO.getScannerType())) {
-            if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
-                // 查询默认的sonarqube配置
-                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
-                CommonExAssertUtil.assertTrue(sonarConfig != null, "devops.default.sonar.not.exist");
-                scripts.add(GitlabCiUtil.getDefaultSonarScannerCommand(devopsCiSonarConfigDTO.getSources()));
-            } else if (CiSonarConfigType.CUSTOM.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
-                if (Objects.isNull(devopsCiSonarConfigDTO.getSonarUrl())) {
-                    throw new CommonException("devops.sonar.url.is.null");
-                }
-                if (SonarAuthType.USERNAME_PWD.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarScannerCommand(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getUsername(), devopsCiSonarConfigDTO.getPassword(), devopsCiSonarConfigDTO.getSources(), blockAfterQualityGateFail));
-                } else if (SonarAuthType.TOKEN.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarScannerCommandForToken(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getToken(), devopsCiSonarConfigDTO.getSources(), blockAfterQualityGateFail));
-                }
-            } else {
-                throw new CommonException("devops.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
+
+        // 配置认证信息
+        if (CiSonarConfigType.CUSTOM.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
+            scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_URL", devopsCiSonarConfigDTO.getSonarUrl())));
+            if (SonarAuthType.USERNAME_PWD.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
+                scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_LOGIN", devopsCiSonarConfigDTO.getUsername())));
+                scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_PASSWORD", devopsCiSonarConfigDTO.getPassword())));
+//                    scripts.add(GitlabCiUtil.renderSonarCommand(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getUsername(), devopsCiSonarConfigDTO.getPassword(), devopsCiSonarConfigDTO.getSkipTests()));
+            } else if (SonarAuthType.TOKEN.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
+                scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_LOGIN", devopsCiSonarConfigDTO.getToken())));
+//                    scripts.add(GitlabCiUtil.renderSonarCommandForToken(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getToken(), devopsCiSonarConfigDTO.getSkipTests()));
             }
+        }
+
+        if (SonarScannerType.SONAR_SCANNER.value().equals(devopsCiSonarConfigDTO.getScannerType())) {
+            scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_SOURCES", devopsCiSonarConfigDTO.getSources())));
+//            if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
+//                // 查询默认的sonarqube配置
+//                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
+//                CommonExAssertUtil.assertTrue(sonarConfig != null, "devops.default.sonar.not.exist");
+//                scripts.add(GitlabCiUtil.getDefaultSonarScannerCommand(devopsCiSonarConfigDTO.getSources()));
+//            } else if (CiSonarConfigType.CUSTOM.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
+//                if (Objects.isNull(devopsCiSonarConfigDTO.getSonarUrl())) {
+//                    throw new CommonException("devops.sonar.url.is.null");
+//                }
+//                if (SonarAuthType.USERNAME_PWD.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
+//                    scripts.add(GitlabCiUtil.renderSonarScannerCommand(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getUsername(), devopsCiSonarConfigDTO.getPassword(), devopsCiSonarConfigDTO.getSources(), blockAfterQualityGateFail));
+//                } else if (SonarAuthType.TOKEN.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
+//                    scripts.add(GitlabCiUtil.renderSonarScannerCommandForToken(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getToken(), devopsCiSonarConfigDTO.getSources(), blockAfterQualityGateFail));
+//                }
+//            } else {
+//                throw new CommonException("devops.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
+//            }
         } else if (SonarScannerType.SONAR_MAVEN.value().equals(devopsCiSonarConfigDTO.getScannerType())) {
             if (devopsCiMavenBuildConfigVO != null) {
                 scripts.add(0, GitlabCiUtil.downloadMavenSettings(projectId, devopsCiMavenSettingsDTO.getId()));
             }
-            if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
-                // 查询默认的sonarqube配置
+            scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_SKIP_TEST_FLAG", devopsCiSonarConfigDTO.getSkipTests())));
+//            if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
+            // 查询默认的sonarqube配置
 //                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
 //                CommonExAssertUtil.assertTrue(sonarConfig != null, "devops.default.sonar.not.exist");
-                scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_SKIP_TEST_FLAG", devopsCiSonarConfigDTO.getSkipTests())));
 //                if (devopsCiMavenBuildConfigVO != null) {
 //                    scripts.add(String.format(MVN_COMPILE_USE_SETTINGS_FUNCTION, devopsCiSonarConfigDTO.getSkipTests()));
 //                    scripts.add(String.format("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -s settings.xml -Dsonar.qualitygate.wait=%s", blockAfterQualityGateFail));
@@ -247,26 +260,26 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 //                    scripts.add(String.format("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.qualitygate.wait=%s", blockAfterQualityGateFail));
 //                }
 
-            } else if (CiSonarConfigType.CUSTOM.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
-                if (Objects.isNull(devopsCiSonarConfigDTO.getSonarUrl())) {
-                    throw new CommonException("devops.sonar.url.is.null");
-                }
-                scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_URL", devopsCiSonarConfigDTO.getSonarUrl())));
-                if (SonarAuthType.USERNAME_PWD.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
-                    scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_LOGIN", devopsCiSonarConfigDTO.getUsername())));
-                    scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_PASSWORD", devopsCiSonarConfigDTO.getPassword())));
-//                    scripts.add(GitlabCiUtil.renderSonarCommand(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getUsername(), devopsCiSonarConfigDTO.getPassword(), devopsCiSonarConfigDTO.getSkipTests()));
-                } else if (SonarAuthType.TOKEN.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
-                    scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_LOGIN", devopsCiSonarConfigDTO.getToken())));
-//                    scripts.add(GitlabCiUtil.renderSonarCommandForToken(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getToken(), devopsCiSonarConfigDTO.getSkipTests()));
-                }
-                scripts.addAll(GitlabCiUtil
-                        .filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()),
-                                true,
-                                true));
-            } else {
-                throw new CommonException("devops.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
-            }
+//            } else if (CiSonarConfigType.CUSTOM.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
+//                if (Objects.isNull(devopsCiSonarConfigDTO.getSonarUrl())) {
+//                    throw new CommonException("devops.sonar.url.is.null");
+//                }
+//                scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_URL", devopsCiSonarConfigDTO.getSonarUrl())));
+//                if (SonarAuthType.USERNAME_PWD.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
+//                    scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_LOGIN", devopsCiSonarConfigDTO.getUsername())));
+//                    scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_PASSWORD", devopsCiSonarConfigDTO.getPassword())));
+////                    scripts.add(GitlabCiUtil.renderSonarCommand(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getUsername(), devopsCiSonarConfigDTO.getPassword(), devopsCiSonarConfigDTO.getSkipTests()));
+//                } else if (SonarAuthType.TOKEN.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
+//                    scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_LOGIN", devopsCiSonarConfigDTO.getToken())));
+////                    scripts.add(GitlabCiUtil.renderSonarCommandForToken(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getToken(), devopsCiSonarConfigDTO.getSkipTests()));
+//                }
+//            } else {
+//                throw new CommonException("devops.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
+//            }
+            scripts.addAll(GitlabCiUtil
+                    .filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()),
+                            true,
+                            true));
         } else {
             throw new CommonException(ResourceCheckConstant.DEVOPS_SONAR_SCANNER_TYPE_INVALID);
         }
