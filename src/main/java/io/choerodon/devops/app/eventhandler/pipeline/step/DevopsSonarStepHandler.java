@@ -24,6 +24,7 @@ import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.AppServiceServiceImpl;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
+import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -210,7 +211,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
         // 有可能为null值
         Boolean blockAfterQualityGateFail = Optional.ofNullable(devopsCiSonarQualityGateService.queryBlock(devopsCiSonarConfigDTO.getId())).orElse(Boolean.FALSE);
-
+        scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_QUALITYGATE_WAIT_FLAG", blockAfterQualityGateFail)));
         if (SonarScannerType.SONAR_SCANNER.value().equals(devopsCiSonarConfigDTO.getScannerType())) {
             if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
                 // 查询默认的sonarqube配置
@@ -235,25 +236,34 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
             }
             if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
                 // 查询默认的sonarqube配置
-                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
-                CommonExAssertUtil.assertTrue(sonarConfig != null, "devops.default.sonar.not.exist");
-                if (devopsCiMavenBuildConfigVO != null) {
-                    scripts.add(String.format(MVN_COMPILE_USE_SETTINGS_FUNCTION, devopsCiSonarConfigDTO.getSkipTests()));
-                    scripts.add(String.format("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -s settings.xml -Dsonar.qualitygate.wait=%s", blockAfterQualityGateFail));
-                } else {
-                    scripts.add(String.format(MVN_COMPILE_FUNCTION, devopsCiSonarConfigDTO.getSkipTests()));
-                    scripts.add(String.format("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.qualitygate.wait=%s", blockAfterQualityGateFail));
-                }
+//                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
+//                CommonExAssertUtil.assertTrue(sonarConfig != null, "devops.default.sonar.not.exist");
+                scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_SKIP_TEST_FLAG", devopsCiSonarConfigDTO.getSkipTests())));
+//                if (devopsCiMavenBuildConfigVO != null) {
+//                    scripts.add(String.format(MVN_COMPILE_USE_SETTINGS_FUNCTION, devopsCiSonarConfigDTO.getSkipTests()));
+//                    scripts.add(String.format("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -s settings.xml -Dsonar.qualitygate.wait=%s", blockAfterQualityGateFail));
+//                } else {
+//                    scripts.add(String.format(MVN_COMPILE_FUNCTION, devopsCiSonarConfigDTO.getSkipTests()));
+//                    scripts.add(String.format("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.qualitygate.wait=%s", blockAfterQualityGateFail));
+//                }
 
             } else if (CiSonarConfigType.CUSTOM.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
                 if (Objects.isNull(devopsCiSonarConfigDTO.getSonarUrl())) {
                     throw new CommonException("devops.sonar.url.is.null");
                 }
+                scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_URL", devopsCiSonarConfigDTO.getSonarUrl())));
                 if (SonarAuthType.USERNAME_PWD.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarCommand(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getUsername(), devopsCiSonarConfigDTO.getPassword(), devopsCiSonarConfigDTO.getSkipTests()));
+                    scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_LOGIN", devopsCiSonarConfigDTO.getUsername())));
+                    scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_PASSWORD", devopsCiSonarConfigDTO.getPassword())));
+//                    scripts.add(GitlabCiUtil.renderSonarCommand(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getUsername(), devopsCiSonarConfigDTO.getPassword(), devopsCiSonarConfigDTO.getSkipTests()));
                 } else if (SonarAuthType.TOKEN.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarCommandForToken(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getToken(), devopsCiSonarConfigDTO.getSkipTests()));
+                    scripts.add((String.format(PipelineConstants.EXPORT_VAR_TPL, "SONAR_LOGIN", devopsCiSonarConfigDTO.getToken())));
+//                    scripts.add(GitlabCiUtil.renderSonarCommandForToken(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getToken(), devopsCiSonarConfigDTO.getSkipTests()));
                 }
+                scripts.addAll(GitlabCiUtil
+                        .filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()),
+                                true,
+                                true));
             } else {
                 throw new CommonException("devops.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
             }

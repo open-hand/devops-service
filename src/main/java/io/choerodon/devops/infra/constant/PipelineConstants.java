@@ -11,7 +11,7 @@ public class PipelineConstants {
 
     public static final String SONAR_NAME = "sonar_default";
 
-
+    public static final String EXPORT_VAR_TPL = "export %s=%s";
     public static final String DEVOPS_CI_MAVEN_REPOSITORY_TYPE = "devops.ci.maven.repository.type";
 
     public static final String DEVOPS_UPDATE_CI_JOB_RECORD = "devops.update.ci.job.record";
