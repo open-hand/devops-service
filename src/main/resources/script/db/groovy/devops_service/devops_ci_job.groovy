@@ -103,4 +103,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
             column(name: "is_enabled", type: "TINYINT UNSIGNED", defaultValue: "1", afterColumn: 'parallel', remarks: '是否启用')
         }
     }
+    changeSet(author: 'wanghao', id: '2023-04-04-udpate-column') {
+        sql("""
+            UPDATE devops_ci_job 
+            SET image = "registry.cn-shanghai.aliyuncs.com/c7n/sonar-scanner:4.6"
+            WHERE id in (SELECT devops_ci_job_id FROM devops_ci_step dcs WHERE type = 'sonar')
+        """)
+    }
 }
