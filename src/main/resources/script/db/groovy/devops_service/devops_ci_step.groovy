@@ -38,7 +38,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_step.groovy') {
     changeSet(author: 'wanghao', id: '2023-04-04-update-column') {
         sql("""
             UPDATE devops_ci_step INNER JOIN devops_ci_sonar_config ON devops_ci_step.id = devops_ci_sonar_config.step_id 
-SET devops_ci_step.script = "sonar-scanner -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=${SONAR_SOURCES} -Dsonar.qualitygate.wait=${SONAR_QUALITYGATE_WAIT_FLAG}"
+SET devops_ci_step.script = "sonar-scanner -Dsonar.host.url=\${SONAR_URL} -Dsonar.login=\${SONAR_LOGIN} -Dsonar.password=\${SONAR_PASSWORD} -Dsonar.projectKey=\${SONAR_PROJECT_KEY} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=\${SONAR_SOURCES} -Dsonar.qualitygate.wait=\${SONAR_QUALITYGATE_WAIT_FLAG}"
 WHERE devops_ci_sonar_config.scanner_type = 'SonarScanner'
         """)
         sql("""
@@ -47,13 +47,13 @@ SET devops_ci_step.script = "# 如果了配置maven仓库,运行时会下载sett
 #一、Java 8项目扫描指令
 #使用java8进行编译，如果是多模块项目则使用install命令
 export JAVA_HOME=/opt/java/openjdk8
-mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent verify -Dmaven.test.failure.ignore=true -DskipTests=${SONAR_SKIP_TEST_FLAG}
+mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent verify -Dmaven.test.failure.ignore=true -DskipTests=\${SONAR_SKIP_TEST_FLAG}
 #使用java11进行扫描
 export JAVA_HOME=/opt/java/openjdk
-mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.qualitygate.wait=${SONAR_QUALITYGATE_WAIT_FLAG}
+mvn sonar:sonar -Dsonar.host.url=\${SONAR_URL} -Dsonar.login=\${SONAR_LOGIN} -Dsonar.password=\${SONAR_PASSWORD} -Dsonar.projectKey=\${SONAR_PROJECT_KEY} -Dsonar.qualitygate.wait=\${SONAR_QUALITYGATE_WAIT_FLAG}
 
 #Java 11项目扫描指令
-#mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.qualitygate.wait=${SONAR_QUALITYGATE_WAIT_FLAG} -Dmaven.test.failure.ignore=true -DskipTests=${SONAR_SKIP_TEST_FLAG}"
+#mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.host.url=\${SONAR_URL} -Dsonar.login=\${SONAR_LOGIN} -Dsonar.password=\${SONAR_PASSWORD} -Dsonar.projectKey=\${SONAR_PROJECT_KEY} -Dsonar.qualitygate.wait=\${SONAR_QUALITYGATE_WAIT_FLAG} -Dmaven.test.failure.ignore=true -DskipTests=\${SONAR_SKIP_TEST_FLAG}"
 WHERE devops_ci_sonar_config.scanner_type = 'SonarMaven'
         """)
     }
