@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiStepMapper">
+    <update id="updateSonarScanner">
+        UPDATE devops_ci_step INNER JOIN devops_ci_sonar_config
+        ON devops_ci_step.id = devops_ci_sonar_config.step_id
+            SET devops_ci_step.script = #{script}
+        WHERE devops_ci_sonar_config.scanner_type = 'SonarScanner';
+    </update>
+    <update id="updateSonarMaven">
+        UPDATE devops_ci_step INNER JOIN devops_ci_sonar_config
+        ON devops_ci_step.id = devops_ci_sonar_config.step_id
+            SET devops_ci_step.script = #{script}
+        WHERE devops_ci_sonar_config.scanner_type = 'SonarMaven';
+    </update>
     <delete id="batchDeleteByIds">
         delete
         from devops_ci_step

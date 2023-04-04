@@ -22,4 +22,10 @@ public interface DevopsCiStepMapper extends BaseMapper<DevopsCiStepDTO> {
     void batchDeleteByIds(@Param("ids") Set<Long> ids);
 
     Long queryAppServiceIdByStepId(Long id);
+
+
+    void updateSonarScanner(@Param("script") String script);
+
+    void updateSonarMaven(@Param("script") String script);
+
 }
