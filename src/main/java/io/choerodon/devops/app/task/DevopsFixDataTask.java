@@ -146,5 +146,19 @@ public class DevopsFixDataTask {
         }
     }
 
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_PIPELINE_SONAR_DATA, description = "修复流水线代码检查脚本")
+    @TimedTask(name = FIX_PIPELINE_SONAR_DATA,
+            description = "修复流水线代码检查脚本",
+            repeatInterval = 1,
+            repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS,
+            params = {})
+    public void fixPipelineSonarData(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(FIX_PIPELINE_SONAR_DATA);
+        } catch (Exception e) {
+            logger.error("devops.fix.data", e);
+        }
+    }
+
 
 }
