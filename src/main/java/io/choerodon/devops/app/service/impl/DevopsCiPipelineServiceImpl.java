@@ -50,7 +50,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
@@ -1462,15 +1461,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciJobServices.setAlias("kaniko");
                         ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
                     }
-                    if (devopsCiStepDTOS.stream().filter(v -> DevopsCiStepTypeEnum.SONAR.value().equals(v.getType())).anyMatch(s -> {
-                        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(s.getId());
-                        return SonarScannerType.SONAR_MAVEN.value().equals(devopsCiSonarConfigDTO.getScannerType());
-                    })) {
-                        CiJobServices ciJobServices = new CiJobServices();
-                        ciJobServices.setName(defaultCiImage);
-                        ciJobServices.setAlias("kaniko");
-                        ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
-                    }
+//                    if (devopsCiStepDTOS.stream().filter(v -> DevopsCiStepTypeEnum.SONAR.value().equals(v.getType())).anyMatch(s -> {
+//                        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(s.getId());
+//                        return SonarScannerType.SONAR_MAVEN.value().equals(devopsCiSonarConfigDTO.getScannerType());
+//                    })) {
+//                        CiJobServices ciJobServices = new CiJobServices();
+//                        ciJobServices.setName(defaultCiImage);
+//                        ciJobServices.setAlias("kaniko");
+//                        ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
+//                    }
                     if (job.getType().equals(API_TEST.value())) {
                         ciJob.setImage(testRunnerImage);
                         if (job.getStartIn() != null) {
