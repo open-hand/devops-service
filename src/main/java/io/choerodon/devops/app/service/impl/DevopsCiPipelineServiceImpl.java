@@ -90,6 +90,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Value("${services.test.runner-image}")
     private String testRunnerImage;
+
+    @Value("${devops.ci.image-build-type}")
+    private String imageBuildType;
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
 
@@ -1455,7 +1458,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
                     //增加services
                     List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobId(job.getId());
-                    if (devopsCiStepDTOS.stream().anyMatch(v -> DevopsCiStepTypeEnum.DOCKER_BUILD.value().equals(v.getType()))) {
+                    if ("kaniko".equals(imageBuildType) && devopsCiStepDTOS.stream().anyMatch(v -> DevopsCiStepTypeEnum.DOCKER_BUILD.value().equals(v.getType()))) {
                         CiJobServices ciJobServices = new CiJobServices();
                         ciJobServices.setName(defaultCiImage);
                         ciJobServices.setAlias("kaniko");
