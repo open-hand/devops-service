@@ -123,7 +123,7 @@ public class GitOpsConstants {
     /**
      * 默认的sonar scanner命令
      */
-    public static final String DEFAULT_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s";
+    public static final String DEFAULT_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s -Dsonar.qualitygate.wait=${SONAR_QUALITYGATE_WAIT_FLAG}";
 
     /**
      * 使用Token认证的sonar命令
