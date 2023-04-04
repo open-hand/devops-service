@@ -276,13 +276,14 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 //            } else {
 //                throw new CommonException("devops.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
 //            }
-            scripts.addAll(GitlabCiUtil
-                    .filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()),
-                            true,
-                            true));
+
         } else {
             throw new CommonException(ResourceCheckConstant.DEVOPS_SONAR_SCANNER_TYPE_INVALID);
         }
+        scripts.addAll(GitlabCiUtil
+                .filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()),
+                        true,
+                        true));
         scripts.add(String.format(SAVE_SONAR_INFO_FUNCTION, devopsCiSonarConfigDTO.getScannerType()));
 
         return scripts;
