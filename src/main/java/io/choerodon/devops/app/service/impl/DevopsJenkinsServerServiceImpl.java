@@ -1,13 +1,18 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.cdancy.jenkins.rest.JenkinsClient;
 import com.cdancy.jenkins.rest.domain.plugins.Plugin;
 import com.cdancy.jenkins.rest.domain.plugins.Plugins;
 import com.cdancy.jenkins.rest.domain.statistics.OverallLoad;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +40,7 @@ import io.choerodon.devops.infra.enums.DevopsJenkinsServerStatusEnum;
 import io.choerodon.devops.infra.enums.jenkins.JenkinsPluginStatusEnum;
 import io.choerodon.devops.infra.mapper.DevopsJenkinsServerMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.JenkinsClientUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -45,12 +51,26 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsJenkinsServerServiceImpl.class);
 
+    private static final String USER_GUIDE_MARKDOWN;
+
+    private static final String USER_GUIDE_MARKDOWN_LOCATION = "jenkins/jenkins-user-guide.md";
+
+
     @Value("${devops.jenkins.plugin.version}")
     private String version;
     @Autowired
     private DevopsJenkinsServerMapper devopsJenkinsServerMapper;
     @Autowired
     private JenkinsClientUtil jenkinsClientUtil;
+
+
+    static {
+        try (InputStream inputStream = DevopsJenkinsServerServiceImpl.class.getResourceAsStream(USER_GUIDE_MARKDOWN_LOCATION)) {
+            USER_GUIDE_MARKDOWN = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("User guide markdown not found");
+        }
+    }
 
 
     @Transactional
@@ -183,7 +203,7 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
     @Override
     public ResponseEntity<Resource> downloadPlugin() {
         String filename = "choerodon-integration-" + version + ".hpi";
-        String fileFolder = "jenkins-plugin";
+        String fileFolder = "jenkins";
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("charset", "utf-8");
@@ -192,5 +212,12 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
 
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileFolder + "/" + filename);
         return ResponseEntity.ok().headers(headers).body(new InputStreamResource(inputStream));
+    }
+
+    @Override
+    public String queryUserGuide(Long projectId) {
+        Map<String, String> params = new HashMap<>();
+        params.put("{{C7N_PROJECT_ID}}", projectId.toString());
+        return FileUtil.replaceReturnString(USER_GUIDE_MARKDOWN, params);
     }
 }
