@@ -62,7 +62,7 @@ public interface SonarClient {
     Call<Void> revokeToken(@QueryMap Map<String, String> maps);
 
     @GET("api/user_tokens/search")
-    Call<ResponseBody> listToken();
+    Call<ResponseBody> listToken(@QueryMap Map<String, String> data);
 
     @GET("api/measures/search")
     Call<ResponseBody> batchQueryMeasures(@QueryMap Map<String, String> maps);

@@ -5,6 +5,7 @@ import java.util.Map;
 import okhttp3.ResponseBody;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
+import retrofit2.http.QueryMap;
 
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -96,7 +97,7 @@ public class SonarClientFallback implements SonarClient {
     }
 
     @Override
-    public Call<ResponseBody> listToken() {
+    public Call<ResponseBody> listToken(@QueryMap Map<String, String> data) {
         return null;
     }
 
