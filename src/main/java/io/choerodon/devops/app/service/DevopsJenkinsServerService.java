@@ -38,4 +38,7 @@ public interface DevopsJenkinsServerService {
     List<DevopsJenkinsServerDTO> listAll(Long projectId, String status);
 
     ResponseEntity<Resource> downloadPlugin();
+
+    String queryUserGuide(Long projectId);
+
 }
