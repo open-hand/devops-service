@@ -41,4 +41,5 @@ public interface DevopsJenkinsServerService {
 
     String queryUserGuide(Long projectId);
 
+    ResponseEntity<Resource> downloadImage(String name);
 }

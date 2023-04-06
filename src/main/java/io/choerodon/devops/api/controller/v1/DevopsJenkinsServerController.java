@@ -161,12 +161,21 @@ public class DevopsJenkinsServerController {
         return ResponseEntity.ok(devopsJenkinsServerService.checkNameExists(projectId, jenkinsServerId, name));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionPublic = true)
     @ApiOperation(value = "下载jenkins插件")
     @GetMapping("/plugins/download")
     public ResponseEntity<Resource> downloadPlugin(@ApiParam(value = "项目ID", required = true)
                                                    @PathVariable(value = "project_id") Long projectId) {
         return devopsJenkinsServerService.downloadPlugin();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionPublic = true)
+    @ApiOperation(value = "下载jenkins相关图片资源")
+    @GetMapping("/images/{name}")
+    public ResponseEntity<Resource> downloadImage(@ApiParam(value = "项目ID", required = true)
+                                                  @PathVariable(value = "project_id") Long projectId,
+                                                  @PathVariable(value = "name") String name) {
+        return devopsJenkinsServerService.downloadImage(name);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)

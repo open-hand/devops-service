@@ -220,4 +220,18 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
         params.put("{{C7N_PROJECT_ID}}", projectId.toString());
         return FileUtil.replaceReturnString(USER_GUIDE_MARKDOWN, params);
     }
+
+    @Override
+    public ResponseEntity<Resource> downloadImage(String name) {
+        String filename = "/image/" + name + ".png";
+        String fileFolder = "jenkins";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("charset", "utf-8");
+        //设置下载文件名
+        headers.add("Content-Disposition", "attachment;filename=\"" + filename + "\"");
+
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileFolder + "/" + filename);
+        return ResponseEntity.ok().headers(headers).body(new InputStreamResource(inputStream));
+    }
 }
