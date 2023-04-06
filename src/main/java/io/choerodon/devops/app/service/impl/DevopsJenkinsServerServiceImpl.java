@@ -53,7 +53,7 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
 
     private static final String USER_GUIDE_MARKDOWN;
 
-    private static final String USER_GUIDE_MARKDOWN_LOCATION = "jenkins/jenkins-user-guide.md";
+    private static final String USER_GUIDE_MARKDOWN_LOCATION = "/jenkins/jenkins-user-guide.md";
 
 
     @Value("${devops.jenkins.plugin.version}")
