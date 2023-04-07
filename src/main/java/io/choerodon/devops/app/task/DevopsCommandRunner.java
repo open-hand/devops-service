@@ -114,9 +114,9 @@ public class DevopsCommandRunner implements CommandLineRunner {
         Map<String, String> map = new HashMap<>();
         map.put("name", "ci-new-token");
         map.put("login", C7N_ANALYSES_USER);
-        Call<ResponseBody> responseCall = sonarClient.listToken();
+        Call<ResponseBody> responseCall = sonarClient.listToken(map);
         UserTokens userTokens = RetrofitCallExceptionParse.executeCall(responseCall, "devops.sonar.token.get", UserTokens.class);
-        Optional<UserToken> userTokenOptional = userTokens.getUserTokens().stream().filter(userToken -> "ci-token".equals(userToken.getName())).findFirst();
+        Optional<UserToken> userTokenOptional = userTokens.getUserTokens().stream().filter(userToken -> "ci-new-token".equals(userToken.getName())).findFirst();
         UserToken userToken;
         if (userTokenOptional.isPresent()) {
             Call<Void> revokeToken = sonarClient.revokeToken(map);
