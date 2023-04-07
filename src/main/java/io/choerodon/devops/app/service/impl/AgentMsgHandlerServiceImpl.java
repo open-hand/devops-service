@@ -2473,6 +2473,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         // 应该要有 version, namespaces, pods, nodes字段
         ClusterSummaryInfoVO clusterSummaryInfoVO = JSONObject.parseObject(msg.getPayload(), ClusterSummaryInfoVO.class);
         devopsClusterService.saveClusterSummaryInfo(clusterId, clusterSummaryInfoVO);
+
+        // 更新agentPodName
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        devopsClusterDTO.setPodName(clusterSummaryInfoVO.getAgentPodName());
+        devopsClusterDTO.setNamespaces(clusterSummaryInfoVO.getAgentNamespace());
+        devopsClusterService.baseUpdate(devopsClusterDTO.getProjectId(), devopsClusterDTO);
     }
 
     @Transactional(rollbackFor = Exception.class)

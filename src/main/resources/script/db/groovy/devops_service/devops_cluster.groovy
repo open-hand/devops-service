@@ -72,9 +72,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
         }
     }
 
-    changeSet(author: 'lihao',id:'2020-10-19-add-type-column'){
-        addColumn(tableName: 'devops_cluster'){
-            column(name: 'type',type: 'VARCHAR(10)',remarks: 'agent集群类型，created或者imported',afterColumn: 'id')
+    changeSet(author: 'lihao', id: '2020-10-19-add-type-column') {
+        addColumn(tableName: 'devops_cluster') {
+            column(name: 'type', type: 'VARCHAR(10)', remarks: 'agent集群类型，created或者imported', afterColumn: 'id')
         }
     }
 
@@ -82,13 +82,20 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
         sql("UPDATE devops_cluster SET type='imported'")
     }
 
-    changeSet(author: 'lihao',id: '2020-10-23-add-status-column'){
-        addColumn(tableName: 'devops_cluster'){
-            column(name: 'status',type: 'VARCHAR(32)',remarks: '集群状态',afterColumn: 'type')
+    changeSet(author: 'lihao', id: '2020-10-23-add-status-column') {
+        addColumn(tableName: 'devops_cluster') {
+            column(name: 'status', type: 'VARCHAR(32)', remarks: '集群状态', afterColumn: 'type')
         }
     }
 
-    changeSet(author: 'lihao',id: '2020-10-30-fix-status'){
+    changeSet(author: 'lihao', id: '2020-10-30-fix-status') {
         sql("UPDATE devops_cluster SET status='disconnect' WHERE type='imported'")
+    }
+
+    changeSet(author: 'lihao', id: '2023-04-07-add-pod_name-column') {
+        addColumn(tableName: 'devops_cluster') {
+            column(name: 'pod_name', type: 'VARCHAR(128)', remarks: 'agent的pod名称', afterColumn: 'type')
+            column(name: 'namespace', type: 'VARCHAR(128)', remarks: 'agent所在集群的命名空间', afterColumn: 'pod_name')
+        }
     }
 }
