@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.ws.log.agent;
+package io.choerodon.devops.api.ws.log.k8s.agent;
 
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.AGENT_DOWNLOAD_LOG;
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.INSTANCE_ID;

@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.ws.log.agent;
+package io.choerodon.devops.api.ws.log.k8s.agent;
 
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.AGENT_DOWNLOAD_LOG;
 
@@ -12,7 +12,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.ws.AbstractSocketHandler;
 import io.choerodon.devops.api.ws.AgentExecAndLogSocketHandler;
-import io.choerodon.devops.api.ws.log.LogMessageHandler;
+import io.choerodon.devops.api.ws.log.k8s.LogMessageHandler;
 
 @Component
 public class AgentDownloadLogSocketHandler extends AbstractSocketHandler {

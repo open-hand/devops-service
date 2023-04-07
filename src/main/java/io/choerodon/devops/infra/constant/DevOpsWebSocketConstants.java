@@ -9,11 +9,15 @@ package io.choerodon.devops.infra.constant;
 public final class DevOpsWebSocketConstants {
     public static final String AGENT = "agent";
     public static final String FRONT_LOG = "front_log";
+    public static final String HOST_FRONT_LOG = "host_front_log";
     public static final String FRONT_DOWNLOAD_LOG = "front_download_log";
+    public static final String HOST_FRONT_DOWNLOAD_LOG = "host_front_download_log";
     public static final String FRONT_EXEC = "front_exec";
     public static final String FRONT_DESCRIBE = "front_describe";
     public static final String AGENT_LOG = "agent_log";
+    public static final String HOST_AGENT_LOG = "host_agent_log";
     public static final String AGENT_DOWNLOAD_LOG = "agent_download_log";
+    public static final String HOST_AGENT_DOWNLOAD_LOG = "host_agent_download_log";
     public static final String AGENT_EXEC = "agent_exec";
     public static final String AGENT_DESCRIBE = "agent_describe";
     public static final String AGENT_POLARIS = "agent_polaris";
@@ -49,6 +53,15 @@ public final class DevOpsWebSocketConstants {
      * 从前端的连接的group的前缀
      */
     public static final String FROM_FRONT_GROUP_PREFIX = "from_front:";
+
+    /**
+     * 从主机agent的连接的group的前缀
+     */
+    public static final String HOST_FROM_AGENT_GROUP_PREFIX = "host_from_agent:";
+    /**
+     * 从前端的连接的group的前缀
+     */
+    public static final String HOST_FRONT_GROUP_PREFIX = "host_from_front:";
 
     public static final String PARAMETER_NULL_TEMPLATE = "The parameter %s is unexpectedly null";
 

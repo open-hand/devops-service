@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.ws.log.front;
+package io.choerodon.devops.api.ws.log.k8s.front;
 
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.FRONT_DOWNLOAD_LOG;
 
@@ -10,7 +10,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.ws.AbstractSocketHandler;
 import io.choerodon.devops.api.ws.DevopsExecAndLogSocketHandler;
-import io.choerodon.devops.api.ws.log.LogMessageHandler;
+import io.choerodon.devops.api.ws.log.k8s.LogMessageHandler;
 
 @Component
 public class FrontDownloadLogHandler extends AbstractSocketHandler {

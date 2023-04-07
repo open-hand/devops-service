@@ -18,6 +18,7 @@ import org.springframework.web.socket.sockjs.transport.session.WebSocketServerSo
 public abstract class AbstractSocketHandler implements SocketHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractSocketHandler.class);
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
 
@@ -56,7 +57,7 @@ public abstract class AbstractSocketHandler implements SocketHandler {
      * @param session session
      * @return sessionId
      */
-    private String getSessionId(WebSocketSession session) {
+    public String getSessionId(WebSocketSession session) {
         String sessionId = null;
         try {
             // 清理缓存
