@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.C7nCertificationCreateVO;
+import io.choerodon.devops.api.vo.C7nCertificationCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.CertificationRespVO;
 import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
@@ -29,8 +29,8 @@ public interface CertificationService {
      * @param projectId        项目id
      * @param certificationDTO 证书
      */
-    void createCertification(Long projectId, C7nCertificationCreateVO certificationDTO,
-                             MultipartFile key, MultipartFile cert);
+    void createOrUpdateCertification(Long projectId, C7nCertificationCreateOrUpdateVO certificationDTO,
+                                     MultipartFile key, MultipartFile cert);
 
     C7nCertification getV1Alpha1C7nCertification(String name, String type, List<String> domains,
                                                  String keyContent, String certContent, String envCode);
@@ -46,7 +46,7 @@ public interface CertificationService {
 
     List<CertificationVO> queryActiveCertificationByDomain(Long projectId, Long envId, String domain);
 
-    Boolean checkCertNameUniqueInEnv(Long envId, String certName);
+    Boolean checkCertNameUniqueInEnv(Long envId, String certName, Long certId);
 
 
     /**
@@ -72,6 +72,12 @@ public interface CertificationService {
 
     CertificationDTO baseCreate(CertificationDTO certificationVO);
 
+    void storeNotifyInfo(CertificationDTO certificationDTO);
+
+    void updateNotifyInfo(CertificationDTO certificationDTO);
+
+    CertificationDTO baseUpdate(CertificationDTO certificationDTO);
+
     CertificationDTO baseQueryById(Long certId);
 
     CertificationDTO baseQueryByEnvAndName(Long envId, String name);
@@ -90,9 +96,9 @@ public interface CertificationService {
 
     void baseDeleteById(Long certId);
 
-    Boolean baseCheckCertNameUniqueInEnv(Long envId, String certName);
-
     Long baseStoreCertFile(CertificationFileDTO certificationFileDTO);
+
+    void baseUpdateCertFile(CertificationFileDTO certificationFileDTO);
 
     CertificationFileDTO baseQueryCertFile(Long certId);
 
@@ -109,4 +115,6 @@ public interface CertificationService {
     void updateStatus(CertificationDTO certificationDTO);
 
     int updateStatusIfOperating(Long certId, CertificationStatus certificationStatus);
+
+    void findAndSendCertificationExpireNotice();
 }

@@ -472,4 +472,10 @@ public interface AppServiceInstanceService {
     List<PipelineInstanceReferenceVO> queryInstancePipelineReference(Long projectId, Long instanceId);
 
     Boolean isInstanceDeploying(Long instanceId);
+
+    void deleteHelmHookJob(Long projectId, Long instanceId, Long envId, Long commandId, String jobName);
+
+    void syncValueToDeploy(Long projectId, AppServiceSyncValueDeployVO syncValueDeployVO);
+
+    List<AppServiceInstanceVO> listInstanceByValueId(Long projectId, Long valueId, String params);
 }

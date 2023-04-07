@@ -16,8 +16,11 @@ public class CertificationRespVO extends DevopsResourceDataInfoVO {
     @Encrypt
     @ApiModelProperty("证书id")
     private Long id;
+    @Deprecated
     @ApiModelProperty("证书名称")
     private String name;
+    @ApiModelProperty("证书名称")
+    private String certName;
     @ApiModelProperty("泛域名")
     private String commonName;
     @ApiModelProperty("DNS名称")
@@ -37,6 +40,177 @@ public class CertificationRespVO extends DevopsResourceDataInfoVO {
 
     @ApiModelProperty("命令错误")
     private String error;
+
+    private List<CertificationNotifyObject> notifyObjects;
+
+    @ApiModelProperty("是否设置到期前通知")
+    private Boolean expireNotice;
+
+    @ApiModelProperty("到期提前多长时间通知")
+    private Integer advanceDays;
+
+    @Encrypt
+    private Long certId;
+
+    @ApiModelProperty("绑定的域名,如果证书类型是选择证书，将会被设置成去掉泛域名后的前缀部分")
+    private List<String> domains;
+    @ApiModelProperty("绑定的完整域名")
+    private List<String> fullDomains;
+
+    private String type;
+    private String certValue;
+    private String keyValue;
+    private String status;
+
+    private Long objectVersionNumber;
+
+    @ApiModelProperty("组织id")
+    private Long organizationId;
+    @Encrypt
+    @ApiModelProperty("环境id")
+    private Long envId;
+    @ApiModelProperty("环境名称")
+    private String envName;
+    @ApiModelProperty("环境是否连接")
+    private Boolean envConnected;
+    @ApiModelProperty("是否跳过权限校验")
+    private Boolean skipCheckProjectPermission;
+
+    public String getCertName() {
+        return certName;
+    }
+
+    public void setCertName(String certName) {
+        this.certName = certName;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
+
+    public Boolean getEnvConnected() {
+        return envConnected;
+    }
+
+    public void setEnvConnected(Boolean envConnected) {
+        this.envConnected = envConnected;
+    }
+
+    public Boolean getSkipCheckProjectPermission() {
+        return skipCheckProjectPermission;
+    }
+
+    public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
+        this.skipCheckProjectPermission = skipCheckProjectPermission;
+    }
+
+    public List<String> getDomains() {
+        return domains;
+    }
+
+    public void setDomains(List<String> domains) {
+        this.domains = domains;
+    }
+
+    public List<String> getFullDomains() {
+        return fullDomains;
+    }
+
+    public void setFullDomains(List<String> fullDomains) {
+        this.fullDomains = fullDomains;
+    }
+
+    public Long getCertId() {
+        return certId;
+    }
+
+    public void setCertId(Long certId) {
+        this.certId = certId;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getCertValue() {
+        return certValue;
+    }
+
+    public void setCertValue(String certValue) {
+        this.certValue = certValue;
+    }
+
+    public String getKeyValue() {
+        return keyValue;
+    }
+
+    public void setKeyValue(String keyValue) {
+        this.keyValue = keyValue;
+    }
+
+    public List<CertificationNotifyObject> getNotifyObjects() {
+        return notifyObjects;
+    }
+
+    public void setNotifyObjects(List<CertificationNotifyObject> notifyObjects) {
+        this.notifyObjects = notifyObjects;
+    }
+
+    public Boolean getExpireNotice() {
+        return expireNotice;
+    }
+
+    public void setExpireNotice(Boolean expireNotice) {
+        this.expireNotice = expireNotice;
+    }
+
+    public Integer getAdvanceDays() {
+        return advanceDays;
+    }
+
+    public void setAdvanceDays(Integer advanceDays) {
+        this.advanceDays = advanceDays;
+    }
 
     public Long getId() {
         return id;

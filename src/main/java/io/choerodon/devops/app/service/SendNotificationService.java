@@ -22,6 +22,27 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 public interface SendNotificationService {
 
     /**
+     * 环境部署成功通知项目所有者
+     *
+     * @param devopsEnvironmentDTO
+     */
+    void sendEnvDeploySuccessMessage(DevopsEnvironmentDTO devopsEnvironmentDTO);
+
+    /**
+     * 环境部署失败通知项目所有者
+     *
+     * @param devopsEnvironmentDTO
+     * @param errorMsg
+     */
+    void sendEnvDeployFailMessage(DevopsEnvironmentDTO devopsEnvironmentDTO, String errorMsg);
+
+    /**
+     * 证书将要过期通知指定人员
+     */
+    void sendCertificationExpireNotice(List<Receiver> receivers, Map<String, String> params, Long projectId
+    );
+
+    /**
      * 发送通知
      *
      * @param sendSettingCode 通知code

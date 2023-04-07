@@ -1,11 +1,12 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import java.util.List;
 
 import io.choerodon.devops.api.vo.CiJobWebHookVO;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
@@ -28,6 +29,7 @@ import io.choerodon.devops.infra.util.ConvertUtils;
  */
 public abstract class AbstractJobHandler {
     @Autowired
+    @Lazy
     private DevopsCiJobService devopsCiJobService;
 
     @Autowired

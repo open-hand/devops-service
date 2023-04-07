@@ -49,4 +49,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job.groovy') {
             DELETE FROM devops_cd_job WHERE type = 'cdHost';
         """)
     }
+    changeSet(author: 'wanghao', id: '2023-03-28-drop-create-table') {
+        dropTable(tableName: "devops_cd_job")
+    }
 }

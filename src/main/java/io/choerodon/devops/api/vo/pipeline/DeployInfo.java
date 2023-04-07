@@ -22,6 +22,25 @@ public class DeployInfo {
     private Long deployTypeId;
     private String hostName;
 
+    private Long podCount;
+
+    private Long podRunningCount;
+
+    public Long getPodCount() {
+        return podCount;
+    }
+
+    public void setPodCount(Long podCount) {
+        this.podCount = podCount;
+    }
+
+    public Long getPodRunningCount() {
+        return podRunningCount;
+    }
+
+    public void setPodRunningCount(Long podRunningCount) {
+        this.podRunningCount = podRunningCount;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;

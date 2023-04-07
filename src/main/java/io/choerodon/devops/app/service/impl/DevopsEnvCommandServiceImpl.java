@@ -138,11 +138,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     @Nullable
     @Override
     public DevopsEnvCommandDTO queryByInstanceIdAndCommitSha(Long instanceId, String sha) {
-        DevopsEnvCommandDTO condition = new DevopsEnvCommandDTO();
-        condition.setObjectId(Objects.requireNonNull(instanceId));
-        condition.setSha(Objects.requireNonNull(sha));
-        condition.setObject(ObjectType.INSTANCE.getType());
-        List<DevopsEnvCommandDTO> devopsEnvCommandDTOS = devopsEnvCommandMapper.select(condition);
+        List<DevopsEnvCommandDTO> devopsEnvCommandDTOS = devopsEnvCommandMapper.listByInstanceIdAndCommitSha(instanceId, sha);
         if (CollectionUtils.isEmpty(devopsEnvCommandDTOS)) {
             return null;
         } else {

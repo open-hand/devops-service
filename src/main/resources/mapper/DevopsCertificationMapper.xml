@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCertificationMapper">
+    <resultMap id="certificationDTOWithNoticeObjects" type="io.choerodon.devops.infra.dto.CertificationDTO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="env_id" property="envId"/>
+        <result column="project_id" property="projectId"/>
+        <result column="valid_until" property="validUntil"/>
+        <result column="object_version_number" property="objectVersionNumber"/>
+        <result column="advance_days" property="advanceDays"/>
+        <result column="env_name" property="envName"/>
+        <collection property="notifyObjects"
+                    ofType="io.choerodon.devops.api.vo.CertificationNotifyObject">
+            <id column="object_id" property="id"/>
+            <result column="object_type" property="type"/>
+        </collection>
+    </resultMap>
     <select id="listCertificationByOptions" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
         SELECT
         dc.id,
@@ -11,8 +25,12 @@
         dc.valid_from,
         dc.organization_id,
         dc.valid_until,
+        dc.type,
+        dc.org_cert_id,
         dc.command_id,
         dc.object_version_number,
+        dc.expire_notice,
+        dc.advance_days,
         cmd.`status` commandStatus,
         cmd.command_type commandType,
         cmd.error error,
@@ -129,11 +147,56 @@
     </select>
     <select id="listClusterCertification" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
         SELECT
-            dc.*
+        dc.*
         FROM
-            devops_certification dc
-            LEFT JOIN devops_env env ON env.id = dc.env_id
+        devops_certification dc
+        LEFT JOIN devops_env env ON env.id = dc.env_id
         WHERE
-            env.cluster_id = #{clusterId}
+        env.cluster_id = #{clusterId}
     </select>
+
+    <select id="listByIds" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
+        SELECT dc.*
+        FROM devops_certification dc
+        WHERE dc.id
+        IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="checkNameUnique" resultType="java.lang.Boolean">
+        SELECT COUNT(*) = 0
+        FROM devops_certification
+        WHERE env_id = #{envId}
+        AND name = #{certName}
+        <if test="certId != null">
+            AND id != #{certId}
+        </if>
+    </select>
+
+    <select id="listExpireCertificate" resultMap="certificationDTOWithNoticeObjects">
+        SELECT dc.id                    AS id,
+               dc.name                  AS name,
+               dc.valid_until           AS valid_until,
+               dc.env_id                AS env_id,
+               dcn.type                 AS object_type,
+               dcn.object_id            AS object_id,
+               dc.object_version_number AS object_version_number,
+               dc.advance_days          AS advance_days,
+               de.project_id            AS project_id,
+               de.name                  AS env_name
+        FROM devops_certification dc
+                 INNER JOIN devops_certification_notice dcn ON dc.id = dcn.certification_id
+                 INNER JOIN devops_env de ON de.id = dc.env_id
+        WHERE dc.advance_days IS NOT NULL
+          AND dc.notice_send_flag = 0
+          AND dc.valid_until IS NOT NULL
+    </select>
+
+    <update id="updateAdvanceDaysToNull">
+        UPDATE devops_certification
+        SET advance_days = NULL
+        WHERE id = #{id}
+    </update>
 </mapper>

@@ -22,8 +22,12 @@ public class GitlabCi {
     @ApiModelProperty("Url to include external yaml from")
     private String include;
 
-    @ApiModelProperty("The image for jobs")
-    private String image;
+    @YamlProperty(value = "default")
+    @JsonProperty("default")
+    private Map<String, Object> defaultSection;
+
+//    @ApiModelProperty("The image for jobs")
+//    private String image;
 
     @ApiModelProperty("stage is defined per-job and relies on stages which is defined globally. It allows to group jobs into different stages, and jobs of the same stage are executed in parallel (subject to certain conditions).")
     private List<String> stages;
@@ -41,6 +45,15 @@ public class GitlabCi {
     @ApiModelProperty("before_script")
     private List<String> beforeScript;
 
+
+    public Map<String, Object> getDefaultSection() {
+        return defaultSection;
+    }
+
+    public void setDefaultSection(Map<String, Object> defaultSection) {
+        this.defaultSection = defaultSection;
+    }
+
     public Map<String, String> getVariables() {
         return variables;
     }
@@ -57,13 +70,13 @@ public class GitlabCi {
         this.include = include;
     }
 
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
+//    public String getImage() {
+//        return image;
+//    }
+//
+//    public void setImage(String image) {
+//        this.image = image;
+//    }
 
     public List<String> getStages() {
         return stages;

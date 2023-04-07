@@ -19,7 +19,6 @@ import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -27,7 +26,10 @@ import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.mapper.CiTemplateStageBusMapper;
+import io.choerodon.devops.infra.mapper.CiTemplateStageJobRelBusMapper;
+import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiStepMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -41,6 +43,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public static final String FIX_PIPELINE_DATA = "fixPipelineData";
     public static final String FIX_HELM_REPO_DATA = "fixHelmRepoData";
     public static final String FIX_HELM_VERSION_DATA = "fixHelmVersionData";
+
+    public static final String FIX_PIPELINE_SONAR_DATA = "fix_pipeline_sonar_data";
     public static final String FIX_IMAGE_VERSION_DATA = "fixImageVersionData";
     public static final String MIGRATION_CD_PIPELINE_DATE = "migrationCdPipelineDate";
 
@@ -67,14 +71,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private AppServiceHelmVersionService appServiceHelmVersionService;
     @Autowired
-    private AppServiceHelmVersionMapper appServiceHelmVersionMapper;
-    @Autowired
     private AppServiceHelmRelService appServiceHelmRelService;
     @Autowired
-    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
-    @Autowired
-    private DevopsCdApiTestInfoService devopsCdApiTestInfoService;
-
+    private DevopsCiStepMapper devopsCiStepMapper;
 
     static {
         jobTypeMapping.put(JobTypeEnum.CD_AUDIT.value(), CiJobTypeEnum.AUDIT.value());
@@ -84,37 +83,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         jobTypeMapping.put(JobTypeEnum.CD_HOST.value(), CiJobTypeEnum.HOST_DEPLOY.value());
     }
 
-    @Autowired
-    private DevopsCdStageService devopsCdStageService;
-    @Autowired
-    private DevopsCdStageMapper devopsCdStageMapper;
-    @Autowired
-    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
-    @Autowired
-    private DevopsCiStageService devopsCiStageService;
-    @Autowired
-    private DevopsCdJobService devopsCdJobService;
-    @Autowired
-    private DevopsCdAuditMapper devopsCdAuditMapper;
-    @Autowired
-    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
-    @Autowired
-    private JobOperator jobOperator;
 
     @Autowired
     private HarborService harborService;
 
     @Autowired
-    private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper;
-    @Autowired
-    private AppServiceMapper appServiceMapper;
-    @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
-    @Autowired
-    private PipelineService pipelineService;
 
-    @Autowired
-    private DevopsCiPipelineService devopsCiPipelineService;
 
     @Autowired
     private CiTemplateStageBusMapper ciTemplateStageBusMapper;
@@ -148,9 +123,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 break;
             case FIX_HELM_IMAGE_VERSION_OF_NULL_DATA:
                 fixIHelmImageVersionOfNullData();
-            case MIGRATION_CD_PIPELINE_DATE:
-                migrationCdPipelineDate();
-                break;
+            case FIX_PIPELINE_SONAR_DATA:
+                fixPipelineSonarData();
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -160,44 +134,22 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
     }
 
-    /**
-     * 迁移cd流水线数据
-     * 1. 包含ci阶段的cd数据迁移到到ci
-     * 2. 不包含ci阶段的cd数据迁移到新的部署流水线
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void migrationCdPipelineDate() {
-        // 查询所有的cd阶段
-        List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageMapper.selectAll();
-        if (!CollectionUtils.isEmpty(devopsCdStageDTOS)) {
-            // 按流水线id分组
-            List<Long> errorIds = new ArrayList<>();
-            Map<Long, List<DevopsCdStageDTO>> stageMap = devopsCdStageDTOS.stream().collect(Collectors.groupingBy(DevopsCdStageDTO::getPipelineId));
-            stageMap.forEach((pipelineId, cdStageDTOS) -> {
-                //
-                try {
-                    devopsCiPipelineService.migrationPipelineData(pipelineId, cdStageDTOS);
-                } catch (Exception e) {
-                    errorIds.add(pipelineId);
-                    LOGGER.error("==================================[CICD]迁移cd数据失败，pipelineId: {}.==================================", pipelineId, e);
-                }
-            });
-            if (CollectionUtils.isEmpty(errorIds)) {
-                LOGGER.info("=====================================[CICD]迁移cd数据成功================================================");
-            } else {
-                LOGGER.info("=====================================[CICD]迁移cd数据成功，存在失败数据。PipelineIds:{}================================================", JsonHelper.marshalByJackson(errorIds));
-            }
-        }
+    private void fixPipelineSonarData() {
+        // 查询所有代码检查任务
+        devopsCiStepMapper.updateSonarScanner("sonar-scanner -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=${SONAR_SOURCES} -Dsonar.qualitygate.wait=${SONAR_QUALITYGATE_WAIT_FLAG}");
+        devopsCiStepMapper.updateSonarMaven("# 如果了配置maven仓库,运行时会下载settings.xml到根目录，此时可以使用-s settings.xml指定使用\n" +
+                "#一、Java 8项目扫描指令\n" +
+                "#使用java8进行编译，如果是多模块项目则使用install命令\n" +
+                "export JAVA_HOME=/opt/java/openjdk8\n" +
+                "mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent verify -Dmaven.test.failure.ignore=true -DskipTests=${SONAR_SKIP_TEST_FLAG}\n" +
+                "#使用java11进行扫描\n" +
+                "export JAVA_HOME=/opt/java/openjdk\n" +
+                "mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.password=${SONAR_PASSWORD}  -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.qualitygate.wait=${SONAR_QUALITYGATE_WAIT_FLAG}\n" +
+                "\n" +
+                "#Java 11项目扫描指令\n" +
+                "#mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.password=${SONAR_PASSWORD} -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.qualitygate.wait=${SONAR_QUALITYGATE_WAIT_FLAG} -Dmaven.test.failure.ignore=true -DskipTests=${SONAR_SKIP_TEST_FLAG}");
     }
 
-    @Override
-    public void fixPipeline(Long pipelineId) {
-        DevopsCdStageDTO devopsCdStageDTOToSearch = new DevopsCdStageDTO();
-        devopsCdStageDTOToSearch.setPipelineId(pipelineId);
-
-        List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageMapper.select(devopsCdStageDTOToSearch);
-        devopsCiPipelineService.migrationPipelineData(pipelineId, devopsCdStageDTOList);
-    }
 
     @Override
     public void fixCiTemplateStageJobRelSequence() {

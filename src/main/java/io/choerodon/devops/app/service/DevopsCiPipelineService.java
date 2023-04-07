@@ -12,7 +12,6 @@ import io.choerodon.devops.api.vo.PipelineFrequencyVO;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
-import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
 import io.choerodon.devops.infra.dto.DevopsPipelineBranchRelDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -129,13 +128,6 @@ public interface DevopsCiPipelineService {
 
     Boolean doesApiTestSuiteRelatedWithPipeline(Long projectId, Long suiteId);
 
-    /**
-     * 迁移cicd数据使用，后期可删除
-     *
-     * @param pipelineId
-     * @param cdStageDTOS
-     */
-    void migrationPipelineData(Long pipelineId, List<DevopsCdStageDTO> cdStageDTOS);
 
     String queryGitlabCiYamlById(Long pipelineId);
 }

@@ -2,7 +2,6 @@ package io.choerodon.devops.api.validator;
 
 import java.util.*;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -12,8 +11,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
-import io.choerodon.devops.infra.enums.CiTriggerType;
-import io.choerodon.devops.infra.util.Base64Util;
 import io.choerodon.devops.infra.util.MavenSettingsUtil;
 
 /**
@@ -26,13 +23,9 @@ public class DevopsCiPipelineAdditionalValidator {
 
     private static final String ERROR_STAGES_EMPTY = "devops.stages.empty";
     private static final String ERROR_CI_JOB_IS_EMPTY = "devops.ci.job.is.empty";
-    private static final String ERROR_CD_JOB_IS_EMPTY = "devops.cd.job.is.empty";
-    private static final String ERROR_JOB_REGULAR_FORMAT = "devops.job.regular.format";
     private static final String ERROR_PIPELINE_RELATED_BRANCH_EMPTY = "devops.pipeline.related.branch.empty";
     private static final String ERROR_JOB_PARALLEL_SIZE_RANGE = "devops.job.parallel.size.range";
     private static final String ERROR_PIPELINE_RELATED_BRANCH_SIZE_INVALID = "devops.pipeline.related.branch.size.invalid";
-    private static final String ERROR_STEP_SEQUENCE_IS_NULL = "devops.step.sequence.null";
-    private static final String ERROR_STEP_SEQUENCE_DUPLICATED = "devops.step.sequence.duplicated";
     private static final String ERROR_MAVEN_REPO_TYPE_EMPTY = "devops.maven.repository.type.null";
     private static final String ERROR_MAVEN_REPO_TYPE_INVALID = "devops.maven.repository.type.invalid";
     private static final String ERROR_MAVEN_REPO_NAME_EMPTY = "devops.maven.repository.name.empty";
@@ -82,23 +75,6 @@ public class DevopsCiPipelineAdditionalValidator {
 
                     });
                 });
-//        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
-//            ciCdPipelineVO.getDevopsCdStageVOS()
-//                    .stream()
-//                    .forEach(stage -> {
-//                        if (CollectionUtils.isEmpty(stage.getJobList())) {
-//                            throw new CommonException(ERROR_CD_JOB_IS_EMPTY, stage.getName());
-//                        }
-//
-//                        // 校验stage名称唯一
-//                        validateStageNameUniqueInPipeline(stage.getName(), stageNames);
-//
-//                        stage.getJobList().forEach(job -> {
-//                            validateTriggerRefRegex(job);
-//                            validateJobNameUniqueInPipeline(job.getName(), jobNames);
-//                        });
-//                    });
-//        }
 
     }
 
@@ -140,32 +116,6 @@ public class DevopsCiPipelineAdditionalValidator {
         }
     }
 
-    private static void validateTriggerRefRegex(DevopsCdJobVO job) {
-        if (CiTriggerType.REGEX_MATCH.value().equals(job.getTriggerType())) {
-            try {
-                Pattern.compile(job.getTriggerValue());
-            } catch (Exception e) {
-                throw new CommonException(ERROR_JOB_REGULAR_FORMAT, job.getName());
-            }
-        }
-    }
-
-    /**
-     * 校验sequence不为null也不重复
-     *
-     * @param sequence         step的序列号
-     * @param templateName     构建步骤的名称，用于报错信息
-     * @param existedSequences 已经存在的sequence
-     */
-    public static void validConfigSequence(@Nullable Long sequence, String templateName, List<Long> existedSequences) {
-        if (sequence == null) {
-            throw new CommonException(ERROR_STEP_SEQUENCE_IS_NULL, templateName);
-        }
-        if (existedSequences.contains(sequence)) {
-            throw new CommonException(ERROR_STEP_SEQUENCE_DUPLICATED, templateName);
-        }
-        existedSequences.add(sequence);
-    }
 
     /**
      * 校验maven步骤的参数
@@ -224,76 +174,6 @@ public class DevopsCiPipelineAdditionalValidator {
         }
     }
 
-    /**
-     * 校验maven步骤的参数
-     *
-     * @param config maven步骤数据
-     */
-    public static void validateMavenStep(CiConfigTemplateVO config) {
-        // 主要是校验仓库设置
-        if (!CollectionUtils.isEmpty(config.getRepos())) {
-            config.getRepos().forEach(repo -> {
-                if (StringUtils.isEmpty(repo.getType())) {
-                    throw new CommonException(ERROR_MAVEN_REPO_TYPE_EMPTY);
-                }
-                String[] types = repo.getType().split(GitOpsConstants.COMMA);
-                if (types.length > 2) {
-                    throw new CommonException(ERROR_MAVEN_REPO_TYPE_INVALID, repo.getType());
-                }
-
-                if (StringUtils.isEmpty(repo.getName())) {
-                    throw new CommonException(ERROR_MAVEN_REPO_NAME_EMPTY);
-                }
-
-                if (!MAVEN_REPO_NAME_REGEX.matcher(repo.getName()).matches()) {
-                    throw new CommonException(ERROR_MAVEN_REPO_NAME_INVALID, repo.getName());
-                }
-
-                if (StringUtils.isEmpty(repo.getUrl())) {
-                    throw new CommonException(ERROR_MAVEN_REPO_URL_EMPTY);
-                }
-
-                if (!GitOpsConstants.HTTP_URL_PATTERN.matcher(repo.getUrl()).matches()) {
-                    throw new CommonException(ERROR_MAVEN_REPO_URL_INVALID, repo.getUrl());
-                }
-
-                if (Boolean.TRUE.equals(repo.getPrivateRepo())) {
-                    if (StringUtils.isEmpty(repo.getUsername())) {
-                        throw new CommonException(ERROR_MAVEN_REPO_USERNAME_EMPTY);
-                    }
-                    if (StringUtils.isEmpty(repo.getPassword())) {
-                        throw new CommonException(ERROR_MAVEN_REPO_PSW_EMPTY);
-                    }
-                }
-            });
-
-            // 两个字段只能填一个
-            if (!StringUtils.isEmpty(config.getMavenSettings())) {
-                throw new CommonException(ERROR_BOTH_REPOS_AND_SETTINGS_EXIST, config.getName());
-            }
-        }
-
-        // 校验用户直接粘贴的maven的settings文件的内容
-        if (!StringUtils.isEmpty(config.getMavenSettings())
-                && !MavenSettingsUtil.isXmlFormat(Base64Util.getBase64DecodedString(config.getMavenSettings()))) {
-            // 如果不符合xml格式，抛异常
-            throw new CommonException(ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT, config.getName());
-        }
-    }
-
-    /**
-     * 校验runner的镜像地址是否正确
-     *
-     * @param image 镜像地址
-     */
-    public static void validateImage(String image) {
-        if (image == null) {
-            return;
-        }
-        if (!GitOpsConstants.IMAGE_REGISTRY.matcher(image).matches()) {
-            throw new CommonException("devops.ci.image.invalid", image);
-        }
-    }
 
     /**
      * 校验自定义任务格式
@@ -322,9 +202,6 @@ public class DevopsCiPipelineAdditionalValidator {
                 throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
             }
             devopsCiJobVO.setName(key);
-//            JSONObject jsonObject = new JSONObject((Map<String, Object>) value);
-//            String stageNameDefinedInJob = jsonObject.getString(GitOpsConstants.STAGE);
-//            CommonExAssertUtil.assertTrue(stageName.equals(stageNameDefinedInJob), ERROR_CUSTOM_JOB_STAGE_NOT_MATCH, stageNameDefinedInJob, stageName);
         });
     }
 

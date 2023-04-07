@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import java.util.HashMap;
 import java.util.List;
 
 import io.choerodon.core.domain.Page;
@@ -104,4 +105,8 @@ public interface DevopsDeployValueService {
      * @param envId 环境id
      */
     void deleteByEnvId(Long envId);
+
+    List<DevopsDeployValueDTO> listValueByInstanceId(Long projectId, Long instanceId);
+
+    void updateValueByInstanceId(Long projectId, Long instanceId, HashMap<String, String> mapValue);
 }

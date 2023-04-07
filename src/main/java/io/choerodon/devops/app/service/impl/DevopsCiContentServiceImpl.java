@@ -4,27 +4,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.DevopsCdStageService;
 import io.choerodon.devops.app.service.DevopsCiContentService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
-import io.choerodon.devops.app.service.DevopsCiStageService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
-import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
 import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
-import io.choerodon.devops.infra.dto.DevopsCiStageDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiContentMapper;
@@ -47,15 +40,11 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     private static final String DEVOPS_LOAD_DEFAULT_EMPTY_GITLAB_CI_FILE = "devops.load.default.empty.gitlab.ci.file";
 
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_PATH = "/component/empty-gitlabci-config.yml";
-    private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_FOR_CD_PATH = "/component/empty-gitlabci-config-for-cd.yml";
     /**
      * 默认的空gitlab-ci文件内容
      */
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT;
-    /**
-     * 默认的空gitlab-ci文件内容
-     */
-    private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT_FOR_CD;
+
     private DevopsCiContentMapper devopsCiContentMapper;
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     private DevopsCiPipelineService devopsCiPipelineService;
@@ -66,22 +55,12 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
         } catch (IOException e) {
             throw new CommonException(DEVOPS_LOAD_DEFAULT_EMPTY_GITLAB_CI_FILE);
         }
-        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream(DEFAULT_EMPTY_GITLAB_CI_FILE_FOR_CD_PATH)) {
-            DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT_FOR_CD = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new CommonException(DEVOPS_LOAD_DEFAULT_EMPTY_GITLAB_CI_FILE);
-        }
     }
-
-    @Autowired
-    private DevopsCiStageService devopsCiStageService;
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
     @Value("${devops.ci.default.rule-number}")
     private Long defaultRuleNumber;
-    @Autowired
-    private DevopsCdStageService devopsCdStageService;
 
     public DevopsCiContentServiceImpl(DevopsCiContentMapper devopsCiContentMapper,
                                       DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -104,12 +83,6 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
         }
         if (Boolean.FALSE.equals(devopsCiPipelineDTO.getEnabled())) {
             return DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT;
-        }
-        // 只有纯cd流水线返回一个
-        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineDTO.getId());
-        List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
-        if (CollectionUtils.isEmpty(devopsCiStageDTOList) && !CollectionUtils.isEmpty(devopsCdStageDTOList)) {
-            return DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT_FOR_CD;
         }
 
         DevopsCiContentDTO devopsCiContentDTO = devopsCiContentMapper.queryLatestContent(devopsCiPipelineDTO.getId());

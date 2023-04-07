@@ -58,4 +58,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job_record.groovy') {
             column(name: 'callback_token', type: 'VARCHAR(255)', remarks: '外部卡点任务回调认证token', beforeColumn: "countersigned")
         }
     }
+    changeSet(author: 'wanghao', id: '2023-03-28-drop-create-table') {
+        dropTable(tableName: "devops_cd_job_record")
+    }
 }

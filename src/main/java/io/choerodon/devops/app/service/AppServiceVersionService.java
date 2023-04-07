@@ -34,7 +34,7 @@ public interface AppServiceVersionService {
      * @param gitlabUserId
      */
     void create(String image,
-                String harborConfigId,
+                Long harborConfigId,
                 String repoType,
                 String token,
                 String version,
@@ -254,4 +254,14 @@ public interface AppServiceVersionService {
     List<AppServiceVersionDTO> listAllVersionsWithHelmConfigNullOrImageConfigNull();
 
     AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, Set<String> version);
+
+    AppServiceVersionDTO saveHelmVersion(Long projectId, String code, String version, String commit, MultipartFile file);
+
+    AppServiceVersionDTO saveImageVersion(Long projectId,
+                                          String code,
+                                          String version,
+                                          String commit,
+                                          Long harborConfigId,
+                                          String repoType,
+                                          String image);
 }

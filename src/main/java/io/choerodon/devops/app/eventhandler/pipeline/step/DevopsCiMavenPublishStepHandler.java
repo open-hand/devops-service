@@ -23,6 +23,7 @@ import io.choerodon.devops.app.service.CiTemplateMavenPublishService;
 import io.choerodon.devops.app.service.DevopsCiMavenPublishConfigService;
 import io.choerodon.devops.infra.config.ProxyProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.CiTemplateMavenPublishDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenPublishConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
@@ -46,7 +47,6 @@ import io.choerodon.devops.infra.util.*;
 public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler {
 
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "devops.maven.settings.insert";
-    private static final String EXPORT_VAR_TPL = "export %s=%s";
 
     @Autowired
     private DevopsCiMavenPublishConfigService devopsCiMavenPublishConfigService;
@@ -280,17 +280,17 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         List<String> shells = new ArrayList<>();
         // 声明变量
         if (!CollectionUtils.isEmpty(targetMavenRepoVO)) {
-            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_REPOSITORY_ID", targetMavenRepoVO.get(0).getName()));
-            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_REPO_URL", targetMavenRepoVO.get(0).getUrl()));
+            shells.add(String.format(PipelineConstants.EXPORT_VAR_TPL, "CHOERODON_MAVEN_REPOSITORY_ID", targetMavenRepoVO.get(0).getName()));
+            shells.add(String.format(PipelineConstants.EXPORT_VAR_TPL, "CHOERODON_MAVEN_REPO_URL", targetMavenRepoVO.get(0).getUrl()));
         }
 
         if (MavenGavSourceTypeEnum.POM.value().equals(ciConfigTemplateVO.getGavSourceType())) {
-            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_POM_LOCATION", ciConfigTemplateVO.getPomLocation()));
+            shells.add(String.format(PipelineConstants.EXPORT_VAR_TPL, "CHOERODON_MAVEN_POM_LOCATION", ciConfigTemplateVO.getPomLocation()));
         } else if (MavenGavSourceTypeEnum.CUSTOM.value().equals(ciConfigTemplateVO.getGavSourceType())) {
-            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_GROUP_ID", ciConfigTemplateVO.getGroupId()));
-            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_ARTIFACT_ID", ciConfigTemplateVO.getArtifactId()));
-            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_VERSION", ciConfigTemplateVO.getVersion()));
-            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_PACKAGING", ciConfigTemplateVO.getPackaging()));
+            shells.add(String.format(PipelineConstants.EXPORT_VAR_TPL, "CHOERODON_MAVEN_GROUP_ID", ciConfigTemplateVO.getGroupId()));
+            shells.add(String.format(PipelineConstants.EXPORT_VAR_TPL, "CHOERODON_MAVEN_ARTIFACT_ID", ciConfigTemplateVO.getArtifactId()));
+            shells.add(String.format(PipelineConstants.EXPORT_VAR_TPL, "CHOERODON_MAVEN_VERSION", ciConfigTemplateVO.getVersion()));
+            shells.add(String.format(PipelineConstants.EXPORT_VAR_TPL, "CHOERODON_MAVEN_PACKAGING", ciConfigTemplateVO.getPackaging()));
         }
 
         // TODO 重构逻辑

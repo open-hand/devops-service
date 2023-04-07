@@ -1,14 +1,15 @@
 package io.choerodon.devops.api.vo;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotEmpty;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
@@ -86,6 +87,10 @@ public class DevopsCiJobVO {
 
     private String tags;
 
+
+    @Column(name = "is_enabled")
+    private Boolean enabled;
+
     @ApiModelProperty("是否有权限修改cd的job,默认有")
     private boolean edit = true;
 
@@ -113,6 +118,14 @@ public class DevopsCiJobVO {
 
     public void setConfigFileRelList(List<ConfigFileRelVO> configFileRelList) {
         this.configFileRelList = configFileRelList;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 
     public DevopsCiPipelineTriggerConfigVO getDevopsCiPipelineTriggerConfigVO() {
