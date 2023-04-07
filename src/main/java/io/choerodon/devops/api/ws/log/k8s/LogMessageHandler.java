@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.ws.log;
+package io.choerodon.devops.api.ws.log.k8s;
 
 
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.FRONT_LOG;

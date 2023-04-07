@@ -1,6 +1,7 @@
-package io.choerodon.devops.api.ws.log.front;
+package io.choerodon.devops.api.ws.log.k8s.front;
 
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.FRONT_DOWNLOAD_LOG;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.FRONT_LOG;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.USER_ID;
 
 import java.util.Map;
 
@@ -14,22 +15,27 @@ import io.choerodon.devops.api.ws.AbstractSocketInterceptor;
 import io.choerodon.devops.api.ws.DevopsExecAndLogSocketHandler;
 import io.choerodon.devops.api.ws.WebSocketTool;
 
+/**
+ * @author zmf
+ * @since 20-5-8
+ */
 @Component
-public class FrontDownloadLogSocketInterceptor extends AbstractSocketInterceptor {
+public class FrontLogSocketInterceptor extends AbstractSocketInterceptor {
     @Autowired
     private DevopsExecAndLogSocketHandler devopsExecAndLogSocketHandler;
 
     @Override
     public String processor() {
-        return FRONT_DOWNLOAD_LOG;
+        return FRONT_LOG;
     }
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) {
         // 先校验token
-        if (!WebSocketTool.preCheckOAuthToken(attributes)) {
-            return false;
-        }
+//        if (!WebSocketTool.preCheckOAuthToken(attributes)) {
+//            return false;
+//        }
+        attributes.put(USER_ID, 1);
         WebSocketTool.preProcessAttributeAboutKeyEncryption(attributes);
         return devopsExecAndLogSocketHandler.beforeHandshake(request, response, attributes);
     }

@@ -7,6 +7,7 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -14,9 +15,14 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.vo.PipeRequestVO;
+import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
+import io.choerodon.devops.infra.constant.DevopsHostConstants;
+import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.util.EurekaInstanceUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 
 /**
  * Created by Sheep on 2019/7/25.
