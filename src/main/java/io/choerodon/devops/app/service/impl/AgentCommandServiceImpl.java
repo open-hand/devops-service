@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Pattern;
+import javax.annotation.Nullable;
+
 import com.google.gson.Gson;
 import io.codearte.props2yaml.Props2YAML;
 import org.hzero.websocket.constant.ClientWebSocketConstant;
@@ -16,11 +21,6 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.Command;
@@ -68,6 +68,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String DELETE_HELM_HOOK_JOB = "delete_helm_hook_job";
     private static final String OPERATE_DOCKER_REGISTRY_SECRET = "operate_docker_registry_secret";
     private static final String CLUSTER_AGENT = "choerodon-cluster-agent-";
+    private static final String RESTART_AGENT = "restart_agent";
 
 
     private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
@@ -461,5 +462,13 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setPayload(JsonHelper.marshalByJackson(configVO));
         sendToWebSocket(clusterId, msg);
         LOGGER.debug("Finished to sendChartMuseumAuthentication. cluster id {}", clusterId);
+    }
+
+    @Override
+    public void sendRestartAgent(Long clusterId) {
+        AgentMsgVO msg = new AgentMsgVO();
+        msg.setType(RESTART_AGENT);
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
+        sendToWebSocket(clusterId, msg);
     }
 }
