@@ -1,5 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import net.schmizz.sshj.SSHClient;
@@ -18,17 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -811,6 +811,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public List<DevopsHostDTO> listByIds(Set<Long> ids) {
         return devopsHostMapper.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
+    }
+
+    @Override
+    public void restartAgent(Long projectId, Long hostId) {
+        hostConnectionHandler.checkHostConnection(hostId);
+        devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostMapper.selectByPrimaryKey(hostId), DetailsHelper.getUserDetails().getUserId());
+
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.RESTART_AGENT.value());
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
 
     @Override

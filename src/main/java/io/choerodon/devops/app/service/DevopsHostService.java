@@ -312,4 +312,6 @@ public interface DevopsHostService {
     DevopsHostDTO checkHostAvailable(Long hostId);
 
     List<DevopsHostDTO> listByIds(Set<Long> ids);
+
+    void restartAgent(Long projectId, Long hostId);
 }

@@ -43,6 +43,7 @@ public enum HostCommandEnum {
     INIT_AGENT_FAILED("init_agent_failed"),
     HOST_AGENT_LOG("host_agent_log"),
     HOST_AGENT_DOWNLOAD_LOG("host_agent_download_log"),
+    RESTART_AGENT("restart_agent"),
     /**
      * 该事件返回command结果
      */

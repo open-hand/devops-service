@@ -2,7 +2,6 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import javax.validation.Valid;
 
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
@@ -90,7 +88,7 @@ public class DevopsHostController {
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "是否带有创建者信息")
             @RequestParam(value = "with_creator_info", required = false, defaultValue = "false")
-                    Boolean withCreatorInfo,
+            Boolean withCreatorInfo,
             @ApiParam(value = "搜索参数")
             @RequestParam(value = "search_param", required = false) String searchParam,
             @ApiParam(value = "主机状态")
@@ -449,5 +447,17 @@ public class DevopsHostController {
             @RequestBody @Valid DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO) {
         devopsHostService.batchUpdateHostUserPermission(projectId, devopsHostUserPermissionUpdateVO);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "重启主机agent")
+    @PostMapping(value = "/{host_id}/restart")
+    public ResponseEntity<Void> restartHostAgent(@ApiParam(value = "项目id", required = true)
+                                                 @PathVariable(value = "project_id") Long projectId,
+                                                 @Encrypt
+                                                 @ApiParam(value = "主机id", required = true)
+                                                 @PathVariable(value = "host_id") Long hostId) {
+        devopsHostService.restartAgent(projectId, hostId);
+        return ResponseEntity.noContent().build();
     }
 }
