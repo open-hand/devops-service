@@ -92,7 +92,7 @@ public class HostConnectionHandler {
     }
 
     /**
-     * 检查集群的环境是否链接
+     * 检查主机是否链接
      *
      * @param hostId 主机ID
      * @return true 表示已连接

@@ -32,9 +32,9 @@ public class HostFrontLogSocketInterceptor extends AbstractSocketInterceptor {
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) {
         // 先校验token
-//        if (!WebSocketTool.preCheckOAuthToken(attributes)) {
-//            return false;
-//        }
+        if (!WebSocketTool.preCheckOAuthToken(attributes)) {
+            return false;
+        }
         WebSocketTool.preProcessAttributeAboutKeyEncryption(attributes);
         return commonHostAgentLogSocketHandler.beforeHandshake(request, response, attributes);
     }

@@ -27,9 +27,9 @@ public class HostFrontDownloadLogSocketInterceptor extends AbstractSocketInterce
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) {
         // 先校验token
-//        if (!WebSocketTool.preCheckOAuthToken(attributes)) {
-//            return false;
-//        }
+        if (!WebSocketTool.preCheckOAuthToken(attributes)) {
+            return false;
+        }
         WebSocketTool.preProcessAttributeAboutKeyEncryption(attributes);
         return devopsExecAndLogSocketHandler.beforeHandshake(request, response, attributes);
     }
