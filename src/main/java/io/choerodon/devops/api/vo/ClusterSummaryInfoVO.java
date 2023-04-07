@@ -28,6 +28,24 @@ public class ClusterSummaryInfoVO {
     private Long jobs;
     private Long cronJobs;
     private Long replicationControllers;
+    private String agentPodName;
+    private String agentNamespace;
+
+    public String getAgentNamespace() {
+        return agentNamespace;
+    }
+
+    public void setAgentNamespace(String agentNamespace) {
+        this.agentNamespace = agentNamespace;
+    }
+
+    public String getAgentPodName() {
+        return agentPodName;
+    }
+
+    public void setAgentPodName(String agentPodName) {
+        this.agentPodName = agentPodName;
+    }
 
     public String getVersion() {
         return version;

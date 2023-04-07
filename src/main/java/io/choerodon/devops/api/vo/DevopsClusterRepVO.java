@@ -37,6 +37,27 @@ public class DevopsClusterRepVO {
     @ApiModelProperty("纪录版本字段")
     private Long objectVersionNumber;
 
+    @ApiModelProperty(value = "agent的pod名称")
+    private String podName;
+    @ApiModelProperty(value = "agent所在集群的命名空间")
+    private String namespace;
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    public String getPodName() {
+        return podName;
+    }
+
+    public void setPodName(String podName) {
+        this.podName = podName;
+    }
+
     public Long getId() {
         return id;
     }

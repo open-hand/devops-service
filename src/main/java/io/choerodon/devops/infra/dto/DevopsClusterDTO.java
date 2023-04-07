@@ -39,6 +39,8 @@ public class DevopsClusterDTO extends AuditDomain {
     private Boolean isInit;
     private Long createdBy;
     private Long projectId;
+    private String podName;
+    private String namespace;
 
     @ApiModelProperty("系统环境id, 用于部署集群相关的资源")
     private Long systemEnvId;
@@ -173,5 +175,21 @@ public class DevopsClusterDTO extends AuditDomain {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getPodName() {
+        return podName;
+    }
+
+    public void setPodName(String podName) {
+        this.podName = podName;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 }
