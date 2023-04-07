@@ -112,6 +112,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private TransactionalProducer producer;
     @Autowired
     private DevopsClusterOperationRecordService devopsClusterOperationRecordService;
+    @Autowired
+    private AgentCommandService agentCommandService;
 
     static {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh")) {
@@ -1011,5 +1013,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             throw new CommonException("cluster.not.exist");
         }
         return String.format(DIS_CONNECTION, clusterDTO.getCode());
+    }
+
+    @Override
+    public void restartAgent(Long projectId, Long clusterId) {
+        clusterConnectionHandler.checkEnvConnection(clusterId);
+
+        agentCommandService.sendRestartAgent(clusterId);
     }
 }

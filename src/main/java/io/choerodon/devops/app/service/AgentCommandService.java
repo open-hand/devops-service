@@ -1,10 +1,10 @@
 package io.choerodon.devops.app.service;
 
-import org.springframework.web.socket.WebSocketSession;
-
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+
+import org.springframework.web.socket.WebSocketSession;
 
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DescribeResourceVO;
@@ -112,4 +112,6 @@ public interface AgentCommandService {
      * @param configVO  配置信息
      */
     void sendChartMuseumAuthentication(Long clusterId, ConfigVO configVO);
+
+    void sendRestartAgent(Long clusterId);
 }

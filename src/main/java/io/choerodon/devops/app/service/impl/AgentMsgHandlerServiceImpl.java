@@ -2476,8 +2476,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
         // 更新agentPodName
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-        devopsClusterDTO.setPodName(clusterSummaryInfoVO.getAgentPodName());
-        devopsClusterDTO.setNamespaces(clusterSummaryInfoVO.getAgentNamespace());
+        devopsClusterDTO.setPodName(ObjectUtils.isEmpty(clusterSummaryInfoVO.getAgentPodName()) ? null : clusterSummaryInfoVO.getAgentPodName());
+        devopsClusterDTO.setNamespace(ObjectUtils.isEmpty(clusterSummaryInfoVO.getAgentNamespace()) ? null : clusterSummaryInfoVO.getAgentNamespace());
         devopsClusterService.baseUpdate(devopsClusterDTO.getProjectId(), devopsClusterDTO);
     }
 

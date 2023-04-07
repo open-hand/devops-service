@@ -273,4 +273,6 @@ public interface DevopsClusterService {
     Long countClusterByOptions(Long projectId);
 
     String disconnectionHost(Long clusterId);
+
+    void restartAgent(Long projectId, Long clusterId);
 }
