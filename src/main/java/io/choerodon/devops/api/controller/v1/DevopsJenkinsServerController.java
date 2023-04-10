@@ -169,6 +169,14 @@ public class DevopsJenkinsServerController {
         return devopsJenkinsServerService.downloadPlugin();
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "jenkins插件最新版本")
+    @GetMapping("/plugins/lasted_version")
+    public ResponseEntity<String> queryPluginLastedVersion(@ApiParam(value = "项目ID", required = true)
+                                                           @PathVariable(value = "project_id") Long projectId) {
+        return ResponseEntity.ok(devopsJenkinsServerService.queryPluginLastedVersion());
+    }
+
     @Permission(level = ResourceLevel.ORGANIZATION, permissionPublic = true)
     @ApiOperation(value = "下载jenkins相关图片资源")
     @GetMapping("/images/{name}")

@@ -234,4 +234,9 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileFolder + "/" + filename);
         return ResponseEntity.ok().headers(headers).body(new InputStreamResource(inputStream));
     }
+
+    @Override
+    public String queryPluginLastedVersion() {
+        return version;
+    }
 }
