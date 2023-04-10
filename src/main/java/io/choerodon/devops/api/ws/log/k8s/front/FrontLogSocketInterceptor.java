@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.ws.log.k8s.front;
 
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.FRONT_LOG;
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.USER_ID;
 
 import java.util.Map;
 
@@ -32,10 +31,9 @@ public class FrontLogSocketInterceptor extends AbstractSocketInterceptor {
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) {
         // 先校验token
-//        if (!WebSocketTool.preCheckOAuthToken(attributes)) {
-//            return false;
-//        }
-        attributes.put(USER_ID, 1);
+        if (!WebSocketTool.preCheckOAuthToken(attributes)) {
+            return false;
+        }
         WebSocketTool.preProcessAttributeAboutKeyEncryption(attributes);
         return devopsExecAndLogSocketHandler.beforeHandshake(request, response, attributes);
     }

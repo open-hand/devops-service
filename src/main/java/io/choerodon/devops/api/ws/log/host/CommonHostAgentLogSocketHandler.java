@@ -19,7 +19,6 @@ import org.springframework.web.socket.WebSocketSession;
 import io.choerodon.devops.api.vo.PipeRequestVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.ws.WebSocketTool;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsHostService;
 import io.choerodon.devops.app.service.DevopsHostUserPermissionService;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
@@ -37,8 +36,6 @@ public class CommonHostAgentLogSocketHandler {
     @Autowired
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
     @Lazy
     private KeySocketSendHelper webSocketHelper;
     @Autowired
@@ -50,7 +47,7 @@ public class CommonHostAgentLogSocketHandler {
         WebSocketTool.checkGroup(attributes);
         WebSocketTool.checkHostId(attributes);
 
-        return true;
+        return checkUserPermission(attributes);
     }
 
     private boolean checkUserPermission(Map<String, Object> attributes) {
@@ -60,7 +57,6 @@ public class CommonHostAgentLogSocketHandler {
         Long userId = Long.parseLong(String.valueOf(attributes.get(USER_ID)));
 
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostService.baseQuery(hostId), userId);
-
         return true;
     }
 
