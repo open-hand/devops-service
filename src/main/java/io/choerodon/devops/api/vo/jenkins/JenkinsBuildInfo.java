@@ -44,6 +44,14 @@ public class JenkinsBuildInfo {
         this.branch = branch;
     }
 
+    public Boolean getRetryAble() {
+        return retryAble;
+    }
+
+    public void setRetryAble(Boolean retryAble) {
+        this.retryAble = retryAble;
+    }
+
     public String getRemoteUrl() {
         return remoteUrl;
     }
