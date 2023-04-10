@@ -307,6 +307,7 @@ public class WebSocketTool {
         Object group = attributes.get(GROUP);
         Object key = attributes.get(KEY);
         Object describeId = attributes.get(DESCRIBE_Id);
+        Object hostId = attributes.get(HOST_ID);
 
         if (clusterId != null) {
             attributes.put(CLUSTER_ID, KeyDecryptHelper.decryptValueOrIgnoreForWs(String.valueOf(clusterId)));
@@ -321,6 +322,9 @@ public class WebSocketTool {
         }
         if (describeId != null) {
             attributes.put(DESCRIBE_Id, KeyDecryptHelper.decryptValueOrIgnoreForWs(String.valueOf(describeId)));
+        }
+        if (hostId != null) {
+            attributes.put(HOST_ID, KeyDecryptHelper.decryptValueOrIgnoreForWs(String.valueOf(hostId)));
         }
     }
 
