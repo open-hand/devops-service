@@ -28,6 +28,6 @@ public class HostAgentDownloadLogSocketInterceptor extends AbstractSocketInterce
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) {
-        return agentExecAndLogSocketHandler.beforeHandshake(request, response, attributes);
+        return agentExecAndLogSocketHandler.beforeHandshake(request, response, attributes, HOST_AGENT_DOWNLOAD_LOG);
     }
 }

@@ -36,6 +36,6 @@ public class HostFrontLogSocketInterceptor extends AbstractSocketInterceptor {
             return false;
         }
         WebSocketTool.preProcessAttributeAboutKeyEncryption(attributes);
-        return commonHostAgentLogSocketHandler.beforeHandshake(request, response, attributes);
+        return commonHostAgentLogSocketHandler.beforeHandshake(request, response, attributes, HOST_FRONT_LOG);
     }
 }

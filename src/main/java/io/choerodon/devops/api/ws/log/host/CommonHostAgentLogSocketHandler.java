@@ -41,13 +41,16 @@ public class CommonHostAgentLogSocketHandler {
     @Autowired
     private DevopsHostService devopsHostService;
 
-    public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse, Map<String, Object> attributes) {
+    public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse, Map<String, Object> attributes, String processor) {
         //校验ws连接参数是否正确
         WebSocketTool.checkKey(attributes);
         WebSocketTool.checkGroup(attributes);
         WebSocketTool.checkHostId(attributes);
-
-        return checkUserPermission(attributes);
+        if (processor.equals(HOST_FRONT_LOG) || processor.equals(HOST_FRONT_DOWNLOAD_LOG)) {
+            return checkUserPermission(attributes);
+        } else {
+            return true;
+        }
     }
 
     private boolean checkUserPermission(Map<String, Object> attributes) {
