@@ -26,7 +26,6 @@ public class DevOpsAppServicePayload {
     private String errorMessage;
 
     private AppServiceDTO appServiceDTO;
-//    private List<DevopsUserPermissionVO> devopsUserPermissionVOS;
 
     private List<MemberDTO> memberDTOS;
 
@@ -39,14 +38,6 @@ public class DevOpsAppServicePayload {
     public void setMemberDTOS(List<MemberDTO> memberDTOS) {
         this.memberDTOS = memberDTOS;
     }
-
-//    public List<DevopsUserPermissionVO> getDevopsUserPermissionVOS() {
-//        return devopsUserPermissionVOS;
-//    }
-//
-//    public void setDevopsUserPermissionVOS(List<DevopsUserPermissionVO> devopsUserPermissionVOS) {
-//        this.devopsUserPermissionVOS = devopsUserPermissionVOS;
-//    }
 
     public AppServiceDTO getAppServiceDTO() {
         return appServiceDTO;

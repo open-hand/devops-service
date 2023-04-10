@@ -26,9 +26,6 @@ public class GitlabCi {
     @JsonProperty("default")
     private Map<String, Object> defaultSection;
 
-//    @ApiModelProperty("The image for jobs")
-//    private String image;
-
     @ApiModelProperty("stage is defined per-job and relies on stages which is defined globally. It allows to group jobs into different stages, and jobs of the same stage are executed in parallel (subject to certain conditions).")
     private List<String> stages;
 
@@ -69,14 +66,6 @@ public class GitlabCi {
     public void setInclude(String include) {
         this.include = include;
     }
-
-//    public String getImage() {
-//        return image;
-//    }
-//
-//    public void setImage(String image) {
-//        this.image = image;
-//    }
 
     public List<String> getStages() {
         return stages;

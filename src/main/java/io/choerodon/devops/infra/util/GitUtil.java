@@ -801,24 +801,6 @@ public class GitUtil {
     }
 
 
-//    public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa, String envType, String clusterCode) {
-//        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-//        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-//        //本地路径
-//        String path = GitOpsUtil.getLocalPathToStoreEnv(
-//                organizationDTO.getCode(), projectDTO.getCode(), clusterCode, envCode);
-//        //生成环境git仓库ssh地址
-//        String url = GitUtil.getGitlabSshUrl(PATTERN, gitlabSshUrl, organizationDTO.getCode(),
-//                projectDTO.getCode(), envCode, EnvironmentType.forValue(envType), clusterCode);
-//
-//        File file = new File(path);
-//        if (!file.exists()) {
-//            this.cloneBySsh(path, url, envRsa);
-//        }
-//        return path;
-//    }
-
-
     public GitConfigVO getGitConfig(Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         List<DevopsEnvironmentDTO> devopsEnvironments = devopsEnvironmentService.listEnvWithInstancesByClusterIdForAgent(clusterId);

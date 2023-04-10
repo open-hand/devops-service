@@ -23,10 +23,8 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping("/v1/projects/{project_id}/deploy")
 public class DevopsDeployController {
 
-//    @Autowired
-//    private DevopsDeployService devopsDeployService;
-@Autowired
-private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     private DevopsHostAppService devopsHostAppService;
 

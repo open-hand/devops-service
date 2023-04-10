@@ -41,7 +41,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsConfigServiceImpl implements DevopsConfigService {
     private static final String HARBOR = "harbor";
-    private static final String AUTHTYPE_PULL = "pull";
     private static final String CHART = "chart";
     private static final Gson gson = new Gson();
 

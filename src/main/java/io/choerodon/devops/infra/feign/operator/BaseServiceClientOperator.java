@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import org.hzero.core.util.ResponseUtils;
@@ -107,9 +106,6 @@ public class BaseServiceClientOperator {
             if (tenant != null && tenant.getTenantId() != null) {
                 return tenant;
             }
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("queryOrganizationById: unexpected result: {}", JSONObject.toJSONString(tenant));
-            }
         }
         throw new CommonException(DEVOPS_ORGANIZATION_GET, organizationId);
     }
@@ -191,128 +187,6 @@ public class BaseServiceClientOperator {
             throw new CommonException("devops.check.user.site.access", e);
         }
     }
-
-//    /**
-//     * 以合并请求的方式，请求用户的信息
-//     *
-//     * @param ids 用户id
-//     * @return 异步结果引用
-//     */
-//    @HystrixCollapser(
-//            batchMethod = "batchListUsersByIds"
-//            , scope = com.netflix.hystrix.HystrixCollapser.Scope.GLOBAL
-//            , collapserProperties = {
-//            @HystrixProperty(name = "timerDelayInMilliseconds", value = "30"),
-//            @HystrixProperty(name = "maxRequestsInBatch", value = "100"),
-//    })
-//    public Future<List<IamUserDTO>> listUsersByIdsCollapse(List<Long> ids) {
-//        return null;
-//    }
-//
-//    @HystrixCommand
-//    public List<List<IamUserDTO>> batchListUsersByIds(List<List<Long>> ids) {
-//        LOGGER.debug("Batch list user by ids, input size: {}", ids.size());
-//        Set<Long> all = new HashSet<>();
-//        // 收集所有的id，一次性请求
-//        ids.forEach(i -> {
-//            if (!CollectionUtils.isEmpty(i)) {
-//                all.addAll(i);
-//            }
-//        });
-//
-//        Map<Long, IamUserDTO> resultMap;
-//        if (!all.isEmpty()) {
-//            Long[] newIds = new Long[all.size()];
-//            try {
-//                List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
-//                        .listUsersByIds(all.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {
-//                });
-//                if (userDTOS == null) {
-//                    resultMap = Collections.emptyMap();
-//                } else {
-//                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
-//                }
-//            } catch (Exception e) {
-//                throw new CommonException("devops.users.get", e);
-//            }
-//        } else {
-//            resultMap = Collections.emptyMap();
-//        }
-//
-//        // 拆分给响应
-//        return ids.stream()
-//                .map(i -> {
-//                    List<IamUserDTO> result = new ArrayList<>(i.size());
-//                    for (Long id : i) {
-//                        IamUserDTO temp = resultMap.get(id);
-//                        if (temp != null) {
-//                            result.add(temp);
-//                        }
-//                    }
-//                    return result;
-//                })
-//                .collect(Collectors.toList());
-//    }/**
-//     * 以合并请求的方式，请求用户的信息
-//     *
-//     * @param ids 用户id
-//     * @return 异步结果引用
-//     */
-//    @HystrixCollapser(
-//            batchMethod = "batchListUsersByIds"
-//            , scope = com.netflix.hystrix.HystrixCollapser.Scope.GLOBAL
-//            , collapserProperties = {
-//            @HystrixProperty(name = "timerDelayInMilliseconds", value = "30"),
-//            @HystrixProperty(name = "maxRequestsInBatch", value = "100"),
-//    })
-//    public Future<List<IamUserDTO>> listUsersByIdsCollapse(List<Long> ids) {
-//        return null;
-//    }
-//
-//    @HystrixCommand
-//    public List<List<IamUserDTO>> batchListUsersByIds(List<List<Long>> ids) {
-//        LOGGER.debug("Batch list user by ids, input size: {}", ids.size());
-//        Set<Long> all = new HashSet<>();
-//        // 收集所有的id，一次性请求
-//        ids.forEach(i -> {
-//            if (!CollectionUtils.isEmpty(i)) {
-//                all.addAll(i);
-//            }
-//        });
-//
-//        Map<Long, IamUserDTO> resultMap;
-//        if (!all.isEmpty()) {
-//            Long[] newIds = new Long[all.size()];
-//            try {
-//                List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
-//                        .listUsersByIds(all.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {
-//                });
-//                if (userDTOS == null) {
-//                    resultMap = Collections.emptyMap();
-//                } else {
-//                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
-//                }
-//            } catch (Exception e) {
-//                throw new CommonException("devops.users.get", e);
-//            }
-//        } else {
-//            resultMap = Collections.emptyMap();
-//        }
-//
-//        // 拆分给响应
-//        return ids.stream()
-//                .map(i -> {
-//                    List<IamUserDTO> result = new ArrayList<>(i.size());
-//                    for (Long id : i) {
-//                        IamUserDTO temp = resultMap.get(id);
-//                        if (temp != null) {
-//                            result.add(temp);
-//                        }
-//                    }
-//                    return result;
-//                })
-//                .collect(Collectors.toList());
-//    }
 
     public List<IamUserDTO> listUsersByIds(Long[] ids, boolean onlyEnabled) {
         try {

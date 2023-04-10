@@ -92,8 +92,6 @@ public class DevopsSagaHandler {
     @Autowired
     @Lazy
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
-    //    @Autowired
-//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private DevopsClusterNodeService devopsClusterNodeService;
     @Autowired
@@ -104,14 +102,6 @@ public class DevopsSagaHandler {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private MarketUseRecordService marketUseRecordService;
-    //    @Autowired
-//    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
-//    @Autowired
-//    private DevopsEnvPodService devopsEnvPodService;
-//    @Autowired
-//    private DevopsDeployRecordService devopsDeployRecordService;
-//    @Autowired
-//    private DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
     @Autowired
@@ -304,34 +294,6 @@ public class DevopsSagaHandler {
         devopsCiPipelineRecordService.handleCreate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
         return data;
     }
-
-//    /**
-//     * 监听gitlab ci pipeline事件，触发cd逻辑
-//     */
-//    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CD_PIPELINE,
-//            description = "gitlab pipeline事件",
-//            sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
-//            maxRetryCount = 0,
-//            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-//            seq = 20)
-//    public String gitlabCDPipeline(String data) {
-//        devopsCdPipelineService.handleCiPipelineStatusUpdate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
-//        return data;
-//    }
-
-//    /**
-//     * 监听gitlab ci pipeline事件，触发cd逻辑
-//     */
-//    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_TRIGGER_SIMPLE_CD_PIPELINE,
-//            description = "gitlab pipeline事件",
-//            sagaCode = DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD,
-//            maxRetryCount = 0,
-//            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-//            seq = 10)
-//    public String trigerSimpleCDPipeline(String data) {
-//        devopsCdPipelineService.trigerSimpleCDPipeline(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
-//        return data;
-//    }
 
     /**
      * devops创建分支

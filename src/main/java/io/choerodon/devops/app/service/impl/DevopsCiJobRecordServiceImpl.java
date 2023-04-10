@@ -207,12 +207,6 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
             recordDTO.setType(existDevopsCiJobDTO.getType());
             recordDTO.setGroupType(existDevopsCiJobDTO.getGroupType());
-//            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO();
-//            devopsCiMavenSettingsDTO.setCiJobId(existDevopsCiJobDTO.getId());
-//            DevopsCiMavenSettingsDTO ciMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);
-//            if (!Objects.isNull(ciMavenSettingsDTO)) {
-//                recordDTO.setMavenSettingId(ciMavenSettingsDTO.getId());
-//            }
         }
         baseCreate(recordDTO);
         if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {

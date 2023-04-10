@@ -26,6 +26,8 @@ public class JenkinsBuildInfo {
     private String branch;
     @ApiModelProperty("git url")
     private String remoteUrl;
+
+    private Boolean retryAble;
     @ApiModelProperty("当前input信息")
     private JenkinsPendingInputAction nextPendingInputAction;
 

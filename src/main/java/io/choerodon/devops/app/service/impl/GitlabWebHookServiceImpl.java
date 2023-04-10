@@ -30,25 +30,21 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
     private DevopsGitlabCommitService devopsGitlabCommitService;
     private DevopsGitlabPipelineService devopsGitlabPipelineService;
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
-    private DevopsCiJobRecordService devopsCiJobRecordService;
     private BaseServiceClientOperator baseServiceClientOperator;
-//    private DevopsCdPipelineService devopsCdPipelineService;
+
 
     public GitlabWebHookServiceImpl(DevopsMergeRequestService devopsMergeRequestService,
                                     DevopsGitService devopsGitService,
                                     DevopsGitlabCommitService devopsGitlabCommitService,
                                     DevopsGitlabPipelineService devopsGitlabPipelineService,
                                     DevopsCiPipelineRecordService devopsCiPipelineRecordService,
-                                    DevopsCiJobRecordService devopsCiJobRecordService,
                                     BaseServiceClientOperator baseServiceClientOperator) {
         this.devopsMergeRequestService = devopsMergeRequestService;
         this.devopsGitService = devopsGitService;
         this.devopsGitlabCommitService = devopsGitlabCommitService;
         this.devopsGitlabPipelineService = devopsGitlabPipelineService;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
-        this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.baseServiceClientOperator = baseServiceClientOperator;
-//        this.devopsCdPipelineService = devopsCdPipelineService;
     }
 
     @Override
@@ -71,15 +67,10 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 devopsGitlabPipelineService.create(pipelineWebHookVO, token);
                 // 保存ci流水线执行记录
                 devopsCiPipelineRecordService.create(pipelineWebHookVO, token);
-//                 处理流水线执行成功逻辑, 只处理纯cd流水线逻辑
-//                if (PipelineStatus.SUCCESS.toValue().equals(pipelineWebHookVO.getObjectAttributes().getStatus())) {
-//                    devopsCdPipelineService.handlerCiPipelineStatusSuccess(pipelineWebHookVO, token);
-//                }
                 break;
             case "build":
                 JobWebHookVO jobWebHookVO = JSONArray.parseObject(body, JobWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
                 devopsGitlabPipelineService.updateStages(jobWebHookVO, token);
-//                devopsCiJobRecordService.update(jobWebHookVO, token);
                 break;
             case "tag_push":
                 PushWebHookVO tagPushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());

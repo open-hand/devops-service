@@ -75,17 +75,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppServiceVersionServiceImpl.class);
-
-    /**
-     * 存储chart包的文件路径模板
-     * devops-应用服务id-版本号-commit值前8位
-     */
-    private static final String DESTINATION_PATH_TEMPLATE = "devops-%s-%s-%s";
-    /**
-     * 解压chart包的文件路径模板
-     * stores-应用服务id-版本号-commit值前8位
-     */
-    private static final String STORE_PATH_TEMPLATE = "stores-%s-%s-%s";
     private static final String TEMP_PATH_TEMPLATE = "temp-path-%s-%s-%s";
     private static final String DEVOPS_VERSION_INSERT = "devops.version.insert";
     private static final String DEVOPS_VERSION_UPDATE = "devops.version.update";
@@ -332,8 +321,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
         FileUtil.toTgz(destFilePath, path);
 
-//        FileUtil.deleteDirectories(storeFilePath, destFilePath);
-
         return values;
     }
 
@@ -371,9 +358,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             String commitPart = commit == null ? "" : commit.substring(0, 8);
             tempFilePath = String.format(TEMP_PATH_TEMPLATE, appServiceId, version, commitPart);
             String chartFilePath = tempFilePath + File.separator + files.getOriginalFilename();
-//            File chartFile = new File(tempFilePath, files.getOriginalFilename());
-
-//            String path = FileUtil.multipartFileToFile(tempFilePath, files);
 
             AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionId);
             String values;
@@ -518,34 +502,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         } catch (RestClientException e) {
             throw new CommonException(e);
         }
-    }
-
-    private String getValues(String storeFilePath, String destFilePath, String path) {
-        FileUtil.unTarGZ(path, destFilePath);
-
-        // 使用深度优先遍历查找文件, 避免查询到子chart的values值
-        File valuesFile = FileUtil.queryFileFromFilesBFS(new File(destFilePath), "values.yaml");
-
-        if (valuesFile == null) {
-            FileUtil.deleteDirectories(storeFilePath, destFilePath);
-            throw new CommonException(DEVOPS_FIND_VALUES_YAML_IN_CHART);
-        }
-
-        String values;
-        try (FileInputStream fis = new FileInputStream(valuesFile)) {
-            values = FileUtil.replaceReturnString(fis, null);
-        } catch (IOException e) {
-            FileUtil.deleteDirectories(storeFilePath, destFilePath);
-            throw new CommonException(e);
-        }
-
-        try {
-            FileUtil.checkYamlFormat(values);
-        } catch (CommonException e) {
-            FileUtil.deleteDirectories(storeFilePath, destFilePath);
-            throw new CommonException(DEVOPS_VALUES_YAML_FORMAT_INVALID, e);
-        }
-        return values;
     }
 
     private void updateValues(Long oldValuesId, String values) {
@@ -1036,8 +992,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         checkVersion(appServiceId, versionIds);
 
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
-        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<HarborImageTagDTO> deleteImagetags = new ArrayList<>();
         List<ChartTagVO> deleteChartTags = new ArrayList<>();
         versionIds.forEach(id -> {

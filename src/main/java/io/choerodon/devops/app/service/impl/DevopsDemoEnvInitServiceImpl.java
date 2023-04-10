@@ -237,12 +237,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
         devOpsAppServicePayload.setUserIds(Collections.emptyList());
 
-        //设置仓库Id
-//        List<DevopsConfigVO> harborConfig = projectConfigService.listByIdAndType(null, "harbor");
-//        List<DevopsConfigVO> chartConfig = projectConfigService.listByIdAndType(null, "chart");
-//        applicationDTO.setHarborConfigId(harborConfig.get(0).getId());
-//        applicationDTO.setChartConfigId(chartConfig.get(0).getId());
-
         applicationDTO = applicationService.baseCreate(applicationDTO);
 
         Long appServiceId = applicationDTO.getId();
@@ -288,27 +282,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
             logger.error("Error occurred when merge request. Exception is {}", e);
         }
     }
-
-
-    /**
-     * get the application version named "0.1.0"
-     *
-     * @param projectId     the project id
-     * @param applicationId the application id
-     * @return the version
-     */
-//    private AppMarketVersionVO getApplicationVersion(Long projectId, Long applicationId) {
-//        PageRequest pageable = new PageRequest(0, 1);
-//        Page<ApplicationVersionRespVO> versions = applicationVersionService.pageByOptions(projectId, applicationId, pageable, null);
-//        if (!versions.getList().isEmpty()) {
-//            AppMarketVersionVO appMarketVersionVO = new AppMarketVersionVO();
-//            BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionVO);
-//            return appMarketVersionVO;
-//        } else {
-//            logger.error("Error: can not find a version with name {}", demoDataVO.getTagInfo().getTag());
-//            return null;
-//        }
-//    }
 
     /**
      * 手动制造一个应用版本
