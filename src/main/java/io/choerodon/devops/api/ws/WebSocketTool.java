@@ -21,6 +21,7 @@ import org.springframework.web.socket.server.HandshakeFailureException;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
 import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -290,6 +291,10 @@ public class WebSocketTool {
             if (customUserDetails == null || customUserDetails.getUserId() == null) {
                 LOGGER.info("Ws: user authentication failed, token is invalid");
                 return false;
+            }
+
+            if (DetailsHelper.getUserDetails() == null) {
+                DetailsHelper.setCustomUserDetails(customUserDetails);
             }
 
             // 将解析的用户id放入到attributes中
