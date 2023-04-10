@@ -43,7 +43,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsProjectCertificationServiceImpl implements DevopsProjectCertificationService {
     private static final String CREATE = "create";
-    private static final String UPDATE = "update";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     private static final String ERROR_CERTIFICATION_NOT_EXIST = "devops.certification.not.exist";
 

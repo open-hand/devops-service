@@ -68,10 +68,6 @@ public class DevopsIngressValidator {
         checkAnnotations(devopsIngressVO.getAnnotations());
     }
 
-    private static Boolean checkPort(Integer port) {
-        return port >= 0 && port <= 65535;
-    }
-
     /**
      * 校验Annotation字段是否合法, 这里不校验Annotations所有键值对的总长度，由后续处理逻辑校验
      * 校验规则可参考(https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set)

@@ -121,7 +121,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     public static final Logger LOGGER = LoggerFactory.getLogger(AppServiceServiceImpl.class);
     public static final String NODELETED = "nodeleted";
     private static final String AUTHTYPE_PUSH = "push";
-    private static final String AUTHTYPE_PULL = "pull";
     private static final String CHART = "chart";
     private static final String GIT = ".git";
     protected static final String SONAR_KEY = "%s-%s:%s";
@@ -132,7 +131,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String COVERAGE = "coverage";
     private static final String SONAR = "sonar";
     private static final String NORMAL = "normal";
-    private static final String APP_SERVICE = "appService";
     private static final String METRICS = "metrics";
     private static final String APPLICATION = "application";
     private static final String DUPLICATE = "duplicate";
@@ -597,10 +595,6 @@ public class AppServiceServiceImpl implements AppServiceService {
                 rdupmClient.saveRelationByService(projectId, appServiceDTO.getId(), appServiceUpdateDTO.getHarborRepoConfigDTO().getRepoId());
             }
         }
-//        if (appServiceUpdateDTO.getChart() != null) {
-//            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
-//            appServiceDTO.setChartConfigId(chartConfig.getId());
-//        }
 
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
             checkName(oldAppServiceDTO.getProjectId(), appServiceDTO.getName());
@@ -768,9 +762,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Page<AppServiceRepVO> appServiceRepVOS = pageByOptions(projectId, true, null, null, true, pageable, searchVO, true, false, true);
         Set<Long> appServiceIds = appServiceRepVOS.getContent().stream().map(AppServiceRepVO::getId).collect(toSet());
         Map<Long, MemberPrivilegeViewDTO> memberPrivilegeViewDTOMap = hrdsCodeRepoClientOperator.selfPrivilege(null, projectId, appServiceIds).stream().collect(toMap(MemberPrivilegeViewDTO::getRepositoryId, Function.identity()));
-        appServiceRepVOS.getContent().forEach(appServiceRepVO -> {
-            appServiceRepVO.setAccessLevel(memberPrivilegeViewDTOMap.get(appServiceRepVO.getId()).getAccessLevel());
-        });
+        appServiceRepVOS.getContent().forEach(appServiceRepVO -> appServiceRepVO.setAccessLevel(memberPrivilegeViewDTOMap.get(appServiceRepVO.getId()).getAccessLevel()));
         return appServiceRepVOS;
     }
 

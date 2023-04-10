@@ -215,30 +215,17 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         if (devopsHostDTO == null) return;
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
-        //不在校验主机的连接状态
-//        checkEnableHostDelete(hostId);
         //校验流水线是否引用了该主机
         List<CiCdPipelineDTO> ciCdPipelineDTOS = devopsHostMapper.selectPipelineByHostId(hostId);
         AssertUtils.isTrue(CollectionUtils.isEmpty(ciCdPipelineDTOS), handHostCheckMsg(ciCdPipelineDTOS));
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         try {
             devopsHostMapper.deleteByPrimaryKey(hostId);
-//            devopsDockerInstanceMapper.deleteByHostId(hostId);
             devopsHostCommandMapper.deleteByHostId(hostId);
             devopsHostAppMapper.deleteByHostId(hostId);
             devopsHostUserPermissionService.deleteByHostId(hostId);
         } catch (Exception exception) {
             throw new CommonException("falied to delete host");
-        }
-    }
-
-    private void checkEnableHostDelete(Long hostId) {
-        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        if (devopsHostDTO == null) {
-            throw new CommonException(ERROR_HOST_NOT_FOUND);
-        }
-        if (DevopsHostStatus.CONNECTED.getValue().equals(devopsHostDTO.getHostStatus())) {
-            throw new CommonException(ERROR_HOST_STATUS_IS_NOT_DISCONNECT);
         }
     }
 

@@ -54,8 +54,6 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     private PermissionHelper permissionHelper;
     @Autowired
     private AppServiceService appServiceService;
-    //    @Autowired
-//    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
     @Lazy
     private DevopsCiJobService devopsCiJobService;

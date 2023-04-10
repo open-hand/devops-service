@@ -279,11 +279,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     handler.fillJobAdditionalInfo(devopsCiJobDTO, job);
                 }
             }
-//            if (devopsCiJobDTO != null) {
-//                job.setType(devopsCiJobDTO.getType());
-//                job.setGroupType(devopsCiJobDTO.getGroupType());
-//                job.setMetadata(devopsCiJobDTO.getMetadata());
-//            }
         }
         pipelineWebHookVO.setToken(token);
         try {
@@ -388,13 +383,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     devopsCiPipelineDTO.getId(),
                     applicationDTO.getId());
 
-            // 保存流水线记录关系
-//            DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
-//            devopsPipelineRecordRelDTO.setCiPipelineRecordId(pipelineRecordId);
-//            devopsPipelineRecordRelDTO.setPipelineId(devopsCiPipelineDTO.getId());
-//            devopsPipelineRecordRelDTO.setCdPipelineRecordId(PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID);
-//            devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
-
         } else {
             LOGGER.debug("Start to update pipeline with gitlab pipeline id {}...", pipelineWebHookVO.getObjectAttributes().getId());
             devopsCiPipelineRecordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
@@ -451,9 +439,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(userAttrService.getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 devopsCiJobRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
-//                devopsCiJobRecordDTO.setMetadata(ciJobWebHookVO.getMetadata());
                 devopsCiJobRecordDTO.setAppServiceId(appServiceId);
-//                fillMavenSettingId(devopsCiJobRecordDTO, ciJobWebHookVO, ciPipelineId);
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
             } else {
                 LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
@@ -492,36 +478,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             }
         });
     }
-
-//    private void fillMavenSettingId(DevopsCiJobRecordDTO devopsCiJobRecordDTO, CiJobWebHookVO ciJobWebHookVO, Long cipipelineId) {
-//        //一条流水线下stage的名字不能相同
-//        DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
-//        devopsCiStageDTO.setName(ciJobWebHookVO.getStage());
-//        devopsCiStageDTO.setCiPipelineId(cipipelineId);
-//        DevopsCiStageDTO ciStageDTO = devopsCiStageMapper.selectOne(devopsCiStageDTO);
-//        if (!Objects.isNull(ciStageDTO)) {
-//            //找到stageId 和job name 查询唯一的job
-//            DevopsCiJobDTO jobDTO = new DevopsCiJobDTO();
-//            jobDTO.setName(ciJobWebHookVO.getName());
-//            jobDTO.setCiStageId(ciStageDTO.getId());
-//            //流水线中阶段名字唯一，阶段内的job名字唯一
-//            DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectOne(jobDTO);
-//            if (!Objects.isNull(devopsCiJobDTO)) {
-//                DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO();
-//                devopsCiMavenSettingsDTO.setCiJobId(devopsCiJobDTO.getId());
-//                DevopsCiMavenSettingsDTO ciMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);
-//
-//                if (!Objects.isNull(ciMavenSettingsDTO)) {
-//                    devopsCiJobRecordDTO.setMavenSettingId(ciMavenSettingsDTO.getId());
-//                } else {
-//                    LOGGER.debug("ciMavenSettingsDTO is null , jobId {}", devopsCiJobDTO.getId());
-//                }
-//            } else {
-//                LOGGER.debug("job is null,name {}, stageId {}", ciJobWebHookVO.getName(), ciStageDTO.getId());
-//            }
-//
-//        }
-//    }
 
     @Transactional(rollbackFor = Exception.class)
     @Async(GitOpsConstants.PIPELINE_EXECUTOR)
@@ -571,14 +527,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordDTO.setStatus(gitlabPipelineDTO.getStatus());
         devopsCiPipelineRecordMapper.updateByPrimaryKeySelective(devopsCiPipelineRecordDTO);
 
-
-        // 如果流水线状态更新为成功，则执行cd流水线触发逻辑
-//        if (PipelineStatus.SUCCESS.toValue().equals(gitlabPipelineDTO.getStatus().toValue())) {
-//            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineDTO.getId(), devopsCiPipelineRecordDTO.getGitlabPipelineId());
-//            if (devopsCdPipelineRecordDTO != null) {
-//                devopsCdPipelineService.executeCdPipeline(devopsCdPipelineRecordDTO.getId());
-//            }
-//        }
 
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineDTO.getId());
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineDTO.getId());
@@ -1692,7 +1640,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Long nexusRepoId;
         String groupId;
         String artifactId;
-//        String versionRegular;
         String version = null;
         String repoUrl;
         String artifactType;
@@ -1716,19 +1663,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO(username, password, downloadUrl);
         JarDeployVO jarDeployVO = null;
         if (nexusRepoId != null) {
-            // 0.3 获取并记录信息
-//            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, ciPipelineMavenDTO.getVersion());
-//            if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
-//                log.append("获取部署jar包信息失败，请检查关联的构建任务是否执行成功、发布的jar包坐标是否和pom文件一致").append(System.lineSeparator());
-//                throw new CommonException(DEVOPS_DEPLOY_FAILED);
-//            }
             List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
                 log.append("获取制品仓库信息失败，请检查关联制品库是否正常").append(System.lineSeparator());
                 throw new CommonException(DEVOPS_DEPLOY_FAILED);
             }
-
-//            C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
             C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), projectId, nexusRepoId);
 
             ProdJarInfoVO prodJarInfoVO = new ProdJarInfoVO(c7nNexusRepoDTO.getConfigId(),
@@ -1737,10 +1676,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     artifactId,
                     ciPipelineMavenDTO.getVersion());
             repoUrl = mavenRepoDTOList.get(0).getUrl();
-//            downloadUrl = nexusComponentDTOList.get(0).getDownloadUrl();
             username = mavenRepoDTOList.get(0).getNePullUserId();
             password = mavenRepoDTOList.get(0).getNePullUserPassword();
-//            version = c7nNexusComponentDTO.getVersion();
 
             jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
                     devopsCiHostDeployInfoDTO.getAppName(),
@@ -2040,8 +1977,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Override
     public Page<CiPipelineRecordVO> pagingPipelineRecord(Long projectId, Long pipelineId, PageRequest pageable) {
         Page<CiPipelineRecordVO> recordPage = PageHelper.doPage(pageable, () -> devopsCiPipelineRecordMapper.listByCiPipelineId(pipelineId));
-//        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
-//        Page<CiCdPipelineRecordVO> cdPipelineRecordVOS = ConvertUtils.convertPage(devopsPipelineRecordRelDTOS, this::dtoToVo);
         List<CiPipelineRecordVO> content = recordPage.getContent();
         content.forEach(recordVO -> {
             fillAdditionalInfo(recordVO);

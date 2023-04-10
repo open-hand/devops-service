@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.hzero.websocket.redis.BrokerSessionRedis;
-import org.hzero.websocket.registry.GroupSessionRegistry;
+import org.hzero.websocket.registry.BaseSessionRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,7 +136,6 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(msg.toString());
         }
-        // TODO 可以用策略模式改造
         switch (helmType) {
             // JOB的相关信息
             case HELM_INSTALL_JOB_INFO:
@@ -316,6 +315,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
                 break;
             case OPERATE_POD_COUNT_FAILED:
                 agentMsgHandlerService.operatePodCount(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()), false);
+                break;
             default:
                 LOGGER.warn("UnExpected message type {}", msg.getType());
                 break;
@@ -350,7 +350,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
     private void doRemoveRedisKeyOfThisMicroService() {
         // 获取本实例所有的连接的web socket session 的 session id
         // （这里获取的是包括所有通过group方式连接的，也就是包括前端以及agent的）
-        List<String> sessionIds = BrokerSessionRedis.getSessionIds(GroupSessionRegistry.getBrokerId());
+        List<String> sessionIds = BrokerSessionRedis.getSessionIds(BaseSessionRegistry.getBrokerId());
 
         // 获取集群连接情况数据
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(CLUSTER_SESSION);
@@ -362,7 +362,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
             }
         });
         // 清除这个实例的redis key
-        BrokerSessionRedis.clearCache(GroupSessionRegistry.getBrokerId());
+        BrokerSessionRedis.clearCache(BaseSessionRegistry.getBrokerId());
     }
 
     private Long getClusterIdFromRegisterKey(String registerKey) {

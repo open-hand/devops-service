@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
-import java.util.List;
 
 import io.choerodon.devops.api.vo.CiJobWebHookVO;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
@@ -73,11 +73,9 @@ public abstract class AbstractJobHandler {
 
         // 保存文件配置
         if (!CollectionUtils.isEmpty(devopsCiJobVO.getConfigFileRelList())) {
-            devopsCiJobVO.getConfigFileRelList().forEach(configFileRelVO -> {
-                ciJobConfigFileRelService.baseCreate(new CiJobConfigFileRelDTO(devopsCiJobDTO.getId(),
-                        configFileRelVO.getConfigFileId(),
-                        configFileRelVO.getConfigFilePath()));
-            });
+            devopsCiJobVO.getConfigFileRelList().forEach(configFileRelVO -> ciJobConfigFileRelService.baseCreate(new CiJobConfigFileRelDTO(devopsCiJobDTO.getId(),
+                    configFileRelVO.getConfigFileId(),
+                    configFileRelVO.getConfigFilePath())));
 
         }
 

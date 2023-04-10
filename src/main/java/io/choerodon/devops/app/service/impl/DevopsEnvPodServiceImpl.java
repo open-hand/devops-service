@@ -1,5 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Pod;
 import org.slf4j.Logger;
@@ -12,12 +18,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -301,12 +301,6 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             return false;
         }
 
-        // 校验pod存在 自动化测试的查看日志没有pod，但是也要查看日志
-//        if (!podExists(envId, podName)) {
-//            logger.info("The pod with name {} doesn't exist in the env with id {}", podName, envId);
-//            return false;
-//        }
-
         return true;
     }
 
@@ -472,12 +466,5 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         }
 
         return devopsEnvPodDOPage;
-    }
-
-    private boolean podExists(Long envId, String podName) {
-        DevopsEnvPodDTO condition = new DevopsEnvPodDTO();
-        condition.setEnvId(envId);
-        condition.setName(podName);
-        return devopsEnvPodMapper.selectCount(condition) > 0;
     }
 }

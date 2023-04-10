@@ -93,8 +93,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Value("${devops.ci.image-build-type}")
     private String imageBuildType;
-    @Autowired
-    private DevopsCiSonarConfigService devopsCiSonarConfigService;
 
     private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     private final DevopsCiPipelineRecordService devopsCiPipelineRecordService;
@@ -170,7 +168,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 这里的懒加载是为了避免循环依赖
             @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
             DevopsCiStageService devopsCiStageService,
-            @Lazy DevopsCiJobMapper devopsCiJobMapper,
             @Lazy DevopsCiJobService devopsCiJobService,
             DevopsCiContentService devopsCiContentService,
             @Lazy GitlabServiceClientOperator gitlabServiceClientOperator,

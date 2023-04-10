@@ -130,65 +130,6 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         return shells;
     }
 
-//    /**
-//     * 生成maven构建相关的脚本
-//     *
-//     * @param projectId       项目id
-//     * @param jobId           job id
-//     * @param devopsCiStepDTO
-//     * @param hasSettings     这个阶段是否有配置settings
-//     * @return 生成的shell脚本
-//     */
-//    private List<String> buildMavenScripts(final Long projectId, final Long jobId, DevopsCiStepDTO devopsCiStepDTO, boolean hasSettings) {
-//        List<String> shells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()), true, true);
-//        if (hasSettings) {
-//            // 插入shell指令将配置的settings文件下载到项目目录下
-//            shells.add(0, GitlabCiUtil.downloadMavenSettings(projectId, jobId, devopsCiStepDTO.getSequence()));
-//        }
-//        return shells;
-//    }
-
-//    private static MavenRepoVO convertRepo(NexusMavenRepoDTO nexusMavenRepoDTO) {
-//        MavenRepoVO mavenRepoVO = new MavenRepoVO();
-//        mavenRepoVO.setName(nexusMavenRepoDTO.getName());
-//        mavenRepoVO.setPrivateRepo(Boolean.TRUE);
-//        if ("MIXED".equals(nexusMavenRepoDTO.getVersionPolicy())) {
-//            mavenRepoVO.setType(GitOpsConstants.SNAPSHOT + "," + GitOpsConstants.RELEASE);
-//        } else {
-//            // group 类型的仓库没有版本类型
-//            mavenRepoVO.setType(nexusMavenRepoDTO.getVersionPolicy() == null ? null : nexusMavenRepoDTO.getVersionPolicy().toLowerCase());
-//        }
-//        mavenRepoVO.setUrl(nexusMavenRepoDTO.getUrl());
-//        mavenRepoVO.setUsername(nexusMavenRepoDTO.getNeUserId());
-//        mavenRepoVO.setPassword(nexusMavenRepoDTO.getNeUserPassword());
-//        return mavenRepoVO;
-//    }
-
-
-//    private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
-//        List<Server> servers = new ArrayList<>();
-//        List<Repository> repositories = new ArrayList<>();
-//
-//        mavenRepoList.forEach(m -> {
-//            if (m.getType() != null) {
-//                String[] types = m.getType().split(GitOpsConstants.COMMA);
-//                if (types.length > 2) {
-//                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
-//                }
-//            }
-//            if (Boolean.TRUE.equals(m.getPrivateRepo())) {
-//                servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
-//            }
-//            repositories.add(new Repository(
-//                    Objects.requireNonNull(m.getName()),
-//                    Objects.requireNonNull(m.getName()),
-//                    Objects.requireNonNull(m.getUrl()),
-//                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
-//                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
-//        });
-//        return MavenSettingsUtil.generateMavenSettings(servers, repositories);
-//    }
-
     @Override
     public DevopsCiStepTypeEnum getType() {
         return DevopsCiStepTypeEnum.MAVEN_BUILD;

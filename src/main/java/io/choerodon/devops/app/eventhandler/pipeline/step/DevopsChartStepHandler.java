@@ -86,6 +86,7 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
         }
     }
 
+    @Override
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
         List<String> cmds = new ArrayList<>();
 
@@ -112,11 +113,8 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public Boolean isComplete(DevopsCiStepVO devopsCiStepVO) {
         CiChartPublishConfigDTO chartPublishConfig = devopsCiStepVO.getChartPublishConfig();
-        if (chartPublishConfig != null
-                && Boolean.FALSE.equals(chartPublishConfig.getUseDefaultRepo())
-                && chartPublishConfig.getRepoId() == null) {
-            return false;
-        }
-        return true;
+        return chartPublishConfig == null
+                || !Boolean.FALSE.equals(chartPublishConfig.getUseDefaultRepo())
+                || chartPublishConfig.getRepoId() != null;
     }
 }

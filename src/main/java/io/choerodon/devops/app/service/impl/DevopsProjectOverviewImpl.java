@@ -67,9 +67,6 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
     @Autowired
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
-//    @Autowired
-//    private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
-
     @Override
     public Map<String, Long> getEnvStatusCount(Long projectId) {
 

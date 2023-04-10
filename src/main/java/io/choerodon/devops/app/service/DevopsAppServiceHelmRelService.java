@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.infra.dto.DevopsAppServiceHelmRelDTO;
-import org.apache.ibatis.annotations.Param;
 
 public interface DevopsAppServiceHelmRelService {
 

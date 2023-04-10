@@ -361,11 +361,6 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         if (appServiceId != null) {
             devopsHelmConfigDTORelatedWithAppService = devopsHelmConfigMapper.selectWithIdAndNameByAppServiceId(appServiceId);
         }
-
-//            List<Long> helmConfigIds = devopsHelmConfigDTOS.stream().map(DevopsHelmConfigDTO::getId).collect(Collectors.toList());
-//            if (devopsHelmConfigDTORelatedWithAppService != null && !helmConfigIds.contains(devopsHelmConfigDTORelatedWithAppService.getId())) {
-//                devopsHelmConfigDTOS.add(0, devopsHelmConfigDTORelatedWithAppService);
-//            }
         if (devopsHelmConfigDTORelatedWithAppService != null) {
             effectiveRepoId = devopsHelmConfigDTORelatedWithAppService.getId();
         } else if (defaultDevopsHelmConfigDTOOnProject != null) {

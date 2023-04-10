@@ -62,7 +62,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME = "choerodon.io/parent-workload-name";
     private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT = "choerodon.io/parent-workload";
     private static final String CHOERODON_IO_NETWORK_SERVICE_INSTANCES = "choerodon.io/network-service-instances";
-    private static final String CHOERODON_IO_V1_COMMAND = "choerodon.io/v1-command";
     private static final String PENDING = "Pending";
     private static final String METADATA = "metadata";
     private static final String SERVICE_KIND = "service";
@@ -177,10 +176,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Autowired
     private ChartResourceOperator chartResourceOperator;
-    @Autowired
-    private DevopsDeployAppCenterService devopsDeployAppCenterService;
-    //    @Autowired
-//    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
     @Autowired
     private AppExceptionRecordService appExceptionRecordService;
 
@@ -1408,8 +1403,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     syncCustom(envId, envFileErrorFiles, resourceCommitVO, objects);
                 }
             } catch (Exception e) {
-                LOGGER.info("Exception occurred when process resource {} as custom", objects[1]);
-                LOGGER.info("The exception is {}", e);
+                LOGGER.error("Exception occurred when process resource as custom", e);
             }
             return;
         }
@@ -1824,8 +1818,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 .baseQueryByKindAndName(envId, event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
 
         if (devopsEnvResourceDTO == null) {
-            // TODO 0.21版本修复Agent没有过滤非平台的Pod和Job的问题
-            // logger.warn("DevopsEnvResourceDTO is null with involved object kind {} and involved object name {}", event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
             return;
         }
 
@@ -2503,9 +2495,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         } else {
             devopsConfigMapVO.setId(devopsConfigMapDTO.getId());
             devopsConfigMapVO.setType(UPDATE_TYPE);
-            if (devopsConfigMapVO.getValue().equals(gson.fromJson(devopsConfigMapDTO.getValue(), Map.class))) {
-                return;
-            } else {
+            if (!devopsConfigMapVO.getValue().equals(gson.fromJson(devopsConfigMapDTO.getValue(), Map.class))) {
                 devopsConfigMapService.createOrUpdate(devopsEnvironmentDTO.getProjectId(), true, devopsConfigMapVO);
             }
         }

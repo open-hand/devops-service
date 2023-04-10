@@ -36,24 +36,6 @@ public class ConvertV1DeploymentServiceImpl extends ConvertK8sObjectService<Devo
         return ResourceType.DEPLOYMENT;
     }
 
-//    @Override
-//    public void checkParameters(V1Deployment v1beta2Deployment, Map<String, String> objectPath) {
-//        String filePath = objectPath.get(TypeUtil.objToString(v1beta2Deployment.hashCode()));
-//        if (v1beta2Deployment.getMetadata() == null) {
-//            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_META_DATA_NOT_FOUND.getError(), filePath);
-//        } else {
-//            if (v1beta2Deployment.getMetadata().getName() == null) {
-//                throw new GitOpsExplainException(GitOpsObjectError.RELEASE_NAME_NOT_FOUND.getError(), filePath);
-//            }
-//        }
-//        if (v1beta2Deployment.getSpec() == null) {
-//            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_SPEC_NOT_FOUND.getError(), filePath);
-//        }
-//        if (v1beta2Deployment.getApiVersion() == null) {
-//            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_API_VERSION_NOT_FOUND.getError(), filePath);
-//        }
-//    }
-
     @Override
     public void checkIfExist(List<DevopsDeploymentDTO> devopsDeploymentDTOS, Long
             envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, DevopsDeploymentDTO devopsDeploymentDTO) {
