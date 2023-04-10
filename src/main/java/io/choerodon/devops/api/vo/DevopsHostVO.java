@@ -69,6 +69,16 @@ public class DevopsHostVO {
     @ApiModelProperty("主机网卡信息")
     private String network;
 
+    private String token;
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
     public String getNetwork() {
         return network;
     }
