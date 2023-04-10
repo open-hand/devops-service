@@ -31,6 +31,6 @@ public class HostFrontDownloadLogSocketInterceptor extends AbstractSocketInterce
             return false;
         }
         WebSocketTool.preProcessAttributeAboutKeyEncryption(attributes);
-        return devopsExecAndLogSocketHandler.beforeHandshake(request, response, attributes);
+        return devopsExecAndLogSocketHandler.beforeHandshake(request, response, attributes, HOST_FRONT_DOWNLOAD_LOG);
     }
 }
