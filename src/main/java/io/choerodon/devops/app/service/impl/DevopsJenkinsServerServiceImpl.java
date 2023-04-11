@@ -152,7 +152,6 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
                     if (optionalPlugin.isPresent()) {
                         Plugin plugin = optionalPlugin.get();
                         jenkinsPluginInfo.setVersion(plugin.version());
-                        jenkinsPluginInfo.setLastedVersion(version);
                         if (Boolean.TRUE.equals(plugin.active())) {
                             jenkinsPluginInfo.setStatus(StringUtils.compare(plugin.version(), version) < 0
                                     ? JenkinsPluginStatusEnum.UPGRADEABLE.value() : JenkinsPluginStatusEnum.INSTALLED.value());
