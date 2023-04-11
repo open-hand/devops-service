@@ -1288,6 +1288,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineDTO.setVersionName(ciCdPipelineVO.getVersionName());
         ciCdPipelineDTO.setObjectVersionNumber(ciCdPipelineVO.getObjectVersionNumber());
         ciCdPipelineDTO.setVersionName(ciCdPipelineVO.getVersionName());
+        ciCdPipelineDTO.setInterruptible(ciCdPipelineVO.getInterruptible());
         if (ciCdPipelineMapper.updateByPrimaryKey(ciCdPipelineDTO) != 1) {
             throw new CommonException(DEVOPS_UPDATE_PIPELINE_FAILED);
         }
