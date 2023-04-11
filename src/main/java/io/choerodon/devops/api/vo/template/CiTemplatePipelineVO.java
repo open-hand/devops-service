@@ -6,6 +6,7 @@ package io.choerodon.devops.api.vo.template;
 
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -45,6 +46,10 @@ public class CiTemplatePipelineVO {
     @ApiModelProperty("镜像地址")
     private String image;
 
+    @ApiModelProperty("是否可中断")
+    @Column(name = "is_interruptible")
+    private Boolean interruptible;
+
     @ApiModelProperty("适用变成语言对象")
     private CiTemplateCategoryVO ciTemplateCategoryVO;
 
@@ -64,6 +69,14 @@ public class CiTemplatePipelineVO {
 
     @ApiModelProperty("版本策略 false 平台默认 true 自定义")
     private Boolean versionStrategy;
+
+    public Boolean getInterruptible() {
+        return interruptible;
+    }
+
+    public void setInterruptible(Boolean interruptible) {
+        this.interruptible = interruptible;
+    }
 
     public List<CiTemplateVariableVO> getCiTemplateVariableVOS() {
         return ciTemplateVariableVOS;
