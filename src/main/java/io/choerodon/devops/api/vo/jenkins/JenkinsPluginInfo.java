@@ -12,8 +12,6 @@ public class JenkinsPluginInfo {
 
     private String version;
 
-    private String lastedVersion;
-
     public String getStatus() {
         return status;
     }
@@ -30,11 +28,4 @@ public class JenkinsPluginInfo {
         this.version = version;
     }
 
-    public String getLastedVersion() {
-        return lastedVersion;
-    }
-
-    public void setLastedVersion(String lastedVersion) {
-        this.lastedVersion = lastedVersion;
-    }
 }
