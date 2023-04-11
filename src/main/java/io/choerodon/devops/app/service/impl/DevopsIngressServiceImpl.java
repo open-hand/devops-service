@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
@@ -21,11 +26,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -574,7 +574,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
     @Override
     public Boolean checkDomainAndPath(Long envId, String domain, String path, Long id) {
-        return baseCheckPath(envId, domain, path, id);
+        // 可能会出现 nginx.ingress.kubernetes.io/canary = true 这种情况，在这种情况下，domain和path是可以重复的 所以不再需要校验
+//        return baseCheckPath(envId, domain, path, id);
+        return true;
     }
 
     private V1HTTPIngressPath createV1Path(String hostPath, String serviceName, Integer port) {
@@ -821,10 +823,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         List<DevopsIngressPathDTO> devopsIngressPathDTOS = handlerPathList(devopsIngressVO.getPathList(), devopsIngressVO, ingress, operateForOldIngress);
 
         //校验域名的domain和path是否在数据库中已存在
-        if (devopsIngressPathDTOS.stream().noneMatch(
-                t -> baseCheckPath(envId, devopsIngressDO.getDomain(), t.getPath(), devopsIngressVO.getId()))) {
-            throw new CommonException(ERROR_DOMAIN_PATH_EXIST);
-        }
+        // 可能会出现 nginx.ingress.kubernetes.io/canary = true 这种情况，在这种情况下，domain和path是可以重复的 所以不再需要校验
+//        if (devopsIngressPathDTOS.stream().noneMatch(
+//                t -> baseCheckPath(envId, devopsIngressDO.getDomain(), t.getPath(), devopsIngressVO.getId()))) {
+//            throw new CommonException(ERROR_DOMAIN_PATH_EXIST);
+//        }
         devopsIngressDO.setDevopsIngressPathDTOS(devopsIngressPathDTOS);
         devopsIngressDO.setCertId(devopsIngressVO.getCertId());
         return devopsIngressDO;
