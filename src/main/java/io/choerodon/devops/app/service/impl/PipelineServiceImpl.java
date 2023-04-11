@@ -594,7 +594,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void triggerByAppVersion(Long appServiceId, Long appVersionId) {
-        Set<Long> pipelineDTOS = pipelineMapper.listAppAssociatedPipeline(appServiceId);
+        Set<Long> pipelineDTOS = pipelineMapper.listAppAssociatedEnablePipeline(appServiceId);
         if (CollectionUtils.isEmpty(pipelineDTOS)) {
             return;
         }
