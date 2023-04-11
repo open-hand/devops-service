@@ -63,13 +63,14 @@
             </if>
         </where>
     </select>
-    <select id="listAppAssociatedPipeline" resultType="java.lang.Long">
+    <select id="listAppAssociatedEnablePipeline" resultType="java.lang.Long">
         select dp.id
         from devops_pipeline_chart_deploy_cfg dpcdc
                  inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
                  inner join devops_pipeline dp on dp.effect_version_id = dpj.version_id
         where dpcdc.app_service_id = #{appServiceId}
           and dp.is_app_version_trigger_enable = 1
+          and dp.is_enable = 1
     </select>
     <select id="listDeployValuePipelineReference"
             resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
