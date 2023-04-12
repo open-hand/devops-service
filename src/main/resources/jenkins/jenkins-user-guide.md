@@ -69,8 +69,8 @@ stage('构建Chart并推送到猪齿鱼制品库') {
 pipeline {
     agent any
     environment { 
-        // 猪齿鱼项目id
-        C7N_PROJECT_ID=1
+        // 猪齿鱼项目id,根据实际项目id替换
+        C7N_PROJECT_ID={{C7N_PROJECT_ID}}
         // 猪齿鱼应用服务编码
         C7N_APP_SERVICE_CODE='hzero-gateway'
         // 镜像、chart版本号
@@ -343,7 +343,7 @@ stage('代码检查') {
 
 ```
 stage('maven构建') {
-	agent {
+    agent {
         docker {
           image 'registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-jdk8u282-b08'
           args '-v /root/.m2:/root/.m2'
@@ -359,7 +359,7 @@ stage('maven构建') {
 
 ```
 stage('构建') {
-	agent {
+    agent {
         docker {
           image 'registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-jdk8u282-b08'
           args '-v /root/.m2:/root/.m2'
@@ -412,7 +412,7 @@ stage('构建镜像并推送到猪齿鱼制品库') {
 
 ```
 stage('构建镜像并推送到猪齿鱼制品库') {
-	agent {
+    agent {
         docker {
           image 'registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-jdk8u282-b08'
           args '-v /root/.m2:/root/.m2 -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock'
@@ -458,7 +458,7 @@ CHART_PATH声明了当前项目chart包路径，也手动指定。如果当前ch
 
 ```
 stage('构建Chart并推送到猪齿鱼制品库') {
-	agent {
+    agent {
         docker {
           image 'registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-jdk8u282-b08'
         }
