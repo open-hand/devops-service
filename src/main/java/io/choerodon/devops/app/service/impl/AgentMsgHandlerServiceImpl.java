@@ -1953,7 +1953,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                 CertificationStatus.ACTIVE,
                                 PvStatus.forValue(newCommand.getResourceStatus()),
                                 PvcStatus.forValue(newCommand.getResourceStatus()),
-                                InstanceStatus.RUNNING);
+                                InstanceStatus.RUNNING,
+                                newCommand.getPayload());
                     } else {
                         devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
                         devopsEnvCommandDTO.setError("The deploy is time out!");
@@ -1972,7 +1973,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                 CertificationStatus.FAILED,
                                 PvStatus.FAILED,
                                 PvcStatus.FAILED,
-                                InstanceStatus.FAILED);
+                                InstanceStatus.FAILED,
+                                newCommand.getPayload());
                     }
 
                     devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
@@ -2179,7 +2181,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                       CertificationStatus certificationStatus,
                                       PvStatus pvStatus,
                                       PvcStatus pvcStatus,
-                                      InstanceStatus deploymentStatus) {
+                                      InstanceStatus deploymentStatus,
+                                      String payload) {
         switch (ObjectType.forValue(devopsEnvCommandDTO.getObject())) {
             case INSTANCE:
                 AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
@@ -2239,6 +2242,19 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 }
                 if (CertificationStatus.ACTIVE == certificationStatus
                         && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+
+                    try {
+                        V1Secret secret = JsonHelper.unmarshalByJackson(payload, V1Secret.class);
+                        String crt = new String(secret.getData().get("tls.crt"));
+                        X509Certificate certificate = CertificateUtil.decodeCert(Base64Util.base64Decoder(crt));
+                        Date validFrom = certificate.getNotBefore();
+                        Date validUntil = certificate.getNotAfter();
+                        certificationDTO.setValid(validFrom, validUntil);
+                        certificationService.baseUpdateValidField(certificationDTO);
+                    } catch (Exception e) {
+                        LOGGER.info("failed to update secret info:{}", e.getMessage());
+                    }
+
                     //创建成功发送webhook json
                     sendNotificationService.sendWhenCertSuccessOrDelete(certificationDTO, SendSettingEnum.CREATE_RESOURCE.value());
                 }

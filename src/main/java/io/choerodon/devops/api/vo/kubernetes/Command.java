@@ -21,6 +21,16 @@ public class Command {
     @ApiModelProperty("资源所在namespace")
     private String namespace;
 
+    private String payload;
+
+    public String getPayload() {
+        return payload;
+    }
+
+    public void setPayload(String payload) {
+        this.payload = payload;
+    }
+
     public Long getId() {
         return id;
     }
