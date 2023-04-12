@@ -25,7 +25,7 @@
         dctj.to_upload,
         dctj.to_download,
         dctj.parallel,
-        dctj.is_enabled as enabled,
+        dctsjr.is_enabled as enabled,
         dctj.config_id,
         dctj.tags,
         dctj.config_file_id,
