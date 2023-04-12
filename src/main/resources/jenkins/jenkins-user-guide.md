@@ -186,7 +186,7 @@ pipeline {
 
 ```
 stage('单元测试') {
-	agent {
+    agent {
         docker {
           image 'registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-jdk8u282-b08'
           args '-v /root/.m2:/root/.m2'
