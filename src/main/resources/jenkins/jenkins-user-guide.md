@@ -366,12 +366,12 @@ stage('构建') {
         }
     }
     steps { 
-		// 安装依赖
+        // 安装依赖
         sh "npm install"
-		// 分配权限
-		sh "chmod -R 755 node_modules"
-		// 构建
-		sh "npm run build"
+        // 分配权限
+        sh "chmod -R 755 node_modules"
+        // 构建
+        sh "npm run build"
     }
 }
 ```
