@@ -276,7 +276,8 @@ stage('代码检查') {
 * SONAR_URL：猪齿鱼平台sonarqueb地址
 * SONAR_LOGIN: 猪齿鱼平台用于执行代码扫描的用户token
 * SONAR_KEY_PREFIX: 创建sonarqube项目时使用的ProjectKey前缀
-  ==注意：使用此步骤前，需要正确配置环境变量`C7N_PROJECT_ID`，`C7N_APP_SERVICE_CODE`.==
+  
+==注意：使用此步骤前，需要正确配置环境变量`C7N_PROJECT_ID`，`C7N_APP_SERVICE_CODE`.==
 
 参数sonar.qualitygate.wait=false表示执行sonar扫描时不等待质量门状态。如果需要在质量门失败时终止此次构建，则可以设置sonar.qualitygate.wait=true强制扫描步骤轮询等待质量门结果。
 
