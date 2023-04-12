@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.List;
+import javax.persistence.Column;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -35,9 +36,21 @@ public class PipelineTemplateVO {
     @ApiModelProperty(value = "流水线模板镜像地址", required = true)
     private String image;
 
+    @ApiModelProperty("是否可中断")
+    @Column(name = "is_interruptible")
+    private Boolean interruptible;
+
     private List<CiTemplateStageVO> ciTemplateStageVOList;
 
     private CiTemplateCategoryDTO ciTemplateCategoryDTO;
+
+    public Boolean getInterruptible() {
+        return interruptible;
+    }
+
+    public void setInterruptible(Boolean interruptible) {
+        this.interruptible = interruptible;
+    }
 
     public CiTemplateCategoryDTO getCiTemplateCategoryDTO() {
         return ciTemplateCategoryDTO;

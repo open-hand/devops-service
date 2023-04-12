@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineTemplateMapper">
 
-    <resultMap id="PipelineTemplateVOMap" type="io.choerodon.devops.api.vo.PipelineTemplateVO">
+    <resultMap id="PipelineTemplateVOMap" type="io.choerodon.devops.api.vo.PipelineTemplateVO" autoMapping="true">
         <id column="pipeline_id" property="id"/>
         <id column="pipeline_name" property="name"/>
         <id column="pipeline_source_type" property="sourceType"/>
@@ -12,6 +12,7 @@
         <id column="enable" property="enable"/>
         <id column="version_name" property="versionName"/>
         <id column="pipeline_image" property="image"/>
+        <id column="is_interruptible" property="interruptible"/>
         <collection property="ciTemplateStageVOList" ofType="io.choerodon.devops.api.vo.template.CiTemplateStageVO">
             <id column="stage_id" property="id"/>
             <id column="stage_name" property="name"/>
@@ -37,6 +38,7 @@
                dpt.source_type  as pipeline_source_type,
                dpt.source_id    as pipeline_source_id,
                dpt.built_in,
+               dpt.is_interruptible,
                dpt.ci_template_category_id,
                dpt.enable,
                dpt.version_name,
