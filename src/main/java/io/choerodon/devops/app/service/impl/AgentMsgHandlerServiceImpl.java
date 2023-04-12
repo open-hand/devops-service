@@ -2244,8 +2244,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
 
                     try {
-                        V1Secret secret = JsonHelper.unmarshalByJackson(payload, V1Secret.class);
-                        String crt = new String(secret.getData().get("tls.crt"));
+                        Object obj = objectMapper.readValue(payload, Object.class);
+                        String crt = ((LinkedHashMap) ((LinkedHashMap) obj).get("data")).get("tls.crt").toString();
                         X509Certificate certificate = CertificateUtil.decodeCert(Base64Util.base64Decoder(crt));
                         Date validFrom = certificate.getNotBefore();
                         Date validUntil = certificate.getNotAfter();
