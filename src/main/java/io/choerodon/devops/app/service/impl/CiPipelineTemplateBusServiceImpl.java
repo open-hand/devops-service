@@ -381,7 +381,11 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
         Map<Long, CiTemplateJobVO> ciTemplateJobDTOSMappedById = ciTemplateJobDTOS.stream().collect(Collectors.toMap(CiTemplateJobVO::getId, Function.identity()));
         return ciTemplateStageJobRelDTOS.stream().sorted(Comparator.comparing(CiTemplateStageJobRelDTO::getSequence))
                 .filter(ciTemplateStageJobRelDTO -> ciTemplateJobDTOSMappedById.get(ciTemplateStageJobRelDTO.getCiTemplateJobId()) != null)
-                .map(ciTemplateStageJobRelDTO -> ciTemplateJobDTOSMappedById.get(ciTemplateStageJobRelDTO.getCiTemplateJobId())).collect(Collectors.toList());
+                .map(ciTemplateStageJobRelDTO -> {
+                    CiTemplateJobVO ciTemplateJobVO = ciTemplateJobDTOSMappedById.get(ciTemplateStageJobRelDTO.getCiTemplateJobId());
+                    ciTemplateJobVO.setEnabled(ciTemplateStageJobRelDTO.getEnabled());
+                    return ciTemplateJobVO;
+                }).collect(Collectors.toList());
     }
 
     private List<CiTemplateStageVO> queryBaseCiTemplateStage(Long ciPipelineTemplateId) {
@@ -506,6 +510,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
             //插入阶段与job的关联关系
             CiTemplateStageJobRelDTO ciTemplateStageJobRelDTO = new CiTemplateStageJobRelDTO();
             ciTemplateStageJobRelDTO.setCiTemplateJobId(ciTemplateJobVO.getId());
+            ciTemplateStageJobRelDTO.setEnabled(ciTemplateJobVO.getEnabled());
             ciTemplateStageJobRelDTO.setCiTemplateStageId(ciTemplateStageDTO.getId());
             ciTemplateStageJobRelDTO.setSequence(jobSequence.get());
             if (CollectionUtils.isEmpty(ciTemplateStageJobRelMapper.select(ciTemplateStageJobRelDTO))) {
@@ -566,6 +571,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
                 //插入阶段与job的关联关系
                 CiTemplateStageJobRelDTO ciTemplateStageJobRelDTO = new CiTemplateStageJobRelDTO();
                 ciTemplateStageJobRelDTO.setCiTemplateJobId(ciTemplateJobVO.getId());
+                ciTemplateStageJobRelDTO.setEnabled(ciTemplateJobVO.getEnabled());
                 ciTemplateStageJobRelDTO.setCiTemplateStageId(ciTemplateStageDTO.getId());
                 ciTemplateStageJobRelDTO.setSequence(jobSequence.get());
                 ciTemplateStageJobRelDTO.setId(null);

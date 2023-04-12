@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -83,9 +82,6 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     @ApiModelProperty("job的并发数")
     private Integer parallel;
-
-    @Column(name = "is_enabled")
-    private Boolean enabled;
     @ApiModelProperty("关联的任务配置id")
     private Long configId;
     @ApiModelProperty("延迟配置")
@@ -104,14 +100,6 @@ public class CiTemplateJobDTO extends AuditDomain {
      */
     @ApiModelProperty("触发类型")
     private String triggerType;
-
-    public Boolean getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
 
     public String getTags() {
         return tags;
