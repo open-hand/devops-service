@@ -129,8 +129,8 @@ C7N_VERSION="1.0.0-${C7N_GIT_SLUG}-${C7N_COMMIT_TIMESTAMP}-${BUILD_ID}"
 pipeline {
     agent any
     environment { 
-        // 猪齿鱼项目id
-        C7N_PROJECT_ID=1
+        // 猪齿鱼项目id,根据实际项目id替换
+        C7N_PROJECT_ID={{C7N_PROJECT_ID}}
         // 猪齿鱼应用服务编码
         C7N_APP_SERVICE_CODE='hzero-gateway'
         // 代码提交时间戳
