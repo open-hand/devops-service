@@ -89,7 +89,7 @@ public class DevopsCiJobVO {
 
 
     @Column(name = "is_enabled")
-    private Boolean enabled = true;
+    private Boolean enabled;
 
     @ApiModelProperty("是否有权限修改cd的job,默认有")
     private boolean edit = true;
