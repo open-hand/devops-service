@@ -126,7 +126,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
                 .stream()
                 .flatMap(stage -> stage.getCiTemplateJobVOList().stream())
                 .noneMatch(job -> Boolean.TRUE.equals(job.getEnabled()))) {
-            throw new CommonException("devops.job.is.all.disable");
+            throw new CommonException("devops.ci.job.is.all.disable");
         }
     }
 
