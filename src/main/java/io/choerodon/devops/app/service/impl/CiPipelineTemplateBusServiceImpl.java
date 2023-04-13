@@ -120,6 +120,16 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     }
 
 
+    private static void additionalCheck(CiTemplatePipelineVO devopsPipelineTemplateVO) {
+        if (devopsPipelineTemplateVO
+                .getTemplateStageVOS()
+                .stream()
+                .flatMap(stage -> stage.getCiTemplateJobVOList().stream())
+                .noneMatch(job -> Boolean.TRUE.equals(job.getEnabled()))) {
+            throw new CommonException("devops.job.is.all.disable");
+        }
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CiTemplatePipelineVO createPipelineTemplate(Long sourceId, String sourceType,
@@ -130,13 +140,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
         checkStageName(devopsPipelineTemplateVO);
         pipelineTemplateUtils.checkAccess(sourceId, sourceType);
         // 流水线任务至少有一个是启用的
-        if (devopsPipelineTemplateVO
-                .getTemplateStageVOS()
-                .stream()
-                .flatMap(stage -> stage.getCiTemplateJobVOList().stream())
-                .noneMatch(job -> Boolean.TRUE.equals(job.getEnabled()))) {
-            throw new CommonException("devops.job.is.all.disable");
-        }
+        additionalCheck(devopsPipelineTemplateVO);
 
 
         //1.插入流水线模板
@@ -174,7 +178,6 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
         return ciTemplatePipelineVO;
     }
 
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CiTemplatePipelineVO updatePipelineTemplate(Long sourceId, String sourceType,
@@ -185,6 +188,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
         checkPipelineCategory(devopsPipelineTemplateVO);
         checkStageName(devopsPipelineTemplateVO);
         pipelineTemplateUtils.checkAccess(sourceId, sourceType);
+        additionalCheck(devopsPipelineTemplateVO);
         CiTemplatePipelineDTO pipelineTemplateDTO
                 = ciPipelineTemplateBusMapper.selectByPrimaryKey(devopsPipelineTemplateVO.getId());
         if (pipelineTemplateDTO == null) {
