@@ -86,7 +86,9 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         // 报错mvn配置
         DevopsCiMavenBuildConfigVO mavenBuildConfig = sonarConfig.getMavenBuildConfig();
         if (mavenBuildConfig != null
-                && (!CollectionUtils.isEmpty(mavenBuildConfig.getNexusMavenRepoIds()) || !CollectionUtils.isEmpty(mavenBuildConfig.getRepos()))) {
+                && (!CollectionUtils.isEmpty(mavenBuildConfig.getNexusMavenRepoIds())
+                || !CollectionUtils.isEmpty(mavenBuildConfig.getRepos())
+                || org.apache.commons.lang3.StringUtils.isNotBlank(mavenBuildConfig.getMavenSettings()))) {
             devopsCiMavenBuildConfigService.baseCreate(stepId, mavenBuildConfig);
         }
 

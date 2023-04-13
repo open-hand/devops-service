@@ -101,6 +101,7 @@ public class MessageCodeConstants {
     public static final String PROJECT_ID = "projectId";
     public static final String REL_ID = "pipelineIdRecordId";
     public static final String PIPELINE_ID = "pipelineId";
+    public static final String CI_BASE_URL = "%s/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
     public static final String BASE_URL = "%s/#/devops/continuous-deployment/detail/%s?type=project&id=%s&name=%s&organizationId=%s&audit_flag=true";
 
     /**

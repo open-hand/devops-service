@@ -1304,13 +1304,13 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         params.put(MessageCodeConstants.REL_ID, ciPipelineRecordId.toString());
         params.put(MessageCodeConstants.PIPELINE_ID, ciPipelineId.toString());
         params.put(MessageCodeConstants.LINK,
-                String.format(MessageCodeConstants.BASE_URL,
+                String.format(MessageCodeConstants.CI_BASE_URL,
                         frontUrl,
                         projectDTO.getId(),
                         projectDTO.getName(),
                         projectDTO.getOrganizationId(),
-                        ciPipelineId.toString(),
-                        ciPipelineRecordId.toString()));
+                        ciPipelineId,
+                        ciPipelineRecordId));
 
         sendNotices(MessageCodeConstants.PIPELINE_AUDIT, userList, params, projectDTO.getId());
     }
