@@ -1394,11 +1394,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
 
         List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
-        // 对阶段排序
-        List<String> stages = devopsCiStageDTOS.stream()
-                .sorted(Comparator.comparing(DevopsCiStageDTO::getSequence))
-                .map(DevopsCiStageDTO::getName)
-                .collect(Collectors.toList());
 
         GitlabCi gitlabCi = new GitlabCi();
 
@@ -1508,7 +1503,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             });
         });
 
-        gitlabCi.setStages(stages);
+        gitlabCi.setStages(stageNames);
         buildBeforeScript(gitlabCi, ciCdPipelineDTO.getVersionName());
         return gitlabCi;
     }
