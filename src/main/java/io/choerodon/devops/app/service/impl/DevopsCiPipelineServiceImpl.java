@@ -1405,7 +1405,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 设置流水线变量
         List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOS = devopsCiPipelineVariableService.listByPipelineId(pipelineId);
         if (!CollectionUtils.isEmpty(devopsCiPipelineVariableDTOS)) {
-            Map<String, String> variables = devopsCiPipelineVariableDTOS.stream().collect(Collectors.toMap(DevopsCiPipelineVariableDTO::getVariableKey, DevopsCiPipelineVariableDTO::getVariableValue));
+            Map<String, String> variables = devopsCiPipelineVariableDTOS
+                    .stream()
+                    .collect(Collectors.toMap(DevopsCiPipelineVariableDTO::getVariableKey, DevopsCiPipelineVariableDTO::getVariableValue));
             gitlabCi.setVariables(variables);
         }
         Map<String, Object> defaultMap = new HashMap<>();
@@ -1435,33 +1437,36 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
 //        gitlabCi.setImage(StringUtils.isEmpty(ciCdPipelineDTO.getImage()) ? defaultCiImage : ciCdPipelineDTO.getImage());
 
-        gitlabCi.setStages(stages);
+        List<String> stageNames = new ArrayList<>();
         devopsCiStageDTOS.forEach(stageVO -> {
             List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByStageId(stageVO.getId());
-            if (!CollectionUtils.isEmpty(devopsCiJobDTOS)) {
-                devopsCiJobDTOS.forEach(job -> {
-                    // 停用的任务不渲染
-                    if (Boolean.FALSE.equals(job.getEnabled())) {
-                        return;
-                    }
-                    if (CiJobTypeEnum.CUSTOM.value().equals(job.getType())) {
-                        return;
-                    }
-                    CiJob ciJob = new CiJob();
-                    if (!StringUtils.isEmpty(job.getImage())) {
-                        ciJob.setImage(job.getImage());
-                    }
-                    ciJob.setStage(stageVO.getName());
-                    ciJob.setParallel(job.getParallel());
+            List<DevopsCiJobDTO> enableJobs = devopsCiJobDTOS
+                    .stream()
+                    .filter(job -> Boolean.TRUE.equals(job.getEnabled()))
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(enableJobs)) {
+                return;
+            }
+            stageNames.add(stageVO.getName());
+            enableJobs.forEach(job -> {
+                if (CiJobTypeEnum.CUSTOM.value().equals(job.getType())) {
+                    return;
+                }
+                CiJob ciJob = new CiJob();
+                if (!StringUtils.isEmpty(job.getImage())) {
+                    ciJob.setImage(job.getImage());
+                }
+                ciJob.setStage(stageVO.getName());
+                ciJob.setParallel(job.getParallel());
 
-                    //增加services
-                    List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobId(job.getId());
-                    if ("kaniko".equals(imageBuildType) && devopsCiStepDTOS.stream().anyMatch(v -> DevopsCiStepTypeEnum.DOCKER_BUILD.value().equals(v.getType()))) {
-                        CiJobServices ciJobServices = new CiJobServices();
-                        ciJobServices.setName(defaultCiImage);
-                        ciJobServices.setAlias("kaniko");
-                        ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
-                    }
+                //增加services
+                List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobId(job.getId());
+                if ("kaniko".equals(imageBuildType) && devopsCiStepDTOS.stream().anyMatch(v -> DevopsCiStepTypeEnum.DOCKER_BUILD.value().equals(v.getType()))) {
+                    CiJobServices ciJobServices = new CiJobServices();
+                    ciJobServices.setName(defaultCiImage);
+                    ciJobServices.setAlias("kaniko");
+                    ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
+                }
 //                    if (devopsCiStepDTOS.stream().filter(v -> DevopsCiStepTypeEnum.SONAR.value().equals(v.getType())).anyMatch(s -> {
 //                        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(s.getId());
 //                        return SonarScannerType.SONAR_MAVEN.value().equals(devopsCiSonarConfigDTO.getScannerType());
@@ -1471,39 +1476,39 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 //                        ciJobServices.setAlias("kaniko");
 //                        ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
 //                    }
-                    if (job.getType().equals(API_TEST.value())) {
-                        ciJob.setImage(testRunnerImage);
-                        if (job.getStartIn() != null) {
-                            ciJob.setStartIn(String.format("%s minutes", job.getStartIn().toString()));
-                            ciJob.setWhen("delayed");
-                        }
+                if (job.getType().equals(API_TEST.value())) {
+                    ciJob.setImage(testRunnerImage);
+                    if (job.getStartIn() != null) {
+                        ciJob.setStartIn(String.format("%s minutes", job.getStartIn().toString()));
+                        ciJob.setWhen("delayed");
                     }
-                    // 外置仓库不渲染tags节点
-                    if (StringUtils.isNoneBlank(job.getTags())
-                            && appServiceDTO.getExternalConfigId() == null) {
-                        ciJob.setTags(Arrays.asList(job.getTags().split(",")));
-                    }
-                    ciJob.setCache(buildJobCache(job));
-                    processOnlyAndExcept(job, ciJob);
+                }
+                // 外置仓库不渲染tags节点
+                if (StringUtils.isNoneBlank(job.getTags())
+                        && appServiceDTO.getExternalConfigId() == null) {
+                    ciJob.setTags(Arrays.asList(job.getTags().split(",")));
+                }
+                ciJob.setCache(buildJobCache(job));
+                processOnlyAndExcept(job, ciJob);
 
-                    AbstractJobHandler handler = jobOperator.getHandler(job.getType());
-                    handler.setCiJobConfig(job, ciJob);
-                    List<String> script = new ArrayList<>();
-                    // 下载配置文件
-                    List<CiJobConfigFileRelDTO> ciJobConfigFileRelDTOS = ciJobConfigFileRelService.listByJobId(job.getId());
-                    if (!CollectionUtils.isEmpty(ciJobConfigFileRelDTOS)) {
-                        ciJobConfigFileRelDTOS.forEach(ciJobConfigFileRelDTO -> {
-                            script.add(String.format("downloadConfigFileByUId %s %s", ciJobConfigFileRelDTO.getConfigFileId(), ciJobConfigFileRelDTO.getConfigFilePath()));
-                        });
+                AbstractJobHandler handler = jobOperator.getHandler(job.getType());
+                handler.setCiJobConfig(job, ciJob);
+                List<String> script = new ArrayList<>();
+                // 下载配置文件
+                List<CiJobConfigFileRelDTO> ciJobConfigFileRelDTOS = ciJobConfigFileRelService.listByJobId(job.getId());
+                if (!CollectionUtils.isEmpty(ciJobConfigFileRelDTOS)) {
+                    ciJobConfigFileRelDTOS.forEach(ciJobConfigFileRelDTO -> {
+                        script.add(String.format("downloadConfigFileByUId %s %s", ciJobConfigFileRelDTO.getConfigFileId(), ciJobConfigFileRelDTO.getConfigFilePath()));
+                    });
+                }
+                script.addAll(handler.buildScript(Objects.requireNonNull(organizationId), projectId, job));
 
-                    }
-                    script.addAll(handler.buildScript(Objects.requireNonNull(organizationId), projectId, job));
-
-                    ciJob.setScript(script);
-                    gitlabCi.addJob(job.getName(), ciJob);
-                });
-            }
+                ciJob.setScript(script);
+                gitlabCi.addJob(job.getName(), ciJob);
+            });
         });
+
+        gitlabCi.setStages(stages);
         buildBeforeScript(gitlabCi, ciCdPipelineDTO.getVersionName());
         return gitlabCi;
     }

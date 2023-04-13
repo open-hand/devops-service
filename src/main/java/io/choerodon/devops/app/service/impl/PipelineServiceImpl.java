@@ -152,7 +152,7 @@ public class PipelineServiceImpl implements PipelineService {
             description = "创建流水线定时执行计划",
             inputSchema = "{}")
     public PipelineDTO create(Long projectId, PipelineVO pipelineVO) {
-
+        additionalCheck(pipelineVO);
         PipelineDTO pipelineDTO = ConvertUtils.convertObject(pipelineVO, PipelineDTO.class);
         pipelineDTO.setProjectId(projectId);
         // 初始化令牌
@@ -192,6 +192,12 @@ public class PipelineServiceImpl implements PipelineService {
                     });
         }
         return pipelineDTO;
+    }
+
+    private void additionalCheck(PipelineVO pipelineVO) {
+        if (pipelineVO.getStageList().stream().flatMap(v -> v.getJobList().stream()).noneMatch(job -> Boolean.TRUE.equals(job.getEnabled()))) {
+            throw new CommonException("devops.pipeline.jobs.is.all.disable");
+        }
     }
 
     private void constructScheduleTaskDTO(Long projectId,
