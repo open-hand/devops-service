@@ -164,8 +164,8 @@ public class DevopsJenkinsServerController {
     @Permission(level = ResourceLevel.ORGANIZATION, permissionPublic = true)
     @ApiOperation(value = "下载jenkins插件")
     @GetMapping("/plugins/download")
-    public ResponseEntity<Resource> downloadPlugin(@ApiParam(value = "项目ID", required = true)
-                                                   @PathVariable(value = "project_id") Long projectId) {
+    public ResponseEntity<byte[]> downloadPlugin(@ApiParam(value = "项目ID", required = true)
+                                                 @PathVariable(value = "project_id") Long projectId) {
         return devopsJenkinsServerService.downloadPlugin();
     }
 
