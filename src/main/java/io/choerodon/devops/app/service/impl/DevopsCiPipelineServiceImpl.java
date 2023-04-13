@@ -1433,17 +1433,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 //        gitlabCi.setImage(StringUtils.isEmpty(ciCdPipelineDTO.getImage()) ? defaultCiImage : ciCdPipelineDTO.getImage());
 
         List<String> stageNames = new ArrayList<>();
-        devopsCiStageDTOS.forEach(stageVO -> {
-            List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByStageId(stageVO.getId());
-            List<DevopsCiJobDTO> enableJobs = devopsCiJobDTOS
-                    .stream()
-                    .filter(job -> Boolean.TRUE.equals(job.getEnabled()))
-                    .collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(enableJobs)) {
-                return;
-            }
-            stageNames.add(stageVO.getName());
-            enableJobs.forEach(job -> {
+        devopsCiStageDTOS
+                .stream()
+                .sorted(Comparator.comparing(DevopsCiStageDTO::getSequence))
+                .forEach(stageVO -> {
+                    List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByStageId(stageVO.getId());
+                    List<DevopsCiJobDTO> enableJobs = devopsCiJobDTOS
+                            .stream()
+                            .filter(job -> Boolean.TRUE.equals(job.getEnabled()))
+                            .collect(Collectors.toList());
+                    if (CollectionUtils.isEmpty(enableJobs)) {
+                        return;
+                    }
+                    stageNames.add(stageVO.getName());
+                    enableJobs.forEach(job -> {
                 if (CiJobTypeEnum.CUSTOM.value().equals(job.getType())) {
                     return;
                 }
