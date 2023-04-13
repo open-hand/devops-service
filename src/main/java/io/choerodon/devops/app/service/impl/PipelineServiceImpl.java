@@ -333,6 +333,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(Long projectId, Long id, PipelineVO pipelineVO) {
+        additionalCheck(pipelineVO);
         PipelineDTO pipelineDTO = baseQueryById(id);
         CommonExAssertUtil.assertTrue(projectId.equals(pipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
