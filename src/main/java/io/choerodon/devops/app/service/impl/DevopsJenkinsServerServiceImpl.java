@@ -200,7 +200,7 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
     }
 
     @Override
-    public ResponseEntity<Resource> downloadPlugin() {
+    public ResponseEntity<byte[]> downloadPlugin() {
         String filename = "choerodon-integration-" + version + ".hpi";
         String fileFolder = "jenkins";
 
@@ -210,7 +210,13 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
         headers.add("Content-Disposition", "attachment;filename=\"" + filename + "\"");
 
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileFolder + "/" + filename);
-        return ResponseEntity.ok().headers(headers).body(new InputStreamResource(inputStream));
+        try {
+            byte[] bytes = IOUtils.toByteArray(inputStream);
+            return ResponseEntity.ok().headers(headers).body(bytes);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override
