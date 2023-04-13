@@ -11,7 +11,13 @@ public class PipeRequestVO {
     private String namespace;
     private String instanceId;
     private Boolean previous;
+    private Boolean downloadLog;
 
+
+    public PipeRequestVO(String pipeID, Boolean downloadLog) {
+        this.pipeID = pipeID;
+        this.downloadLog = downloadLog;
+    }
 
     public PipeRequestVO(String podName, String containerName, String pipeID, String namespace, String instanceId, Boolean previous) {
         this.podName = podName;
@@ -22,6 +28,13 @@ public class PipeRequestVO {
         this.previous = previous;
     }
 
+    public Boolean getDownloadLog() {
+        return downloadLog;
+    }
+
+    public void setDownloadLog(Boolean downloadLog) {
+        this.downloadLog = downloadLog;
+    }
 
     public String getPodName() {
         return podName;

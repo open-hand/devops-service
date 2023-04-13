@@ -739,4 +739,26 @@
                  join devops_env_command dec2 on dasi.command_id = dec2.id and dec2.status = 'operating'
         where dasi.id = #{instanceId}
     </select>
+
+    <update id="updateSyncDeployValueId">
+        UPDATE devops_app_service_instance
+        SET sync_deploy_value_id=#{syncDeployValueId}
+        WHERE id = #{instanceId}
+    </update>
+
+    <select id="listInstanceByValueId" resultType="io.choerodon.devops.api.vo.AppServiceInstanceVO">
+        SELECT
+            dasi.*,
+            ddace.NAME
+        FROM
+            devops_app_service_instance dasi
+                JOIN devops_deploy_app_center_env ddace ON ddace.object_id = dasi.id
+                AND ddace.rdupm_type = 'chart'
+        WHERE
+            dasi.env_id = #{envId}
+          AND dasi.app_service_id = #{appServiceId}
+          <if test="params!=null">
+              AND  ddace.NAME LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+          </if>
+    </select>
 </mapper>

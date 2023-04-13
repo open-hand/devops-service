@@ -63,4 +63,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline.groovy') {
     changeSet(author: 'wanghao', id: '2021-12-14-drop-column') {
         dropColumn(columnName: "trigger_type", tableName: "devops_cicd_pipeline")
     }
+
+    changeSet(author: 'wanghao', id: '2023-12-14-add-column') {
+        addColumn(tableName: 'devops_cicd_pipeline') {
+            column(name: 'is_interruptible', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否可中断', afterColumn: 'is_enabled')
+        }
+    }
+
 }

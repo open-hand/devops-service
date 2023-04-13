@@ -30,7 +30,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record_rel.groovy') {
         }
     }
 
-    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+    changeSet(author: 'lihao', id: '2021-11-02-drop-index') {
         dropIndex(indexName: "idx_pipeline_id", tableName: "devops_pipeline_record_rel")
     }
 
@@ -38,6 +38,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record_rel.groovy') {
         createIndex(indexName: "idx_cd_pipeline_record_id`", tableName: "devops_pipeline_record_rel") {
             column(name: "cd_pipeline_record_id")
         }
+    }
+    changeSet(author: 'wanghao', id: '2023-03-28-drop-create-table') {
+        dropTable(tableName: "devops_pipeline_record_rel")
     }
 
 }

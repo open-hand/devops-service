@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import groovy.lang.Lazy;
 import org.apache.commons.lang3.StringUtils;
@@ -9,11 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -477,6 +477,13 @@ public class PipelineServiceImpl implements PipelineService {
         for (int i = 0; i < sortedPipelineStage.size(); i++) {
             PipelineStageDTO stage = sortedPipelineStage.get(i);
             Long stageId = stage.getId();
+
+            List<PipelineJobDTO> pipelineJobDTOS = pipelineJobService.listByStageId(stageId);
+            List<PipelineJobDTO> enabledJobs = pipelineJobDTOS.stream().filter(v -> Boolean.TRUE.equals(v.getEnabled())).collect(Collectors.toList());
+            // 阶段下不包含启用的任务，则跳过
+            if (CollectionUtils.isEmpty(enabledJobs)) {
+                continue;
+            }
             PipelineStageRecordDTO pipelineStageRecordDTO = new PipelineStageRecordDTO(id,
                     stage.getName(),
                     stageId,
@@ -488,8 +495,7 @@ public class PipelineServiceImpl implements PipelineService {
 
             Long stageRecordId = pipelineStageRecordDTO.getId();
             // 初始化任务记录
-            List<PipelineJobDTO> pipelineJobDTOS = pipelineJobService.listByStageId(stageId);
-            for (PipelineJobDTO job : pipelineJobDTOS) {
+            for (PipelineJobDTO job : enabledJobs) {
                 Long jobId = job.getId();
                 PipelineJobRecordDTO pipelineJobRecordDTO = new PipelineJobRecordDTO(projectId,
                         id,
@@ -588,7 +594,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void triggerByAppVersion(Long appServiceId, Long appVersionId) {
-        Set<Long> pipelineDTOS = pipelineMapper.listAppAssociatedPipeline(appServiceId);
+        Set<Long> pipelineDTOS = pipelineMapper.listAppAssociatedEnablePipeline(appServiceId);
         if (CollectionUtils.isEmpty(pipelineDTOS)) {
             return;
         }

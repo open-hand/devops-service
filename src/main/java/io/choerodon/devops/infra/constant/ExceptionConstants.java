@@ -65,6 +65,8 @@ public class ExceptionConstants {
         public static final String DEVOPS_INSTANCE_NOT_STOP = "devops.instance.not.stop";
         public static final String DEVOPS_INSTANCE_NOT_RUNNING = "devops.instance.not.running";
         public static final String DEVOPS_INSTANCE_RESOURCE_NOT_FOUND = "devops.instance.resource.not.found";
+
+        public static final String DEVOPS_INSTANCE_JOB_MISMATCHED = "devops.instance.job.mismatched";
         public static final String DEVOPS_APP_INSTANCE_NAME_ALREADY_EXIST = "devops.app.instance.name.already.exist";
         public static final String DEVOPS_APPLICATION_INSTANCE_CREATE = "devops.application.instance.create";
         public static final String DEVOPS_INSTANCE_UPDATE = "devops.instance.update";
@@ -217,6 +219,13 @@ public class ExceptionConstants {
         public static final String DEVOPS_INVALID_APP_AUTH_TYPE = "devops.invalid.app.auth.type";
         public static final String DEVOPS_SAVE_APP_CONFIG_FAILED = "devops.save.app.config.failed";
         public static final String DEVOPS_UPDATE_APP_CONFIG_FAILED = "devops.update.app.config.failed";
+    }
+
+    public static class CertificationExceptionCode {
+        public static final String ERROR_DEVOPS_CERTIFICATION_EXISTCERT_FILED_NULL = "error.devops.certification.existCert.filed.null";
+        public static final String DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL = "devops.certification.operateType.null";
+        public static final String ERROR_DEVOPS_CERTIFICATION_READ_NOTIFY_OBJECTS = "devops.certification.read.notify.object";
+        public static final String ERROR_DEVOPS_CERTIFICATION_TYPE_UNKNOWN ="devops.certification.type.unknown";
     }
 
 }

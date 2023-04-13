@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -392,9 +392,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<String> refIds = devopsEnvironmentRepVOS.stream().map(devopsEnvironmentRepVO -> String.valueOf(devopsEnvironmentRepVO.getId())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(refIds)) {
             Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(ENV.toLowerCase(), refIds, SagaTopicCodeConstants.DEVOPS_CREATE_ENV));
-            devopsEnvironmentRepVOS.forEach(devopsEnvironmentRepVO -> {
-                devopsEnvironmentRepVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(devopsEnvironmentRepVO.getId())));
-            });
+            devopsEnvironmentRepVOS.forEach(devopsEnvironmentRepVO -> devopsEnvironmentRepVO.setSagaInstanceId(SagaInstanceUtils.fillInstanceId(stringSagaInstanceDetailsMap, String.valueOf(devopsEnvironmentRepVO.getId()))));
         }
         return sort(devopsEnvironmentRepVOS).get(groupId);
     }
@@ -875,17 +873,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         baseCheckCode(projectId, clusterId, code);
     }
 
-    private boolean doesNamespaceExistInCluster(Long clusterId, String code) {
-        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-        // 考虑创建环境时,集群已删除的情况
-        if (devopsClusterDTO == null) {
-            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
-        }
-        if (devopsClusterDTO.getNamespaces() != null) {
-            return JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class).stream().anyMatch(namespace -> namespace.equals(code));
-        }
-        return false;
-    }
 
     @Override
     public boolean isCodeValid(Long projectId, Long clusterId, String code) {
@@ -1909,6 +1896,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnvironmentDTO> baseListByIds(List<Long> envIds) {
+        if (ObjectUtils.isEmpty(envIds)) {
+            return new ArrayList<>();
+        }
         return devopsEnvironmentMapper.listByIds(envIds);
     }
 

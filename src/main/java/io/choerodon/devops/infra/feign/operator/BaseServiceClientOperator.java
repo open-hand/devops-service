@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import org.hzero.core.util.ResponseUtils;
@@ -19,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
@@ -74,7 +74,6 @@ public class BaseServiceClientOperator {
     }
 
 
-
     public ProjectDTO queryIamProjectBasicInfoById(Long projectId) {
         ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProjectBasicInfo(projectId);
         ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
@@ -106,9 +105,6 @@ public class BaseServiceClientOperator {
             Tenant tenant = organizationDTOResponseEntity.getBody();
             if (tenant != null && tenant.getTenantId() != null) {
                 return tenant;
-            }
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("queryOrganizationById: unexpected result: {}", JSONObject.toJSONString(tenant));
             }
         }
         throw new CommonException(DEVOPS_ORGANIZATION_GET, organizationId);
@@ -171,6 +167,19 @@ public class BaseServiceClientOperator {
         return userDTOS;
     }
 
+    public List<IamUserDTO> listUsersUnderRoleByIds(Long projectId, String roleIds) {
+        if (ObjectUtils.isEmpty(roleIds)) {
+            return new ArrayList<>();
+        }
+        try {
+            return ResponseUtils.getResponse(baseServiceClient
+                    .listUsersUnderRoleByIds(projectId, roleIds), new TypeReference<List<IamUserDTO>>() {
+            });
+        } catch (Exception e) {
+            throw new CommonException("Failed to query user based on the role id", e);
+        }
+    }
+
     public Boolean checkSiteAccess(Long userId) {
         try {
             return iamServiceClient.platformAdministratorOrAuditor(userId).getBody();
@@ -178,128 +187,6 @@ public class BaseServiceClientOperator {
             throw new CommonException("devops.check.user.site.access", e);
         }
     }
-
-//    /**
-//     * 以合并请求的方式，请求用户的信息
-//     *
-//     * @param ids 用户id
-//     * @return 异步结果引用
-//     */
-//    @HystrixCollapser(
-//            batchMethod = "batchListUsersByIds"
-//            , scope = com.netflix.hystrix.HystrixCollapser.Scope.GLOBAL
-//            , collapserProperties = {
-//            @HystrixProperty(name = "timerDelayInMilliseconds", value = "30"),
-//            @HystrixProperty(name = "maxRequestsInBatch", value = "100"),
-//    })
-//    public Future<List<IamUserDTO>> listUsersByIdsCollapse(List<Long> ids) {
-//        return null;
-//    }
-//
-//    @HystrixCommand
-//    public List<List<IamUserDTO>> batchListUsersByIds(List<List<Long>> ids) {
-//        LOGGER.debug("Batch list user by ids, input size: {}", ids.size());
-//        Set<Long> all = new HashSet<>();
-//        // 收集所有的id，一次性请求
-//        ids.forEach(i -> {
-//            if (!CollectionUtils.isEmpty(i)) {
-//                all.addAll(i);
-//            }
-//        });
-//
-//        Map<Long, IamUserDTO> resultMap;
-//        if (!all.isEmpty()) {
-//            Long[] newIds = new Long[all.size()];
-//            try {
-//                List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
-//                        .listUsersByIds(all.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {
-//                });
-//                if (userDTOS == null) {
-//                    resultMap = Collections.emptyMap();
-//                } else {
-//                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
-//                }
-//            } catch (Exception e) {
-//                throw new CommonException("devops.users.get", e);
-//            }
-//        } else {
-//            resultMap = Collections.emptyMap();
-//        }
-//
-//        // 拆分给响应
-//        return ids.stream()
-//                .map(i -> {
-//                    List<IamUserDTO> result = new ArrayList<>(i.size());
-//                    for (Long id : i) {
-//                        IamUserDTO temp = resultMap.get(id);
-//                        if (temp != null) {
-//                            result.add(temp);
-//                        }
-//                    }
-//                    return result;
-//                })
-//                .collect(Collectors.toList());
-//    }/**
-//     * 以合并请求的方式，请求用户的信息
-//     *
-//     * @param ids 用户id
-//     * @return 异步结果引用
-//     */
-//    @HystrixCollapser(
-//            batchMethod = "batchListUsersByIds"
-//            , scope = com.netflix.hystrix.HystrixCollapser.Scope.GLOBAL
-//            , collapserProperties = {
-//            @HystrixProperty(name = "timerDelayInMilliseconds", value = "30"),
-//            @HystrixProperty(name = "maxRequestsInBatch", value = "100"),
-//    })
-//    public Future<List<IamUserDTO>> listUsersByIdsCollapse(List<Long> ids) {
-//        return null;
-//    }
-//
-//    @HystrixCommand
-//    public List<List<IamUserDTO>> batchListUsersByIds(List<List<Long>> ids) {
-//        LOGGER.debug("Batch list user by ids, input size: {}", ids.size());
-//        Set<Long> all = new HashSet<>();
-//        // 收集所有的id，一次性请求
-//        ids.forEach(i -> {
-//            if (!CollectionUtils.isEmpty(i)) {
-//                all.addAll(i);
-//            }
-//        });
-//
-//        Map<Long, IamUserDTO> resultMap;
-//        if (!all.isEmpty()) {
-//            Long[] newIds = new Long[all.size()];
-//            try {
-//                List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
-//                        .listUsersByIds(all.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {
-//                });
-//                if (userDTOS == null) {
-//                    resultMap = Collections.emptyMap();
-//                } else {
-//                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
-//                }
-//            } catch (Exception e) {
-//                throw new CommonException("devops.users.get", e);
-//            }
-//        } else {
-//            resultMap = Collections.emptyMap();
-//        }
-//
-//        // 拆分给响应
-//        return ids.stream()
-//                .map(i -> {
-//                    List<IamUserDTO> result = new ArrayList<>(i.size());
-//                    for (Long id : i) {
-//                        IamUserDTO temp = resultMap.get(id);
-//                        if (temp != null) {
-//                            result.add(temp);
-//                        }
-//                    }
-//                    return result;
-//                })
-//                .collect(Collectors.toList());
-//    }
 
     public List<IamUserDTO> listUsersByIds(Long[] ids, boolean onlyEnabled) {
         try {
@@ -332,7 +219,8 @@ public class BaseServiceClientOperator {
         return this.listUsersByIds(ids);
     }
 
-    public Page<IamUserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, int page, int size, String params) {
+    public Page<IamUserDTO> pagingQueryUsersWithRolesOnProjectLevel(Long projectId, int page, int size, String
+            params) {
         return baseServiceClient.pagingQueryUsersWithRolesOnProjectLevel(projectId, page, size, params).getBody();
     }
 
@@ -416,10 +304,10 @@ public class BaseServiceClientOperator {
         // 项目下所有项目所有者
         this.listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, LabelType.GITLAB_PROJECT_OWNER.getValue())
                 .stream().filter(IamUserDTO::getEnabled).forEach(t -> {
-            if (!memberIds.contains(t.getId())) {
-                list.add(t);
-            }
-        });
+                    if (!memberIds.contains(t.getId())) {
+                        list.add(t);
+                    }
+                });
         return list;
     }
 

@@ -160,30 +160,8 @@
 
     <select id="listByIds" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
         SELECT
-          dctj.id,
-          dctj.name,
-          dctj.group_id,
-          dctj.image,
-          dctj.source_type,
-          dctj.source_id,
-          dctj.built_in,
-          dctj.type,
-          dctj.script,
-          dctj.to_upload,
-          dctj.to_download,
-          dctj.parallel,
-          dctj.object_version_number,
-          dctj.created_by,
-          dctj.creation_date,
-          dctj.last_updated_by,
-          dctj.last_update_date,
-          dctj.config_id,
-          dctj.tags,
-          dctj.start_in,
-          dctj.visibility,
-          dctj.trigger_value,
-          dctj.trigger_type,
-          dctjg.type AS groupType
+        dctj.*,
+        dctjg.type AS groupType
         FROM devops_ci_template_job dctj LEFT JOIN  devops_ci_template_job_group dctjg ON  dctj.group_id=dctjg.id
         WHERE dctj.id
         IN

@@ -86,6 +86,7 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
         ciTemplateJobVOList.forEach(templateJobVO -> {
             DevopsCiJobVO devopsCiJobVO = ConvertUtils.convertObject(templateJobVO, DevopsCiJobVO.class);
             devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
+            devopsCiJobVO.setEnabled(true);
             // 填充任务配置
             AbstractJobHandler handler = jobOperator.getHandler(templateJobVO.getType());
             if (handler != null) {

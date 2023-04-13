@@ -14,7 +14,12 @@ import io.choerodon.devops.infra.dto.AppServiceImageVersionDTO;
  */
 public interface AppServiceImageVersionService {
 
-    void create(AppServiceImageVersionDTO appServiceImageVersionDTO);
+    AppServiceImageVersionDTO create(AppServiceImageVersionDTO appServiceImageVersionDTO);
+
+    AppServiceImageVersionDTO create(Long appServiceVersionId,
+                                     Long harborConfigId,
+                                     String repoType,
+                                     String image);
 
     AppServiceImageVersionDTO queryByAppServiceVersionId(Long appServiceVersionId);
 

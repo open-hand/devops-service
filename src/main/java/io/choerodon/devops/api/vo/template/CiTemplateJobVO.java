@@ -1,12 +1,13 @@
 package io.choerodon.devops.api.vo.template;
 
+import java.util.Date;
+import java.util.List;
+import javax.persistence.Column;
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
-
-import java.util.Date;
-import java.util.List;
-import javax.validation.constraints.NotNull;
 
 import io.choerodon.devops.api.vo.pipeline.ConfigFileRelVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiTemplatePipelineTriggerConfigVO;
@@ -81,6 +82,9 @@ public class CiTemplateJobVO {
     @ApiModelProperty("job的并发数")
     private Integer parallel;
 
+    @Column(name = "is_enabled")
+    private Boolean enabled;
+
     @ApiModelProperty("是否开启并发")
     private Boolean openParallel;
 
@@ -120,6 +124,14 @@ public class CiTemplateJobVO {
 
     @ApiModelProperty("分组类型")
     private String groupType;
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public DevopsCiTemplatePipelineTriggerConfigVO getDevopsCiPipelineTriggerConfigVO() {
         return devopsCiPipelineTriggerConfigVO;

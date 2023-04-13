@@ -4,11 +4,9 @@ package io.choerodon.devops.infra.dto;
  * Created by wangxiang on 2021/12/3
  */
 
+import javax.persistence.*;
+
 import io.swagger.annotations.ApiModelProperty;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -46,6 +44,18 @@ public class CiTemplatePipelineDTO extends AuditDomain {
 
     @ApiModelProperty("镜像地址")
     private String image;
+
+    @ApiModelProperty("是否可中断")
+    @Column(name = "is_interruptible")
+    private Boolean interruptible;
+
+    public Boolean getInterruptible() {
+        return interruptible;
+    }
+
+    public void setInterruptible(Boolean interruptible) {
+        this.interruptible = interruptible;
+    }
 
     public Long getId() {
         return id;

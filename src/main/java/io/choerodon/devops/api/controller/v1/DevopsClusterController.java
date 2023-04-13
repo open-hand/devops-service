@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
-import java.util.Optional;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
@@ -496,5 +494,17 @@ public class DevopsClusterController {
             @Encrypt
             @PathVariable(value = "cluster_id") Long clusterId) {
         return ResponseEntity.ok(devopsClusterService.disconnectionHost(clusterId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "重启集群agent")
+    @PostMapping(value = "/{cluster_id}/restart")
+    public ResponseEntity<Void> restartClusterAgent(@ApiParam(value = "项目id", required = true)
+                                                    @PathVariable(value = "project_id") Long projectId,
+                                                    @Encrypt
+                                                    @ApiParam(value = "集群id", required = true)
+                                                    @PathVariable(value = "cluster_id") Long clusterId) {
+        devopsClusterService.restartAgent(projectId, clusterId);
+        return ResponseEntity.noContent().build();
     }
 }

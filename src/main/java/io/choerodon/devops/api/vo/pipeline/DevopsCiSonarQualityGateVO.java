@@ -2,7 +2,6 @@ package io.choerodon.devops.api.vo.pipeline;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 

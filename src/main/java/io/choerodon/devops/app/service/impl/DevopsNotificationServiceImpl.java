@@ -9,8 +9,6 @@ import org.apache.commons.lang.StringUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -42,7 +40,6 @@ import io.choerodon.devops.infra.util.StringMapBuilder;
 @Service
 public class DevopsNotificationServiceImpl implements DevopsNotificationService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsNotificationServiceImpl.class);
     private static final String NOTIFY_TYPE = "resourceDelete";
     public static final Gson gson = new Gson();
     private static final Long TIMEOUT = 600L;

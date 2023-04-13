@@ -286,14 +286,6 @@ public interface AppServiceInstanceService {
      */
     Page<DeployDetailTableVO> pageDeployTimeTable(Long projectId, PageRequest pageable, Long[] appServiceIds, Long envId, Date startTime, Date endTime);
 
-//    /**
-//     * 部署自动化测试应用
-//     *
-//     * @param projectId          项目id
-//     * @param appServiceDeployVO 部署信息
-//     */
-//    void deployTestApp(Long projectId, AppServiceDeployVO appServiceDeployVO);
-
     /**
      * 根据实例id获取更多资源详情(json格式）
      *
@@ -313,13 +305,6 @@ public interface AppServiceInstanceService {
      * @return 包含yaml格式的资源详情的DTO
      */
     InstanceControllerDetailVO getInstanceResourceDetailYaml(Long instanceId, String resourceName, ResourceType resourceType);
-
-//    /**
-//     * 查询自动化测试应用实例状态
-//     *
-//     * @param testReleases
-//     */
-//    void getTestAppStatus(Map<Long, List<String>> testReleases);
 
 
     /**
@@ -472,4 +457,10 @@ public interface AppServiceInstanceService {
     List<PipelineInstanceReferenceVO> queryInstancePipelineReference(Long projectId, Long instanceId);
 
     Boolean isInstanceDeploying(Long instanceId);
+
+    void deleteHelmHookJob(Long projectId, Long instanceId, Long envId, Long commandId, String jobName);
+
+    void syncValueToDeploy(Long projectId, AppServiceSyncValueDeployVO syncValueDeployVO);
+
+    List<AppServiceInstanceVO> listInstanceByValueId(Long projectId, Long valueId, String params);
 }

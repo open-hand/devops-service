@@ -168,4 +168,11 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
     List<AppServiceInstanceVO> listMarketInstance(@Param("envId") Long envId);
 
     Integer countInstanceDeploying(@Param("instanceId") Long instanceId);
+
+    void updateSyncDeployValueId(@Param("instanceId") Long instanceId,
+                                 @Param("syncDeployValueId") Long syncDeployValueId);
+
+    List<AppServiceInstanceVO> listInstanceByValueId(@Param("envId") Long envId,
+                                                     @Param("appServiceId") Long appServiceId,
+                                                     @Param("params") String params);
 }

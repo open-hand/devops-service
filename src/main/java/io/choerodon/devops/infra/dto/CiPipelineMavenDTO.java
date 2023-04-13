@@ -41,7 +41,6 @@ public class CiPipelineMavenDTO extends AuditDomain {
 
     public String calculateDownloadUrl() {
         String downloadUrl = "";
-//        if (io.choerodon.devops.infra.enums.ArtifactTypeEnum.JAR.getType().equals(artifactType)) {
         // SNAPSHOT类型
         if (getVersion().contains(BaseConstants.Symbol.SLASH)) {
             downloadUrl = appendWithSlash(getMavenRepoUrl(), getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
@@ -54,13 +53,6 @@ public class CiPipelineMavenDTO extends AuditDomain {
             downloadUrl = appendWithSlash(downloadUrl, getVersion());
             downloadUrl = appendWithSlash(downloadUrl, getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + getVersion() + "." + artifactType);
         }
-//        }
-//        if (io.choerodon.devops.infra.enums.ArtifactTypeEnum.WAR.getType().equals(artifactType)) {
-//            downloadUrl = appendWithSlash(getMavenRepoUrl(), getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
-//            downloadUrl = appendWithSlash(downloadUrl, getArtifactId());
-//            downloadUrl = appendWithSlash(downloadUrl, getVersion());
-//            downloadUrl = appendWithSlash(downloadUrl, getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + getVersion() + ".war");
-//        }
         return downloadUrl;
     }
 

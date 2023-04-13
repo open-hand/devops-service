@@ -43,4 +43,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_pipeline.groovy') {
             column(name: 'source_id')
         }
     }
+    changeSet(author: 'wanghao', id: '2023-12-14-add-column') {
+        addColumn(tableName: 'devops_ci_template_pipeline') {
+            column(name: 'is_interruptible', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '是否可中断', afterColumn: 'image')
+        }
+    }
 }

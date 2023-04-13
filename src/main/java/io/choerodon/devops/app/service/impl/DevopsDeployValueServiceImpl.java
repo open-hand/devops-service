@@ -20,11 +20,13 @@ import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -52,15 +54,16 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     private PermissionHelper permissionHelper;
     @Autowired
     private AppServiceService appServiceService;
-    //    @Autowired
-//    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
+    @Lazy
     private DevopsCiJobService devopsCiJobService;
 
     @Autowired
     @Lazy
     private PipelineService pipelineService;
 
+    @Autowired
+    private AppServiceInstanceMapper appServiceInstanceMapper;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -133,6 +136,10 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     public DevopsDeployValueVO query(Long projectId, Long valueId) {
         DevopsDeployValueVO devopsDeployValueVO = ConvertUtils.convertObject(devopsDeployValueMapper.queryById(valueId), DevopsDeployValueVO.class);
         devopsDeployValueVO.setIndex(CollectionUtils.isEmpty(checkDelete(projectId, valueId)));
+        // 设置环境连接状态
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsDeployValueVO.getEnvId());
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
+        devopsDeployValueVO.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
         return devopsDeployValueVO;
     }
 
@@ -272,5 +279,37 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         DevopsDeployValueDTO condition = new DevopsDeployValueDTO();
         condition.setEnvId(Objects.requireNonNull(envId));
         devopsDeployValueMapper.delete(condition);
+    }
+
+    @Override
+    public List<DevopsDeployValueDTO> listValueByInstanceId(Long projectId, Long instanceId) {
+        // 查询流水线和持续部署是否绑定配置
+        List<DevopsDeployValueDTO> list = devopsDeployValueMapper.listByInstanceId(instanceId);
+        if (!CollectionUtils.isEmpty(list)) {
+            return list.stream().distinct().collect(Collectors.toList());
+        } else {
+            // 查询界面是否同步配置到资源
+            AppServiceInstanceDTO instanceDTO = appServiceInstanceMapper.selectByPrimaryKey(instanceId);
+            if (instanceDTO.getSyncDeployValueId() != null) {
+                return Collections.singletonList(devopsDeployValueMapper.selectByPrimaryKey(instanceDTO.getSyncDeployValueId()));
+            } else {
+                return null;
+            }
+        }
+    }
+
+    @Override
+    public void updateValueByInstanceId(Long projectId, Long instanceId, HashMap<String, String> mapValue) {
+        if (Objects.isNull(mapValue.get("value"))) {
+            throw new CommonException("devops.value.is.null");
+        }
+        List<DevopsDeployValueDTO> list = listValueByInstanceId(projectId, instanceId);
+        if (CollectionUtils.isEmpty(list)) {
+            throw new CommonException("devops.instance.not.bind.values");
+        }
+        list.forEach(t -> {
+            t.setValue(mapValue.get("value"));
+            devopsDeployValueMapper.updateByPrimaryKey(t);
+        });
     }
 }

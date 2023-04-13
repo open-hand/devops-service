@@ -16,7 +16,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.C7nCertificationCreateVO;
+import io.choerodon.devops.api.vo.C7nCertificationCreateOrUpdateVO;
 import io.choerodon.devops.api.vo.CertificationRespVO;
 import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
@@ -57,12 +57,12 @@ public class CertificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书", required = true)
-            @ModelAttribute C7nCertificationCreateVO certification,
+            @ModelAttribute C7nCertificationCreateOrUpdateVO certification,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
-        certificationService.createCertification(projectId, certification, key, cert);
+        certificationService.createOrUpdateCertification(projectId, certification, key, cert);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -158,8 +158,10 @@ public class CertificationController {
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "证书名称", required = true)
-            @RequestParam(value = "cert_name") String certName) {
-        return ResponseEntity.ok(certificationService.checkCertNameUniqueInEnv(envId, certName));
+            @RequestParam(value = "cert_name") String certName,
+            @Encrypt
+            @RequestParam(value = "cert_id", required = false) Long certId) {
+        return ResponseEntity.ok(certificationService.checkCertNameUniqueInEnv(envId, certName, certId));
     }
 
 

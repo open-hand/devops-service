@@ -580,7 +580,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceService.baseQuery(middlewareHostInstanceVO.getInstanceId());
         CommonExAssertUtil.assertTrue(projectId.equals(devopsHostAppInstanceDTO.getProjectId()), "devops.operating.resource.in.other.project");
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsHostAppInstanceDTO.getAppId());
-//        devopsHostAppService.checkNameUniqueAndThrow(projectId, devopsHostAppInstanceDTO.getAppId(), middlewareHostInstanceVO.getAppName());
         devopsHostAppDTO.setName(middlewareHostInstanceVO.getAppName());
         devopsHostAppService.baseUpdate(devopsHostAppDTO);
     }

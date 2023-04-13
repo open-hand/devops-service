@@ -85,8 +85,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private static final String CONNECTED = "connected";
     private static final String DISCONNECTED = "disconnected";
 
-    private static final String APP_FILE_SAVE_PATH_ON_HOST_TEMPLATE = "%s%s";
-
     @Lazy
     @Autowired
     private DevopsHostAdditionalCheckValidator devopsHostAdditionalCheckValidator;
@@ -118,9 +116,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
     private DevopsMiddlewareService devopsMiddlewareService;
-    //    @Autowired
-//    @Lazy
-//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
@@ -132,6 +127,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
+    @Lazy
     private DevopsCiJobService devopsCiJobService;
 
     @Override
@@ -390,7 +386,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             return;
         }
         devopsHostAppVO.setStatus(DockerComposeStatusEnum.OTHER.getType());
-        return;
     }
 
     @Override
@@ -968,7 +963,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     Long nexusRepoId = prodJarInfoVO.getRepositoryId();
                     // 从制品库获取仓库信息
                     // 获取并记录信息
-                    List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
+                    List<C7nNexusComponentDTO> nexusComponentDTOList;
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
                     String groupId = prodJarInfoVO.getGroupId();
                     String artifactId = prodJarInfoVO.getArtifactId();

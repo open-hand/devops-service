@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo.cd;
 
+import javax.persistence.Column;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
@@ -33,8 +34,20 @@ public class PipelineJobVO {
     @Encrypt
     private Long configId;
 
+
+    @Column(name = "is_enabled")
+    private Boolean enabled;
+
     private Boolean edit;
 
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
     private PipelineChartDeployCfgVO chartDeployCfg;
 

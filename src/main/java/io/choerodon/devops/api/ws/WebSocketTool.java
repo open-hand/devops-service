@@ -1,10 +1,14 @@
 package io.choerodon.devops.api.ws;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.devops.infra.util.KeyDecryptHelper;
-import io.choerodon.devops.infra.util.KeyParseUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
+import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
+import static org.hzero.websocket.constant.WebSocketConstant.Attributes.PROCESSOR;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+
 import org.hzero.core.util.StringPool;
 import org.hzero.websocket.config.ClientWebSocketConfig;
 import org.hzero.websocket.handler.DefaultSocketHandler;
@@ -15,14 +19,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.server.HandshakeFailureException;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.*;
-import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
-import static org.hzero.websocket.constant.WebSocketConstant.Attributes.PROCESSOR;
+import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.infra.util.KeyDecryptHelper;
+import io.choerodon.devops.infra.util.KeyParseUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * Created by Sheep on 2019/7/25.
@@ -91,6 +93,26 @@ public class WebSocketTool {
     }
 
     /**
+     * 构造对应的agent的连接的group
+     *
+     * @param group 不带连接前缀的原始随机值
+     * @return agent连接的group
+     */
+    public static String buildHostAgentGroup(String group) {
+        return HOST_FROM_AGENT_GROUP_PREFIX + Objects.requireNonNull(group);
+    }
+
+    /**
+     * 构造对应的前端的连接的group
+     *
+     * @param group 不带连接前缀的原始随机值
+     * @return 前端连接的group
+     */
+    public static String buildHostFrontGroup(String group) {
+        return HOST_FRONT_GROUP_PREFIX + Objects.requireNonNull(group);
+    }
+
+    /**
      * Group 形如 from_front:cluster:12.log:q1a
      * 获取rawKey， 用于拼接转发的目的地group  返回 cluster:12.log:q1a
      *
@@ -150,6 +172,25 @@ public class WebSocketTool {
         keySocketSendHelper.closeSessionByGroup(buildAgentGroup(key));
     }
 
+    /**
+     * 通过key关闭agent的对应session
+     *
+     * @param key key
+     */
+    public static void closeHostAgentSessionByKey(String key) {
+        KeySocketSendHelper keySocketSendHelper = ApplicationContextHelper.getContext().getBean(KeySocketSendHelper.class);
+        keySocketSendHelper.closeSessionByGroup(buildHostAgentGroup(key));
+    }
+
+    /**
+     * 通过key关闭前端的session
+     *
+     * @param key key
+     */
+    public static void closeHostFrontSessionByKey(String key) {
+        KeySocketSendHelper keySocketSendHelper = ApplicationContextHelper.getContext().getBean(KeySocketSendHelper.class);
+        keySocketSendHelper.closeSessionByGroup(buildHostFrontGroup(key));
+    }
 
     public static void checkGroup(Map<String, Object> attributes) {
         checkParameter(attributes, GROUP);
@@ -252,6 +293,10 @@ public class WebSocketTool {
                 return false;
             }
 
+            if (DetailsHelper.getUserDetails() == null) {
+                DetailsHelper.setCustomUserDetails(customUserDetails);
+            }
+
             // 将解析的用户id放入到attributes中
             LOGGER.info("User with name {} and id {} connect from websocket", customUserDetails.getRealName(), customUserDetails.getUserId());
             attributes.put(USER_ID, customUserDetails.getUserId());
@@ -267,6 +312,7 @@ public class WebSocketTool {
         Object group = attributes.get(GROUP);
         Object key = attributes.get(KEY);
         Object describeId = attributes.get(DESCRIBE_Id);
+        Object hostId = attributes.get(HOST_ID);
 
         if (clusterId != null) {
             attributes.put(CLUSTER_ID, KeyDecryptHelper.decryptValueOrIgnoreForWs(String.valueOf(clusterId)));
@@ -281,6 +327,9 @@ public class WebSocketTool {
         }
         if (describeId != null) {
             attributes.put(DESCRIBE_Id, KeyDecryptHelper.decryptValueOrIgnoreForWs(String.valueOf(describeId)));
+        }
+        if (hostId != null) {
+            attributes.put(HOST_ID, KeyDecryptHelper.decryptValueOrIgnoreForWs(String.valueOf(hostId)));
         }
     }
 
@@ -301,5 +350,13 @@ public class WebSocketTool {
             result.deleteCharAt(result.length() - 1);
         }
         return result.toString();
+    }
+
+    public static void checkHostId(Map<String, Object> attributes) {
+        checkParameter(attributes, HOST_ID);
+    }
+
+    public static String getToken(WebSocketSession session) {
+        return TypeUtil.objToString(session.getAttributes().get(TOKEN));
     }
 }

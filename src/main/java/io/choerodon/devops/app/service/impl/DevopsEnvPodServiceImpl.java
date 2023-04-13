@@ -1,5 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Pod;
 import org.slf4j.Logger;
@@ -12,12 +18,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -192,13 +192,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         Page<DevopsEnvPodDTO> devopsEnvPodDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
-            devopsEnvPodDOPage = PageHelper.doPageAndSort(pageable, () -> devopsEnvPodMapper.listAppServicePod(
-                    projectId,
-                    envId,
-                    appServiceId,
-                    instanceId,
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+            devopsEnvPodDOPage = PageHelper.doPageAndSort(pageable, () -> devopsEnvPodMapper.listAppServicePod(projectId, envId, appServiceId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         } else {
             devopsEnvPodDOPage = PageHelper.doPageAndSort(pageable, () -> devopsEnvPodMapper.listAppServicePod(projectId, envId, appServiceId, instanceId, null, null));
         }
@@ -283,6 +277,13 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     @Override
     public boolean checkLogAndExecPermission(Long projectId, Long clusterId, String envCode, Long userId, String podName) {
+
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        // 先检查是不是查看agent的pod日志
+        if (envCode.equals(devopsClusterDTO.getNamespace()) && podName.equals(devopsClusterDTO.getPodName())) {
+            return true;
+        }
+
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, envCode);
         if (devopsEnvironmentDTO == null) {
             LOGGER.info("The env with clusterId {} and envCode {} doesn't exist", clusterId, envCode);
@@ -301,12 +302,6 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             return false;
         }
 
-        // 校验pod存在 自动化测试的查看日志没有pod，但是也要查看日志
-//        if (!podExists(envId, podName)) {
-//            logger.info("The pod with name {} doesn't exist in the env with id {}", podName, envId);
-//            return false;
-//        }
-
         return true;
     }
 
@@ -318,12 +313,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
         if (devopsEnvResourceDTO != null && devopsEnvResourceDTO.getInstanceId() != null) {
             AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvResourceDTO.getInstanceId());
-            return pageByOptions(projectId,
-                    envId,
-                    appServiceInstanceDTO.getAppServiceId(),
-                    devopsEnvResourceDTO.getInstanceId(),
-                    pageable,
-                    searchParam);
+            return pageByOptions(projectId, envId, appServiceInstanceDTO.getAppServiceId(), devopsEnvResourceDTO.getInstanceId(), pageable, searchParam);
         }
 
         Page<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageByKind(envId, kind, name, pageable, searchParam);
@@ -413,15 +403,12 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
         try {
             V1Pod pod = K8sUtil.deserialize(message, V1Pod.class);
-            List<ContainerVO> containers = pod.getStatus().getContainerStatuses()
-                    .stream()
-                    .map(container -> {
-                        ContainerVO containerVO = new ContainerVO();
-                        containerVO.setName(container.getName());
-                        containerVO.setReady(container.getReady());
-                        return containerVO;
-                    })
-                    .collect(Collectors.toList());
+            List<ContainerVO> containers = pod.getStatus().getContainerStatuses().stream().map(container -> {
+                ContainerVO containerVO = new ContainerVO();
+                containerVO.setName(container.getName());
+                containerVO.setReady(container.getReady());
+                return containerVO;
+            }).collect(Collectors.toList());
 
             // 将不可用的容器置于靠前位置
             Map<Boolean, List<ContainerVO>> containsByStatus = containers.stream().collect(Collectors.groupingBy(container -> container.getReady() == null ? Boolean.FALSE : container.getReady()));
@@ -461,23 +448,11 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         Page<DevopsEnvPodDTO> devopsEnvPodDOPage;
         if (!ObjectUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
-            devopsEnvPodDOPage = PageHelper.doPageAndSort(pageable, () -> devopsEnvPodMapper.listPodByKind(
-                    envId,
-                    kind,
-                    name,
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+            devopsEnvPodDOPage = PageHelper.doPageAndSort(pageable, () -> devopsEnvPodMapper.listPodByKind(envId, kind, name, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         } else {
             devopsEnvPodDOPage = PageHelper.doPageAndSort(pageable, () -> devopsEnvPodMapper.listPodByKind(envId, kind, name, null, null));
         }
 
         return devopsEnvPodDOPage;
-    }
-
-    private boolean podExists(Long envId, String podName) {
-        DevopsEnvPodDTO condition = new DevopsEnvPodDTO();
-        condition.setEnvId(envId);
-        condition.setName(podName);
-        return devopsEnvPodMapper.selectCount(condition) > 0;
     }
 }

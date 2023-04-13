@@ -10,7 +10,33 @@
           AND dctj.visibility=1
     </select>
     <select id="listByStageIds" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
-        select dctj.*, dctsjr.ci_template_stage_id as relate_stage_id , dctsjr.sequence
+        select dctj.id,
+        dctj.name,
+        dctj.group_id,
+        dctj.image,
+        dctj.source_type,
+        dctj.source_id,
+        dctj.built_in,
+        dctj.visibility,
+        dctj.type,
+        dctj.trigger_value,
+        dctj.trigger_type,
+        dctj.script,
+        dctj.to_upload,
+        dctj.to_download,
+        dctj.parallel,
+        dctsjr.is_enabled as enabled,
+        dctj.config_id,
+        dctj.tags,
+        dctj.config_file_id,
+        dctj.config_file_path,
+        dctj.start_in,
+        dctj.object_version_number,
+        dctj.created_by,
+        dctj.creation_date,
+        dctj.last_updated_by,
+        dctj.last_update_date,
+        dctsjr.ci_template_stage_id as relate_stage_id , dctsjr.sequence
         from devops_ci_template_stage_job_rel dctsjr
         join devops_ci_template_job dctj on dctj.id = dctsjr.ci_template_job_id
         where dctsjr.ci_template_stage_id in

@@ -23,6 +23,9 @@ public class DevopsCiPipelineTriggerConfigVO {
     @ApiModelProperty("触发的其它流水线gitlab 项目id")
     private Long triggeredPipelineGitlabProjectId;
 
+    @ApiModelProperty("触发的其它流水线名称")
+    private String triggeredPipelineName;
+
     @ApiModelProperty("流水线trigger id")
     private Long pipelineTriggerId;
 
@@ -37,6 +40,14 @@ public class DevopsCiPipelineTriggerConfigVO {
 
     public List<DevopsCiPipelineTriggerConfigVariableDTO> getDevopsCiPipelineVariables() {
         return devopsCiPipelineVariables;
+    }
+
+    public String getTriggeredPipelineName() {
+        return triggeredPipelineName;
+    }
+
+    public void setTriggeredPipelineName(String triggeredPipelineName) {
+        this.triggeredPipelineName = triggeredPipelineName;
     }
 
     public void setDevopsCiPipelineVariables(List<DevopsCiPipelineTriggerConfigVariableDTO> devopsCiPipelineVariables) {

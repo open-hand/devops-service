@@ -46,12 +46,8 @@ public class DevopsCiJobRecordVO {
     private Long durationSeconds;
     @ApiModelProperty("单元测试覆盖率")
     private String codeCoverage;
-    //    @ApiModelProperty("详细信息")
-//    private String metadata;
     @ApiModelProperty("是否有镜像扫描")
     private Boolean imageScan;
-    //    @ApiModelProperty("任务记录关联的maven配置id")
-//    private Long mavenSettingId;
     private Long commandId;
 
     @ApiModelProperty("ci生成jar包地址")
@@ -158,15 +154,6 @@ public class DevopsCiJobRecordVO {
     public void setPipelineChartInfo(PipelineChartInfo pipelineChartInfo) {
         this.pipelineChartInfo = pipelineChartInfo;
     }
-//
-//    public Long getMavenSettingId() {
-//        return mavenSettingId;
-//    }
-//
-//    public void setMavenSettingId(Long mavenSettingId) {
-//        this.mavenSettingId = mavenSettingId;
-//    }
-
     public Boolean getImageScan() {
         return imageScan;
     }
@@ -182,15 +169,6 @@ public class DevopsCiJobRecordVO {
     public void setPipelineJarInfo(PipelineJarInfoVO pipelineJarInfo) {
         this.pipelineJarInfo = pipelineJarInfo;
     }
-
-//    public String getMetadata() {
-//        return metadata;
-//    }
-//
-//    public void setMetadata(String metadata) {
-//        this.metadata = metadata;
-//    }
-
     public Long getId() {
         return id;
     }

@@ -13,12 +13,13 @@
     </delete>
 
     <select id="listByStageId" resultType="io.choerodon.devops.infra.dto.CiTemplateStageJobRelDTO">
-        SELECT
-        id,
-        ci_template_stage_id,
-        ci_template_job_id,
-        sequence,
-        object_version_number FROM devops_ci_template_stage_job_rel
-        WHERE ci_template_stage_id=#{stageId}
+        SELECT id,
+               ci_template_stage_id,
+               ci_template_job_id,
+               is_enabled as enabled,
+               sequence,
+               object_version_number
+        FROM devops_ci_template_stage_job_rel
+        WHERE ci_template_stage_id = #{stageId}
     </select>
 </mapper>

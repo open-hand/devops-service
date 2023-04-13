@@ -234,7 +234,15 @@
         SELECT max(id)
         FROM devops_env_command
         WHERE object_id = #{workloadId}
-          AND object = #{workloadType}
+        AND object = #{workloadType}
         AND status='success'
+    </select>
+
+    <select id="listByInstanceIdAndCommitSha" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
+        SELECT *
+        FROM devops_env_command dev
+        WHERE dev.object = 'instance'
+        AND dev.object_id = #{instanceId}
+        AND dev.sha like CONCAT(CONCAT('%', #{sha}), '%')
     </select>
 </mapper>

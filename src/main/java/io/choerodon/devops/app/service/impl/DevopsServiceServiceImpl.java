@@ -1,5 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT;
+import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -21,15 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-
-import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
-import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT;
-import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -616,11 +616,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         if (!serviceIds.isEmpty()) {
             devopsServiceMapper.deleteServiceInstance(serviceIds);
         }
-    }
-
-
-    private int getBegin(int page, int size) {
-        return page * size;
     }
 
 

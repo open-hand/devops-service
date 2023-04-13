@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -75,7 +76,17 @@ public class PipelineTemplateDTO extends AuditDomain {
     @ApiModelProperty(value = "流水线模板镜像地址", required = true)
     @NotBlank
     private String image;
+    @ApiModelProperty("是否可中断")
+    @Column(name = "is_interruptible")
+    private Boolean interruptible;
 
+    public Boolean getInterruptible() {
+        return interruptible;
+    }
+
+    public void setInterruptible(Boolean interruptible) {
+        this.interruptible = interruptible;
+    }
 
     public Long getId() {
         return id;

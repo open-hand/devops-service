@@ -6,4 +6,18 @@
         JOIN devops_certification dc ON dcf.id=dc.certification_file_id
         WHERE dc.id=#{certificationId}
     </select>
+
+    <select id="listByCertificationIds" resultType="io.choerodon.devops.infra.dto.CertificationFileDTO">
+        SELECT dcf.id,
+        dcf.key_file,
+        dcf.cert_file,
+        dc.id AS certification_id
+        FROM devops_certification_file dcf
+        JOIN devops_certification dc ON dcf.id = dc.certification_file_id
+        WHERE dc.id
+        IN
+        <foreach collection="certificationIds" item="certificationId" open="(" close=")" separator=",">
+            #{certificationId}
+        </foreach>
+    </select>
 </mapper>

@@ -4,20 +4,23 @@ import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceHelmVersionCode.DEVOPS_HELM_CONFIG_ID_NULL;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceHelmVersionCode.DEVOPS_HELM_CONFIG_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.yqcloud.core.oauth.ZKnowDetailsHelper;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -35,6 +38,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -43,7 +48,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.appversion.AppServiceHelmVersionVO;
 import io.choerodon.devops.api.vo.appversion.AppServiceImageVersionVO;
@@ -71,17 +75,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppServiceVersionServiceImpl.class);
-
-    /**
-     * 存储chart包的文件路径模板
-     * devops-应用服务id-版本号-commit值前8位
-     */
-    private static final String DESTINATION_PATH_TEMPLATE = "devops-%s-%s-%s";
-    /**
-     * 解压chart包的文件路径模板
-     * stores-应用服务id-版本号-commit值前8位
-     */
-    private static final String STORE_PATH_TEMPLATE = "stores-%s-%s-%s";
+    private static final String TEMP_PATH_TEMPLATE = "temp-path-%s-%s-%s";
     private static final String DEVOPS_VERSION_INSERT = "devops.version.insert";
     private static final String DEVOPS_VERSION_UPDATE = "devops.version.update";
     private static final String DEVOPS_UPLOAD_CHART = "devops.upload.chart";
@@ -149,6 +143,77 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     private static final Gson GSON = new Gson();
 
+    private static String replaceAndGetValues(MultipartFile files, String tempFilePath, String chartFilePath, String repositoryName) {
+        File tempFile = new File(tempFilePath);
+        File chartFile = new File(chartFilePath);
+        try {
+            if (!tempFile.exists()) {
+                tempFile.mkdirs();
+            }
+            try (BufferedOutputStream out = new BufferedOutputStream(
+                    new FileOutputStream(chartFile))) {
+                out.write(files.getBytes());
+                out.flush();
+            }
+        } catch (IOException e) {
+            throw new CommonException("devops.file.transfer", e);
+        }
+
+        FileUtil.unTarGZ(chartFile.getPath(), tempFilePath);
+
+        // 使用深度优先遍历查找文件, 避免查询到子chart的values值
+        File valuesFile = FileUtil.queryFileFromFilesBFS(new File(tempFilePath), "values.yaml");
+
+        if (valuesFile == null) {
+            throw new CommonException(DEVOPS_FIND_VALUES_YAML_IN_CHART);
+        }
+
+        String values;
+        try (FileInputStream fis = new FileInputStream(valuesFile)) {
+            values = FileUtil.replaceReturnString(fis, null);
+            if (StringUtils.isNotBlank(repositoryName)) {
+                values = replaceRepository(values, repositoryName);
+            }
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(valuesFile))) {
+            bw.write(values);
+            bw.flush();
+        } catch (IOException e) {
+            throw new CommonException("error.write.new.values", e);
+        }
+        String filePath = StringUtils.substringBeforeLast(chartFile.getPath(), ".");
+        File[] fileList = tempFile.listFiles();
+        chartFile.delete();
+        for (File file : fileList) {
+            if (file.isDirectory()) {
+                FileUtil.toTgz(file.getPath(), filePath);
+            }
+        }
+        return values;
+    }
+
+    private static String replaceRepository(String values, String repositoryName) {
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setAllowReadOnlyProperties(true);
+        options.setPrettyFlow(true);
+        Yaml yaml = new Yaml(options);
+        Object data = yaml.load(values);
+        JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
+        try {
+            Map<String, Object> image = (Map<String, Object>) jsonObject.get("image");
+            image.replace("repository", repositoryName);
+            values = yaml.dump(jsonObject);
+
+        } catch (Exception e) {
+            throw new CommonException(DEVOPS_YAML_FORMAT_INVALID, e);
+        }
+        return values;
+    }
+
     /**
      * 方法中抛出{@link DevopsCiInvalidException}而不是{@link CommonException}是为了返回非200的状态码。
      */
@@ -156,7 +221,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = DEVOPS_APP_VERSION_TRIGGER_PIPELINE, description = "应用服务版本生成触发流水线", inputSchemaClass = AppVersionTriggerVO.class)
     public void create(String image,
-                       String harborConfigId,
+                       Long harborConfigId,
                        String repoType,
                        String token,
                        String version,
@@ -168,71 +233,24 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                        Long helmRepoId,
                        Long gitlabUserId) {
         try {
-
             AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
             // 设置用户上下文
             setUserContext(gitlabPipelineId, gitlabUserId, appServiceDTO);
-            LOGGER.warn(">>>>>>>>>>>>>>>>>>Before save appVersion,userId {}<<<<<<<<<<<<<<<<<<<", DetailsHelper.getUserDetails().getUserId());
             AppServiceVersionDTO appServiceVersionDTO = saveAppVersion(version, commit, ref, gitlabPipelineId, appServiceDTO.getId());
-            LOGGER.warn(">>>>>>>>>>>>>>>>>>End save appVersion,userId {}<<<<<<<<<<<<<<<<<<<", DetailsHelper.getUserDetails().getUserId());
+
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
-            Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            LOGGER.warn(">>>>>>>>>>>>>>>>>>End feign base-service,userId {}<<<<<<<<<<<<<<<<<<<", DetailsHelper.getUserDetails().getUserId());
 
-            // 查询helm仓库配置id
-            DevopsHelmConfigDTO devopsHelmConfigDTO;
+            saveHelmVersion(projectDTO,
+                    appServiceDTO.getId(),
+                    appServiceVersionDTO.getId(),
+                    version,
+                    commit,
+                    files,
+                    image,
+                    harborConfigId,
+                    repoType,
+                    helmRepoId);
 
-            if (helmRepoId == null) {
-                devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceDTO.getId(), projectDTO.getId(), organization.getTenantId());
-            } else {
-                devopsHelmConfigDTO = devopsHelmConfigService.queryById(helmRepoId);
-            }
-
-            String repository;
-            if (ResourceLevel.PROJECT.value().equals(devopsHelmConfigDTO.getResourceType())) {
-                repository = devopsHelmConfigDTO.getUrl();
-            } else {
-                repository = devopsHelmConfigDTO.getUrl().endsWith("/") ? devopsHelmConfigDTO.getUrl() + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" : devopsHelmConfigDTO.getUrl() + "/" + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/";
-            }
-            // 取commit的一部分作为文件路径
-            String commitPart = commit == null ? "" : commit.substring(0, 8);
-            String storeFilePath = String.format(STORE_PATH_TEMPLATE, appServiceDTO.getId(), version, commitPart);
-            String destFilePath = String.format(DESTINATION_PATH_TEMPLATE, appServiceDTO.getId(), version, commitPart);
-            String path = FileUtil.multipartFileToFile(storeFilePath, files);
-
-            uploadChart(files, devopsHelmConfigDTO, repository);
-
-            // 解析chart包中的values文件
-            String values = getValues(storeFilePath, destFilePath, path);
-            LOGGER.warn(">>>>>>>>>>>>>>>>>>Before create or update helm version ,userId {}<<<<<<<<<<<<<<<<<<<", DetailsHelper.getUserDetails().getUserId());
-            AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
-            if (appServiceHelmVersionDTO == null) {
-                AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
-                appServiceVersionValueDTO.setValue(values);
-                appServiceVersionValueService.baseCreate(appServiceVersionValueDTO);
-
-                AppServiceVersionReadmeDTO appServiceVersionReadmeDTO = new AppServiceVersionReadmeDTO();
-                appServiceVersionReadmeDTO.setReadme(FileUtil.getReadme(destFilePath));
-                appServiceVersionReadmeMapper.insert(appServiceVersionReadmeDTO);
-
-                appServiceHelmVersionDTO = new AppServiceHelmVersionDTO();
-                appServiceHelmVersionDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
-                appServiceHelmVersionDTO.setValueId(appServiceVersionValueDTO.getId());
-                appServiceHelmVersionDTO.setReadmeValueId(appServiceVersionReadmeDTO.getId());
-                appServiceHelmVersionDTO.setHarborRepoType(repoType);
-                appServiceHelmVersionDTO.setHarborConfigId(TypeUtil.objToLong(harborConfigId));
-                appServiceHelmVersionDTO.setHelmConfigId(devopsHelmConfigDTO.getId());
-                appServiceHelmVersionDTO.setRepository(repository);
-                appServiceHelmVersionDTO.setImage(image);
-
-                appServiceHelmVersionService.create(appServiceHelmVersionDTO);
-            } else {
-                updateValues(appServiceHelmVersionDTO.getValueId(), values);
-            }
-
-            FileUtil.deleteDirectories(destFilePath, storeFilePath);
-            //生成版本成功后发送webhook json
-            sendNotificationService.sendWhenAppServiceVersion(appServiceVersionDTO, appServiceDTO, projectDTO);
 
             // 保存流水线chart版本信息
             if (gitlabPipelineId != null && StringUtils.isNotBlank(jobName)) {
@@ -248,6 +266,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                             appServiceVersionDTO.getId()));
                 }
             }
+            //生成版本成功后发送webhook json
+            sendNotificationService.sendWhenAppServiceVersion(appServiceVersionDTO, appServiceDTO, projectDTO);
             // 触发流水线自动部署任务
             producer.apply(
                     StartSagaBuilder
@@ -265,7 +285,131 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             }
             throw new DevopsCiInvalidException(e);
         }
+    }
 
+    private String getReplacedValues(String storeFilePath, String destFilePath, String path, String repositoryName) {
+        FileUtil.unTarGZ(path, destFilePath);
+
+        // 使用深度优先遍历查找文件, 避免查询到子chart的values值
+        File valuesFile = FileUtil.queryFileFromFilesBFS(new File(destFilePath), "values.yaml");
+
+        if (valuesFile == null) {
+            FileUtil.deleteDirectories(storeFilePath, destFilePath);
+            throw new CommonException(DEVOPS_FIND_VALUES_YAML_IN_CHART);
+        }
+
+        String values;
+        try (FileInputStream fis = new FileInputStream(valuesFile)) {
+            values = replaceRepository(FileUtil.replaceReturnString(fis, null), repositoryName);
+        } catch (Exception e) {
+            FileUtil.deleteDirectories(storeFilePath, destFilePath);
+            throw new CommonException(e);
+        }
+
+        try {
+            FileUtil.checkYamlFormat(values);
+        } catch (CommonException e) {
+            FileUtil.deleteDirectories(storeFilePath, destFilePath);
+            throw new CommonException(DEVOPS_VALUES_YAML_FORMAT_INVALID, e);
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(valuesFile))) {
+            bw.write(values);
+            bw.flush();
+        } catch (IOException e) {
+            throw new CommonException("error.write.new.values", e);
+        }
+        FileUtil.toTgz(destFilePath, path);
+
+        return values;
+    }
+
+    @NotNull
+    private AppServiceHelmVersionDTO saveHelmVersion(ProjectDTO projectDTO,
+                                                     Long appServiceId,
+                                                     Long appServiceVersionId,
+                                                     String version,
+                                                     String commit,
+                                                     MultipartFile files,
+                                                     @Nullable String image,
+                                       @Nullable Long harborConfigId,
+                                       @Nullable String repoType,
+                                       @Nullable Long helmRepoId) {
+        String tempFilePath = null;
+        try {
+            Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+            // 查询helm仓库配置id
+            DevopsHelmConfigDTO devopsHelmConfigDTO;
+
+            if (helmRepoId == null) {
+                devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceId, projectDTO.getId(), organization.getTenantId());
+            } else {
+                devopsHelmConfigDTO = devopsHelmConfigService.queryById(helmRepoId);
+            }
+
+            String repository;
+            if (ResourceLevel.PROJECT.value().equals(devopsHelmConfigDTO.getResourceType())) {
+                repository = devopsHelmConfigDTO.getUrl();
+            } else {
+                repository = devopsHelmConfigDTO.getUrl().endsWith("/") ? devopsHelmConfigDTO.getUrl() + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" : devopsHelmConfigDTO.getUrl() + "/" + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/";
+            }
+            // 取commit的一部分作为文件路径
+            String commitPart = commit == null ? "" : commit.substring(0, 8);
+            tempFilePath = String.format(TEMP_PATH_TEMPLATE, appServiceId, version, commitPart);
+            String chartFilePath = tempFilePath + File.separator + files.getOriginalFilename();
+
+            AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionId);
+            String values;
+            if (appServiceImageVersionDTO != null) {
+                // 应用服务版本中存在镜像版本，则替换chart包中repository信息
+                String imageName = appServiceImageVersionDTO.getImage();
+                String repositoryName = imageName.split(":")[0];
+                values = replaceAndGetValues(files, tempFilePath, chartFilePath, repositoryName);
+                if (harborConfigId == null) {
+                    harborConfigId = appServiceImageVersionDTO.getHarborConfigId();
+                    repoType = appServiceImageVersionDTO.getHarborRepoType();
+                    image = imageName;
+                }
+
+            } else {
+                values = replaceAndGetValues(files, tempFilePath, chartFilePath, null);
+            }
+            FileUtil.checkYamlFormat(values);
+
+            uploadChart(new File(chartFilePath), devopsHelmConfigDTO, repository);
+
+            AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionId);
+            if (appServiceHelmVersionDTO == null) {
+                AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
+                appServiceVersionValueDTO.setValue(values);
+                appServiceVersionValueService.baseCreate(appServiceVersionValueDTO);
+
+                AppServiceVersionReadmeDTO appServiceVersionReadmeDTO = new AppServiceVersionReadmeDTO();
+                appServiceVersionReadmeDTO.setReadme(FileUtil.getReadme(tempFilePath));
+                appServiceVersionReadmeMapper.insert(appServiceVersionReadmeDTO);
+
+                appServiceHelmVersionDTO = new AppServiceHelmVersionDTO();
+                appServiceHelmVersionDTO.setAppServiceVersionId(appServiceVersionId);
+                appServiceHelmVersionDTO.setValueId(appServiceVersionValueDTO.getId());
+                appServiceHelmVersionDTO.setReadmeValueId(appServiceVersionReadmeDTO.getId());
+                appServiceHelmVersionDTO.setHarborRepoType(repoType);
+
+                appServiceHelmVersionDTO.setHarborConfigId(harborConfigId);
+                appServiceHelmVersionDTO.setHelmConfigId(devopsHelmConfigDTO.getId());
+                appServiceHelmVersionDTO.setRepository(repository);
+                appServiceHelmVersionDTO.setImage(image);
+
+                appServiceHelmVersionService.create(appServiceHelmVersionDTO);
+            } else {
+                updateValues(appServiceHelmVersionDTO.getValueId(), values);
+            }
+            return appServiceHelmVersionDTO;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            FileUtil.deleteDirectories(tempFilePath);
+        }
     }
 
     private void setUserContext(Long gitlabPipelineId, Long gitlabUserId, AppServiceDTO appServiceDTO) {
@@ -311,25 +455,25 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     /**
      * 上传chart包到chartmuserm
      *
-     * @param files
+     * @param file
      * @param devopsHelmConfigDTO
      * @param repository
      */
-    private void uploadChart(MultipartFile files, DevopsHelmConfigDTO devopsHelmConfigDTO, String repository) {
+    private void uploadChart(File file, DevopsHelmConfigDTO devopsHelmConfigDTO, String repository) {
         MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
         ByteArrayResource fileAsResource = null;
         try {
-            byte[] bytes = files.getBytes();
+            byte[] bytes = FileUtils.readFileToByteArray(file);
 
             fileAsResource = new ByteArrayResource(bytes) {
                 @Override
                 public String getFilename() {
-                    return files.getOriginalFilename();
+                    return file.getName();
                 }
 
                 @Override
                 public long contentLength() {
-                    return files.getSize();
+                    return file.length();
                 }
             };
         } catch (IOException e) {
@@ -358,34 +502,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         } catch (RestClientException e) {
             throw new CommonException(e);
         }
-    }
-
-    private String getValues(String storeFilePath, String destFilePath, String path) {
-        FileUtil.unTarGZ(path, destFilePath);
-
-        // 使用深度优先遍历查找文件, 避免查询到子chart的values值
-        File valuesFile = FileUtil.queryFileFromFilesBFS(new File(destFilePath), "values.yaml");
-
-        if (valuesFile == null) {
-            FileUtil.deleteDirectories(storeFilePath, destFilePath);
-            throw new CommonException(DEVOPS_FIND_VALUES_YAML_IN_CHART);
-        }
-
-        String values;
-        try (FileInputStream fis = new FileInputStream(valuesFile)) {
-            values = FileUtil.replaceReturnString(fis, null);
-        } catch (IOException e) {
-            FileUtil.deleteDirectories(storeFilePath, destFilePath);
-            throw new CommonException(e);
-        }
-
-        try {
-            FileUtil.checkYamlFormat(values);
-        } catch (CommonException e) {
-            FileUtil.deleteDirectories(storeFilePath, destFilePath);
-            throw new CommonException(DEVOPS_VALUES_YAML_FORMAT_INVALID, e);
-        }
-        return values;
     }
 
     private void updateValues(Long oldValuesId, String values) {
@@ -736,11 +852,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
         appServiceVersionDTO.setAppServiceId(appServiceId);
         appServiceVersionDTO.setVersion(version);
-        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
-        if (appServiceVersionDTOS.isEmpty()) {
-            return null;
-        }
-        return appServiceVersionDTOS.get(0);
+        return appServiceVersionMapper.selectOne(appServiceVersionDTO);
     }
 
     @Override
@@ -880,8 +992,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         checkVersion(appServiceId, versionIds);
 
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
-        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<HarborImageTagDTO> deleteImagetags = new ArrayList<>();
         List<ChartTagVO> deleteChartTags = new ArrayList<>();
         versionIds.forEach(id -> {
@@ -1077,6 +1187,69 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, Set<String> versions) {
         return appServiceVersionMapper.queryLatestByAppServiceIdVersionType(appServiceId, versions);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AppServiceVersionDTO saveHelmVersion(Long projectId,
+                                                String code,
+                                                String version,
+                                                String commit,
+                                                MultipartFile files) {
+        AppServiceDTO appServiceDTO = applicationService.baseQueryByCode(code, projectId);
+        Long appServiceId = appServiceDTO.getId();
+        // 创建应用服务版本
+        AppServiceVersionDTO appServiceVersionDTO = baseQueryByAppServiceIdAndVersion(appServiceId, version);
+        if (appServiceVersionDTO == null) {
+            appServiceVersionDTO = create(appServiceId, version, commit, null);
+        }
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+        saveHelmVersion(projectDTO,
+                appServiceDTO.getId(),
+                appServiceVersionDTO.getId(),
+                version,
+                commit,
+                files,
+                null,
+                null,
+                null,
+                null);
+
+        // 创建helm版本
+        return appServiceVersionDTO;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AppServiceVersionDTO saveImageVersion(Long projectId,
+                                                 String code,
+                                                 String version,
+                                                 String commit,
+                                                 Long harborConfigId,
+                                                 String repoType,
+                                                 String image) {
+        AppServiceDTO appServiceDTO = applicationService.baseQueryByCode(code, projectId);
+        Long appServiceId = appServiceDTO.getId();
+        // 创建应用服务版本
+        AppServiceVersionDTO appServiceVersionDTO = baseQueryByAppServiceIdAndVersion(appServiceId, version);
+        if (appServiceVersionDTO == null) {
+            appServiceVersionDTO = create(appServiceId, version, commit, null);
+        }
+        AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+        if (appServiceImageVersionDTO == null) {
+            appServiceImageVersionService.create(appServiceVersionDTO.getId(),
+                    harborConfigId,
+                    repoType,
+                    image);
+        } else {
+            appServiceImageVersionDTO.setHarborConfigId(harborConfigId);
+            appServiceImageVersionDTO.setHarborRepoType(repoType);
+            appServiceImageVersionDTO.setImage(image);
+            appServiceImageVersionService.baseUpdate(appServiceImageVersionDTO);
+        }
+
+        // 创建helm版本
+        return appServiceVersionDTO;
     }
 
     private Set<AppServiceVersionDTO> checkVersion(Long appServiceId, Set<Long> versionIds) {

@@ -40,4 +40,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_service_helm_version.groovy')
         addUniqueConstraint(tableName: 'devops_app_service_helm_version',
                 constraintName: 'devops_app_service_helm_version_u1', columnNames: 'app_service_version_id')
     }
+    changeSet(author: 'wanghao', id: '2023-03-10-updateDataType') {
+        dropNotNullConstraint(tableName: 'devops_app_service_helm_version', columnName: 'harbor_repo_type', columnDataType: 'VARCHAR(64)')
+        dropNotNullConstraint(tableName: 'devops_app_service_helm_version', columnName: 'harbor_config_id', columnDataType: 'BIGINT UNSIGNED')
+        dropNotNullConstraint(tableName: 'devops_app_service_helm_version', columnName: 'image', columnDataType: 'VARCHAR(255)')
+    }
 }

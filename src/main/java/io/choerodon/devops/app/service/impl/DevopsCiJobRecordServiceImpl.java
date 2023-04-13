@@ -155,7 +155,9 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
                        Long appServiceId) {
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
-        Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
+        Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream()
+                .filter(Boolean.TRUE::equals)
+                .collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
 
         for (JobDTO jobDTO : jobDTOS) {
             DevopsCiJobDTO devopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(jobDTO.getName(), jobMap);
@@ -205,12 +207,6 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
             recordDTO.setType(existDevopsCiJobDTO.getType());
             recordDTO.setGroupType(existDevopsCiJobDTO.getGroupType());
-//            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO();
-//            devopsCiMavenSettingsDTO.setCiJobId(existDevopsCiJobDTO.getId());
-//            DevopsCiMavenSettingsDTO ciMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);
-//            if (!Objects.isNull(ciMavenSettingsDTO)) {
-//                recordDTO.setMavenSettingId(ciMavenSettingsDTO.getId());
-//            }
         }
         baseCreate(recordDTO);
         if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {

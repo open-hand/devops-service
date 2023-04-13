@@ -45,5 +45,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_host_deploy_info.groovy') {
             column(name: "image_job_name", type: "VARCHAR(64)", remarks: "关联镜像构建任务名称", afterColumn: "post_command")
         }
     }
+    changeSet(author: 'wanghao', id: '2023-03-28-drop-create-table') {
+        dropTable(tableName: "devops_cd_host_deploy_info")
+    }
 
 }

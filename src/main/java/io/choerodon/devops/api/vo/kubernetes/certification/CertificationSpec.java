@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import io.choerodon.devops.infra.enums.CertificationType;
 import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.devops.infra.enums.CertificationType;
 
 /**
  * Created by n!Ck
@@ -46,7 +47,7 @@ public class CertificationSpec {
         if (type.equals(CertificationType.REQUEST.getType())) {
             issuerRef.put("name", LETSENCRYPT_PROD);
             issuerRef.put("kind", CLUSTER_ISSUER);
-        } else if (type.equals(CertificationType.UPLOAD.getType())) {
+        } else if (type.equals(CertificationType.UPLOAD.getType()) || type.equals(CertificationType.CHOOSE.getType())) {
             issuerRef.put("name", LOCALHOST);
             issuerRef.put("kind", CLUSTER_ISSUER);
         }

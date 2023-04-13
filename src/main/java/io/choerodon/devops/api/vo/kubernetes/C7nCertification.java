@@ -26,6 +26,9 @@ public class C7nCertification {
     @ApiModelProperty("对象配置内容")
     private CertificationSpec spec;
 
+    public C7nCertification() {
+    }
+
     public C7nCertification(String apiVersion) {
         this.apiVersion = apiVersion;
         this.kind = "Certificate";

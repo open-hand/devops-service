@@ -41,6 +41,9 @@ public class DevopsCiJobDTO extends AuditDomain {
     @ApiModelProperty("job的并发数")
     private Integer parallel;
 
+    @Column(name = "is_enabled")
+    private Boolean enabled;
+
     /**
      * {@link io.choerodon.devops.infra.enums.CiTriggerType}
      */
@@ -65,6 +68,14 @@ public class DevopsCiJobDTO extends AuditDomain {
     private Integer startIn;
     @ApiModelProperty("任务tags")
     private String tags;
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public String getTags() {
         return tags;

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.task;
 
-import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.*;
+import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA;
+import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.FIX_PIPELINE_SONAR_DATA;
 
 import java.util.Map;
 
@@ -28,86 +29,6 @@ public class DevopsFixDataTask {
     private DevopsCheckLogService devopsCheckLogService;
 
 
-    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON,
-            maxRetryCount = 3,
-            code = FIX_APP_CENTER_DATA,
-            description = "修复应用中心数据")
-    @TimedTask(name = FIX_APP_CENTER_DATA, description = "修复应用中心数据", oneExecution = true,
-            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
-    public void fixAppCenterData(Map<String, Object> map) {
-        try {
-            devopsCheckLogService.checkLog(FIX_APP_CENTER_DATA);
-        } catch (Exception e) {
-            logger.error("devops.fix.data", e);
-        }
-    }
-
-    /**
-     * v1.2.0 执行此次任务需要保证，1.2.0-alpha版本的数据修复任务执行成功才行。即1.1版本必须先升级1.2.0-alpha版本，在升级1.2版本
-     *
-     * @param map
-     */
-    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_PIPELINE_DATA, description = "修复流水线数据")
-    @TimedTask(name = FIX_PIPELINE_DATA, description = "修复流水线数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
-    public void fixPipelineData(Map<String, Object> map) {
-        try {
-            devopsCheckLogService.checkLog(FIX_PIPELINE_DATA);
-        } catch (Exception e) {
-            logger.error("devops.fix.data", e);
-        }
-    }
-
-    /**
-     * 迁移helm仓库的数据到新的表，以及应用版本与helm仓库的关联关系
-     *
-     * @param map
-     */
-    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_HELM_REPO_DATA, description = "迁移helm仓库数据")
-    @TimedTask(name = FIX_HELM_REPO_DATA, description = "迁移helm仓库数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
-    public void fixHelmRepoData(Map<String, Object> map) {
-        try {
-            devopsCheckLogService.checkLog(FIX_HELM_REPO_DATA);
-        } catch (Exception e) {
-            logger.error("devops.fix.data", e);
-        }
-    }
-
-    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_HELM_VERSION_DATA, description = "迁移应用服务版本中chart版本数据")
-    @TimedTask(name = FIX_HELM_VERSION_DATA, description = "迁移应用服务版本中chart版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
-    public void fixHelmVersionData(Map<String, Object> map) {
-        try {
-            devopsCheckLogService.checkLog(FIX_HELM_VERSION_DATA);
-        } catch (Exception e) {
-            logger.error("devops.fix.data", e);
-        }
-    }
-
-
-    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_HELM_IMAGE_VERSION_OF_NULL_DATA, description = "迁移遗漏的应用版本数据")
-    @TimedTask(name = FIX_HELM_IMAGE_VERSION_OF_NULL_DATA, description = "迁移遗漏的应用版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
-    public void fixRemainHelmVersionData(Map<String, Object> map) {
-        try {
-            devopsCheckLogService.checkLog(FIX_HELM_IMAGE_VERSION_OF_NULL_DATA);
-        } catch (Exception e) {
-            logger.error("devops.fix.data", e);
-        }
-    }
-
-    /**
-     * 迁移应用服务版本中镜像版本数据
-     *
-     * @param map
-     */
-    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_IMAGE_VERSION_DATA, description = "迁移应用服务版本中镜像版本数据")
-    @TimedTask(name = FIX_IMAGE_VERSION_DATA, description = "迁移应用服务版本中镜像版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
-    public void fixImageVersionData(Map<String, Object> map) {
-        try {
-            devopsCheckLogService.checkLog(FIX_IMAGE_VERSION_DATA);
-        } catch (Exception e) {
-            logger.error("devops.fix.data", e);
-        }
-    }
-
     /**
      * 删除devops_env_resource_detail脏数据
      *
@@ -127,20 +48,15 @@ public class DevopsFixDataTask {
         }
     }
 
-    /**
-     * cicd融合迁移cd数据
-     *
-     * @param map
-     */
-    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = MIGRATION_CD_PIPELINE_DATE, description = "cicd融合迁移cd数据")
-    @TimedTask(name = MIGRATION_CD_PIPELINE_DATE,
-            description = "cicd融合迁移cd数据",
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_PIPELINE_SONAR_DATA, description = "修复流水线代码检查脚本")
+    @TimedTask(name = FIX_PIPELINE_SONAR_DATA,
+            description = "修复流水线代码检查脚本",
             repeatInterval = 1,
             repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS,
             params = {})
-    public void migrationCdPipelineDate(Map<String, Object> map) {
+    public void fixPipelineSonarData(Map<String, Object> map) {
         try {
-            devopsCheckLogService.checkLog(MIGRATION_CD_PIPELINE_DATE);
+            devopsCheckLogService.checkLog(FIX_PIPELINE_SONAR_DATA);
         } catch (Exception e) {
             logger.error("devops.fix.data", e);
         }

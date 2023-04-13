@@ -159,7 +159,6 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
-//        checkGitlabUser(gitlabUserReqDTO);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
         if (userAttrDTO != null) {
             gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),

@@ -30,8 +30,6 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/v1/projects/{project_id}/service")
 public class DevopsServiceController {
 
-    private static final String ERROR_APP_K8S_SERVICE_QUERY = "devops.app.k8s.service.query";
-
     @Autowired
     private DevopsServiceService devopsServiceService;
 

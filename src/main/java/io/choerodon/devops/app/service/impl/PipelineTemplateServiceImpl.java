@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.api.vo.template.CiTemplateStageVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +12,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.PipelineTemplateCompositeVO;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
+import io.choerodon.devops.api.vo.template.CiTemplateStageVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
 import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
@@ -196,6 +196,7 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
         ciCdPipelineVO.setName(pipelineTemplateDTO.getName());
         ciCdPipelineVO.setVersionName(pipelineTemplateDTO.getVersionName());
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOList);
+        ciCdPipelineVO.setInterruptible(pipelineTemplateDTO.getInterruptible());
 
         return ciCdPipelineVO;
     }

@@ -13,22 +13,24 @@
 
     <select id="queryResource" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
         SELECT *
-        FROM devops_env_resource dir where 1 = 1
-        <if test="instanceId != null">
-            AND dir.instance_id = #{instanceId}
-        </if>
-        <if test="commandId != null">
-            AND dir.command_id = #{commandId}
-        </if>
-        <if test="envId != null">
-            AND dir.env_id = #{envId}
-        </if>
-        <if test="kind != null">
-            AND dir.kind = #{kind}
-        </if>
-        <if test="name != null">
-            AND dir.name = #{name}
-        </if>
+        FROM devops_env_resource dir
+        <where>
+            <if test="instanceId != null">
+                AND dir.instance_id = #{instanceId}
+            </if>
+            <if test="commandId != null">
+                AND dir.command_id = #{commandId}
+            </if>
+            <if test="envId != null">
+                AND dir.env_id = #{envId}
+            </if>
+            <if test="kind != null">
+                AND dir.kind = #{kind}
+            </if>
+            <if test="name != null">
+                AND dir.name = #{name}
+            </if>
+        </where>
     </select>
 
 

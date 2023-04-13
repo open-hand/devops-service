@@ -11,8 +11,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -51,7 +49,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployAppCenterServiceImpl.class);
 
     private static final String POD_RUNNING_STATUS = "Running";
 

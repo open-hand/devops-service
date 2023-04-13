@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -53,8 +54,6 @@ public class AppServiceInstanceController {
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
-    //    @Autowired
-//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private AppServiceInstanceValidator appServiceInstanceValidator;
 
@@ -908,18 +907,6 @@ public class AppServiceInstanceController {
         return new ResponseEntity<>(appServiceInstanceService.batchDeployment(projectId, appServiceDeployVOs), HttpStatus.OK);
     }
 
-//    @ApiOperation("查询引用了实例作为替换对象的流水线信息")
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @GetMapping("/{instance_id}/pipeline_reference")
-//    public ResponseEntity<List<PipelineInstanceReferenceVO>> queryPipelineReference(
-//            @ApiParam(value = "项目ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @Encrypt
-//            @ApiParam(value = "实例ID", required = true)
-//            @PathVariable(value = "instance_id") Long instanceId) {
-//        return ResponseEntity.ok().body(appServiceInstanceService.queryInstancePipelineReference(projectId, instanceId));
-//    }
-
     @ApiOperation("查询服务下在环境下的实例列表")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/list_by_service_and_env")
@@ -933,5 +920,52 @@ public class AppServiceInstanceController {
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId) {
         return ResponseEntity.ok(appServiceInstanceService.listByServiceAndEnv(projectId, appServiceId, envId, true));
+    }
+
+    @ApiOperation("删除集群中对应的job资源，以停止helm hook操作")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @DeleteMapping("/{instance_id}/delete_job")
+    public ResponseEntity<Void> deleteHelmHookJob(@ApiParam(value = "项目ID", required = true)
+                                                      @PathVariable(value = "project_id") Long projectId,
+                                                  @ApiParam(value = "应用实例id", required = true)
+                                                      @Encrypt @PathVariable(value = "instance_id") Long instanceId,
+                                                  @ApiParam(value = "操作id", required = true)
+                                                      @Encrypt @RequestParam(value = "command_id") Long commandId,
+                                                  @ApiParam(value = "环境id", required = true)
+                                                      @Encrypt @RequestParam(value = "env_id") Long envId,
+                                                  @ApiParam(value = "job名称", required = true)
+                                                      @RequestParam(value = "job_name") String jobName) {
+        appServiceInstanceService.deleteHelmHookJob(projectId, instanceId, envId, commandId, jobName);
+        return ResponseEntity.noContent().build();
+    }
+
+    @ApiOperation(value = "同步values到实例部署")
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @PostMapping("/sync_value_deploy")
+    public ResponseEntity<Void> syncValueToDeploy(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "更新信息", required = true)
+            @RequestBody @Valid AppServiceSyncValueDeployVO syncValueDeployVO) {
+        appServiceInstanceService.syncValueToDeploy(projectId, syncValueDeployVO);
+        return Results.success();
+    }
+
+    @ApiOperation(value = "根据valueId查询需要同步实例的列表")
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @GetMapping("/list_instance_by_value_id")
+    public ResponseEntity<List<AppServiceInstanceVO>> listInstanceByValueId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "配置ID", required = true)
+            @Encrypt
+            @RequestParam(value = "value_id") Long valueId,
+            @ApiParam(value = "筛选参数", required = false)
+            @RequestParam(value = "params", required = false) String params) {
+        return Results.success(appServiceInstanceService.listInstanceByValueId(projectId, valueId, params));
     }
 }

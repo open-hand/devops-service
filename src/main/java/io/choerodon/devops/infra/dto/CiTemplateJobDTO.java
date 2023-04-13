@@ -100,6 +100,7 @@ public class CiTemplateJobDTO extends AuditDomain {
      */
     @ApiModelProperty("触发类型")
     private String triggerType;
+
     public String getTags() {
         return tags;
     }

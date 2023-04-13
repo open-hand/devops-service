@@ -53,6 +53,8 @@ public interface AgentCommandService {
 
     void operatePodCount(String kind, String name, String namespace, Long clusterId, Long count, String commandId);
 
+    void deleteHelmHookJob(String name, String namespace, Long clusterId);
+
     void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO);
 
     void gitopsSyncCommandStatus(Long clusterId, String envCode, Long envId, List<Command> commands);
@@ -110,4 +112,6 @@ public interface AgentCommandService {
      * @param configVO  配置信息
      */
     void sendChartMuseumAuthentication(Long clusterId, ConfigVO configVO);
+
+    void sendRestartAgent(Long clusterId);
 }

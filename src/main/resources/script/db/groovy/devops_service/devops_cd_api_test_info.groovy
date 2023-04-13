@@ -25,4 +25,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_api_test_info.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'wanghao', id: '2023-03-28-drop-create-table') {
+        dropTable(tableName: "devops_cd_api_test_info")
+    }
 }

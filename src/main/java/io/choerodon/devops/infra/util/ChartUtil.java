@@ -84,7 +84,7 @@ public class ChartUtil {
         // 判断响应结果
         if (!response.isSuccessful()) {
             // 报409，可能是chart包已经存在，而chart museum又设置为不允许覆盖，这种情况认为是成功的
-            // 报错信息形如:  {"error":"test/test/code-i-0.1.0.tgz already exists"}
+            // 报错信息形如:{"error":"test/test/code-i-0.1.0.tgz already exists"}
             if (response.code() == 409) {
                 LOGGER.info("409 for uploading chart: the repo: {}, orgCode {}, proCode {}, file name {}, username {}, password is null: {}", repository, organizationCode, projectCode, file.getName(), username, password == null);
                 return;
@@ -138,20 +138,6 @@ public class ChartUtil {
         if (!exchange.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("devops.delete.chart");
         }
-
-//        ConfigurationProperties configurationProperties = new ConfigurationProperties();
-//        configurationProperties.setType(CHART);
-//        configurationProperties.setUsername(devopsHelmConfigDTO.getUsername());
-//        configurationProperties.setPassword(devopsHelmConfigDTO.getPassword());
-//        configurationProperties.setBaseUrl(chartTagVO.getRepository().split(chartTagVO.getOrgCode() + "/" + chartTagVO.getProjectCode())[0]);
-//        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-//        ChartClient chartClient = retrofit.create(ChartClient.class);
-//        Call<ChartDeleteResponseVO> call = chartClient.deleteChartVersion(chartTagVO.getOrgCode(), chartTagVO.getProjectCode(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
-//        try {
-//            call.execute();
-//        } catch (Exception e) {
-//            LOGGER.error("devops.delete.chart。repository: {}, chartName：{}，chartVersion：{} ", chartTagVO.getRepository(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
-//        }
     }
 
     public void downloadChart(AppServiceVersionDTO appServiceVersionDTO, Tenant organizationDTO, ProjectDTO projectDTO, AppServiceDTO applicationDTO, String destpath) {

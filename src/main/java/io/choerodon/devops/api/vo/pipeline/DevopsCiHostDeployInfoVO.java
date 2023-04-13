@@ -15,6 +15,8 @@ public class DevopsCiHostDeployInfoVO {
     @Encrypt
     private Long hostId;
 
+    private String hostName;
+
     private String deployType;  // 部署类型：新建实例 create 替换实例 update
 
     @Encrypt
@@ -70,6 +72,14 @@ public class DevopsCiHostDeployInfoVO {
     private String dockerComposeRunCommand;
 
     private String value;
+
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
 
     public String getValue() {
         return value;

@@ -8,6 +8,7 @@
         <result property="triggeredPipelineProjectId" column="triggered_pipeline_project_id"/>
         <result property="refName" column="ref_name"/>
         <result property="token" column="token"/>
+        <result property="triggeredPipelineName" column="triggered_pipeline_name"/>
         <result property="triggeredPipelineGitlabProjectId" column="triggered_pipeline_gitlab_project_id"/>
         <collection property="devopsCiPipelineVariables"
                     ofType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigVariableDTO">
@@ -45,6 +46,7 @@
       dcptc.pipeline_id AS pipeline_id,
       dcptc.triggered_pipeline_project_id AS triggered_pipeline_project_id,
       dcptc.triggered_pipeline_id AS triggered_pipeline_id,
+      dcp.name AS triggered_pipeline_name,
       dcptc.triggered_pipeline_gitlab_project_id AS triggered_pipeline_gitlab_project_id,
       dcptc.pipeline_trigger_id AS pipeline_trigger_id,
       dcptc.ref_name AS ref_name,
@@ -55,6 +57,7 @@
       dcptcv.variable_value AS variable_value
       FROM devops_ci_pipeline_trigger_config dcptc
       LEFT JOIN devops_ci_pipeline_trigger_config_variable dcptcv ON dcptcv.pipeline_trigger_config_id = dcptc.id
+      JOIN devops_cicd_pipeline dcp ON dcp.id=dcptc.triggered_pipeline_id
       WHERE dcptc.id = #{configId}
   </select>
 </mapper>

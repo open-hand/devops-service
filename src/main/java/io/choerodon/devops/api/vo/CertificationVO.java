@@ -21,8 +21,10 @@ public class CertificationVO {
     private String certName;
     @ApiModelProperty("泛域名")
     private String commonName;
-    @ApiModelProperty("绑定的域名")
+    @ApiModelProperty("绑定的域名,如果证书类型是选择证书，将会被设置成去掉泛域名后的前缀部分")
     private List<String> domains;
+    @ApiModelProperty("绑定的完整域名")
+    private List<String> fullDomains;
     @ApiModelProperty("证书类型")
     private String type;
     @ApiModelProperty("证书状态")
@@ -46,7 +48,86 @@ public class CertificationVO {
     private String error;
     @ApiModelProperty("是否跳过权限校验")
     private Boolean skipCheckProjectPermission;
+    private String certValue;
+    private String keyValue;
+    @Encrypt
+    private Long certId;
 
+    private List<CertificationNotifyObject> notifyObjects;
+
+    private String notifyObjectsJsonStr;
+
+    @ApiModelProperty("是否设置到期前通知")
+    private Boolean expireNotice;
+
+    @ApiModelProperty("到期提前多长时间通知")
+    private Integer advanceDays;
+
+    private Long objectVersionNumber;
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Long getCertId() {
+        return certId;
+    }
+
+    public void setCertId(Long certId) {
+        this.certId = certId;
+    }
+
+    public String getKeyValue() {
+        return keyValue;
+    }
+
+    public void setKeyValue(String keyValue) {
+        this.keyValue = keyValue;
+    }
+
+    public String getCertValue() {
+        return certValue;
+    }
+
+    public void setCertValue(String certValue) {
+        this.certValue = certValue;
+    }
+
+    public List<CertificationNotifyObject> getNotifyObjects() {
+        return notifyObjects;
+    }
+
+    public void setNotifyObjects(List<CertificationNotifyObject> notifyObjects) {
+        this.notifyObjects = notifyObjects;
+    }
+
+    public String getNotifyObjectsJsonStr() {
+        return notifyObjectsJsonStr;
+    }
+
+    public void setNotifyObjectsJsonStr(String notifyObjectsJsonStr) {
+        this.notifyObjectsJsonStr = notifyObjectsJsonStr;
+    }
+
+    public Boolean getExpireNotice() {
+        return expireNotice;
+    }
+
+    public void setExpireNotice(Boolean expireNotice) {
+        this.expireNotice = expireNotice;
+    }
+
+    public Integer getAdvanceDays() {
+        return advanceDays;
+    }
+
+    public void setAdvanceDays(Integer advanceDays) {
+        this.advanceDays = advanceDays;
+    }
 
     public Long getId() {
         return id;
@@ -174,5 +255,13 @@ public class CertificationVO {
 
     public void setOrganizationId(Long organizationId) {
         this.organizationId = organizationId;
+    }
+
+    public List<String> getFullDomains() {
+        return fullDomains;
+    }
+
+    public void setFullDomains(List<String> fullDomains) {
+        this.fullDomains = fullDomains;
     }
 }
