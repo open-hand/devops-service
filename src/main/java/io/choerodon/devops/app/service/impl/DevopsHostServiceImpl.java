@@ -334,9 +334,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
         List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
         Map<Long, DevopsHostUserPermissionDTO> finalHostPermissionMap = hostPermissionMap;
-        devopsHostVOList = devopsHostVOList.stream()
-                .peek(h -> h.setHostStatus(updatedClusterList.contains(h.getId()) ? DevopsHostStatus.CONNECTED.getValue() : DevopsHostStatus.DISCONNECT.getValue()))
-                .sorted(Comparator.comparing(DevopsHostVO::getHostStatus))
+        devopsHostVOList = devopsHostVOList.stream().peek(h -> h.setHostStatus(updatedClusterList.contains(h.getId()) ? DevopsHostStatus.CONNECTED.getValue() : DevopsHostStatus.DISCONNECT.getValue())).sorted(Comparator.comparing(DevopsHostVO::getHostStatus).thenComparing(DevopsHostVO::getId, Comparator.reverseOrder()))
                 .peek(h -> {
                     // 如果是项目所有者、root、创建者，设置administrator标签
                     if (projectOwnerOrRoot || h.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId())) {
