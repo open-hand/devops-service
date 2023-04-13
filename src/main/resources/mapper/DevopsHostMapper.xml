@@ -67,6 +67,7 @@
                         OR dh.host_ip LIKE CONCAT(CONCAT('%', #{searchParam}), '%'))
             </if>
         </where>
+        ORDER BY id DESC
         )
     </select>
     <select id="selectPipelineByHostId" resultType="io.choerodon.devops.infra.dto.CiCdPipelineDTO">
