@@ -23,6 +23,7 @@ public class DevopsCiPipelineAdditionalValidator {
 
     private static final String ERROR_STAGES_EMPTY = "devops.stages.empty";
     private static final String ERROR_CI_JOB_IS_EMPTY = "devops.ci.job.is.empty";
+    private static final String DEVOPS_CI_JOB_IS_ALL_DISABLE = "devops.ci.job.is.all.disable";
     private static final String ERROR_PIPELINE_RELATED_BRANCH_EMPTY = "devops.pipeline.related.branch.empty";
     private static final String ERROR_JOB_PARALLEL_SIZE_RANGE = "devops.job.parallel.size.range";
     private static final String ERROR_PIPELINE_RELATED_BRANCH_SIZE_INVALID = "devops.pipeline.related.branch.size.invalid";
@@ -55,6 +56,13 @@ public class DevopsCiPipelineAdditionalValidator {
 
         List<String> jobNames = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
+
+        if (ciCdPipelineVO.getDevopsCiStageVOS()
+                .stream()
+                .flatMap(stage -> stage.getJobList().stream())
+                .noneMatch(job -> Boolean.TRUE.equals(job.getEnabled() || CiJobTypeEnum.CUSTOM.value().equals(job.getType())))) {
+            throw new CommonException(DEVOPS_CI_JOB_IS_ALL_DISABLE);
+        }
 
         ciCdPipelineVO.getDevopsCiStageVOS()
                 .stream()

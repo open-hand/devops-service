@@ -129,6 +129,15 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
         checkPipelineCategory(devopsPipelineTemplateVO);
         checkStageName(devopsPipelineTemplateVO);
         pipelineTemplateUtils.checkAccess(sourceId, sourceType);
+        // 流水线任务至少有一个是启用的
+        if (devopsPipelineTemplateVO
+                .getTemplateStageVOS()
+                .stream()
+                .flatMap(stage -> stage.getCiTemplateJobVOList().stream())
+                .noneMatch(job -> Boolean.TRUE.equals(job.getEnabled()))) {
+            throw new CommonException("devops.job.is.all.disable");
+        }
+
 
         //1.插入流水线模板
         CiTemplatePipelineDTO ciTemplatePipelineDTO = baseInsertPipelineTemplate(sourceId, devopsPipelineTemplateVO);
