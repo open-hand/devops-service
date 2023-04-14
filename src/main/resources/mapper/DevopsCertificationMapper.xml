@@ -199,4 +199,16 @@
         SET advance_days = NULL
         WHERE id = #{id}
     </update>
+
+    <select id="queryCountWithNullType" resultType="int">
+        SELECT count(*)
+        FROM devops_certification
+        WHERE type IS NULL
+    </select>
+
+    <select id="listWithNullType" resultMap="certificationDTOWithNoticeObjects">
+        SELECT id, org_cert_id, certification_file_id
+        FROM devops_certification
+        WHERE type IS NULL
+    </select>
 </mapper>

@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.task;
 
-import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA;
-import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.FIX_PIPELINE_SONAR_DATA;
+import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.*;
 
 import java.util.Map;
 
@@ -62,5 +61,19 @@ public class DevopsFixDataTask {
         }
     }
 
+
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_CERTIFICATE_TYPE, description = "修复证书类型")
+    @TimedTask(name = FIX_CERTIFICATE_TYPE,
+            description = "修复证书类型",
+            repeatInterval = 1,
+            repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS,
+            params = {})
+    public void fixCertificateType(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(FIX_CERTIFICATE_TYPE);
+        } catch (Exception e) {
+            logger.error("devops.fix.data", e);
+        }
+    }
 
 }

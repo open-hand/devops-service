@@ -117,4 +117,8 @@ public interface CertificationService {
     int updateStatusIfOperating(Long certId, CertificationStatus certificationStatus);
 
     void findAndSendCertificationExpireNotice();
+
+    int queryCountWithNullType();
+
+    List<CertificationDTO> listWithNullType();
 }

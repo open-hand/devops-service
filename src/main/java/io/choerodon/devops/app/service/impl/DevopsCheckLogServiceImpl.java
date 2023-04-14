@@ -12,14 +12,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
+import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CiTemplateStageDTO;
 import io.choerodon.devops.infra.dto.CiTemplateStageJobRelDTO;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
+import io.choerodon.devops.infra.enums.CertificationType;
 import io.choerodon.devops.infra.mapper.CiTemplateStageBusMapper;
 import io.choerodon.devops.infra.mapper.CiTemplateStageJobRelBusMapper;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiStepMapper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
 @Service
@@ -34,6 +40,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public static final String FIX_PIPELINE_SONAR_DATA = "fix_pipeline_sonar_data";
     public static final String FIX_IMAGE_VERSION_DATA = "fixImageVersionData";
     public static final String MIGRATION_CD_PIPELINE_DATE = "migrationCdPipelineDate";
+    public static final String FIX_CERTIFICATE_TYPE = "fix_certificate_type";
 
     public static final String DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA = "deleteDevopsEnvResourceDetailData";
 
@@ -45,13 +52,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCiStepMapper devopsCiStepMapper;
 
 
-
-
     @Autowired
     private CiTemplateStageBusMapper ciTemplateStageBusMapper;
 
     @Autowired
     private CiTemplateStageJobRelBusMapper ciTemplateStageJobRelBusMapper;
+    @Autowired
+    private CertificationService certificationService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -68,6 +75,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             case FIX_PIPELINE_SONAR_DATA:
                 fixPipelineSonarData();
                 break;
+            case FIX_CERTIFICATE_TYPE:
+                fixCertificateType();
+                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -75,6 +85,33 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    private void fixCertificateType() {
+        int count = certificationService.queryCountWithNullType();
+        int pageSize = 500;
+        int total = (count + pageSize - 1) / pageSize;
+        int pageNumber = 0;
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>start fix certification type>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+        do {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>certification type{}/{} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", pageNumber, total);
+            PageRequest pageRequest = new PageRequest();
+            pageRequest.setPage(pageNumber);
+            pageRequest.setSize(pageSize);
+            Page<CertificationDTO> certificationDTOPage = PageHelper.doPage(pageRequest, () -> certificationService.listWithNullType());
+            certificationDTOPage.getContent().forEach(c -> {
+                if (c.getOrgCertId() != null && c.getCertificationFileId() != null) {
+                    c.setType(CertificationType.CHOOSE.getType());
+                } else if (c.getOrgCertId() == null && c.getCertificationFileId() != null) {
+                    c.setType(CertificationType.UPLOAD.getType());
+                } else {
+                    c.setType(CertificationType.REQUEST.getType());
+                }
+                certificationService.baseUpdate(c);
+            });
+            pageNumber++;
+        } while (pageNumber <= total);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix certification type>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
     }
 
     private void fixPipelineSonarData() {
