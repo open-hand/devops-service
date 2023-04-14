@@ -94,17 +94,17 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         int pageNumber = 0;
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>start fix certification type>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
         do {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>certification type{}/{} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", pageNumber, total);
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>certification type {}/{} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", pageNumber, total);
             PageRequest pageRequest = new PageRequest();
             pageRequest.setPage(pageNumber);
             pageRequest.setSize(pageSize);
             Page<CertificationDTO> certificationDTOPage = PageHelper.doPage(pageRequest, () -> certificationService.listWithNullType());
             certificationDTOPage.getContent().forEach(c -> {
-                if (c.getOrgCertId() != null && c.getCertificationFileId() != null) {
+                if (c.getOrgCertId() != null && c.getCertificationFileId() != null && c.getEnvId() != null) {
                     c.setType(CertificationType.CHOOSE.getType());
-                } else if (c.getOrgCertId() == null && c.getCertificationFileId() != null) {
+                } else if (c.getOrgCertId() == null && c.getCertificationFileId() != null && c.getEnvId() != null) {
                     c.setType(CertificationType.UPLOAD.getType());
-                } else {
+                } else if (c.getOrgCertId() == null && c.getCertificationFileId() == null && c.getEnvId() != null) {
                     c.setType(CertificationType.REQUEST.getType());
                 }
                 certificationService.baseUpdate(c);
