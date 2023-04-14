@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StreamUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -209,9 +210,8 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
         //设置下载文件名
         headers.add("Content-Disposition", "attachment;filename=\"" + filename + "\"");
 
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileFolder + "/" + filename);
         try {
-            byte[] bytes = IOUtils.toByteArray(inputStream);
+            byte[] bytes = StreamUtils.copyToByteArray(this.getClass().getClassLoader().getResourceAsStream(fileFolder + "/" + filename));
             return ResponseEntity.ok().headers(headers).body(bytes);
         } catch (IOException e) {
             throw new RuntimeException(e);
