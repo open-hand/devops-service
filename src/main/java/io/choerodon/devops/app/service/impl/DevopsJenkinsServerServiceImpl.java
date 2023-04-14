@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -205,16 +203,15 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
     @Override
     public ResponseEntity<byte[]> downloadPlugin() {
         String filename = "choerodon-integration-" + version + ".hpi";
-//        String fileFolder = "jenkins";
+        String fileFolder = "jenkins";
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("charset", "utf-8");
         //设置下载文件名
         headers.add("Content-Disposition", "attachment;filename=\"" + filename + "\"");
         headers.add("Content-Type", "application/octet-stream");
-        File file = new File("/opt/choerodon/" + filename);
-        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            byte[] bytes = StreamUtils.copyToByteArray(fileInputStream);
+        try (InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(fileFolder + "/" + filename)) {
+            byte[] bytes = StreamUtils.copyToByteArray(resourceAsStream);
             return ResponseEntity.ok().headers(headers).body(bytes);
         } catch (IOException e) {
             throw new RuntimeException(e);
