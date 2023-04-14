@@ -4,6 +4,7 @@ FROM registry.cn-shanghai.aliyuncs.com/c7n/javabase:jdk8u282-b08
 COPY --from=base --chown=www-data:www-data /usr/lib/yaml /usr/lib/yaml
 RUN mkdir /choerodon && chown -R www-data:www-data /choerodon
 COPY --chown=www-data:www-data app.jar /choerodon/devops-service.jar
+COPY --chown=www-data:www-data choerodon-integration-1.0.0.hpi /choerodon/choerodon-integration-1.0.0.hpi
 WORKDIR /choerodon
 USER 33
 CMD java $JAVA_OPTS $SKYWALKING_OPTS -jar /choerodon/devops-service.jar
