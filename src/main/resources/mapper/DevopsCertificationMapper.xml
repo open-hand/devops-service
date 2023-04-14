@@ -206,8 +206,8 @@
         WHERE type IS NULL
     </select>
 
-    <select id="listWithNullType" resultMap="certificationDTOWithNoticeObjects">
-        SELECT id, org_cert_id, certification_file_id
+    <select id="listWithNullType" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
+        SELECT id, org_cert_id, certification_file_id, object_version_number, env_id
         FROM devops_certification
         WHERE type IS NULL
     </select>
