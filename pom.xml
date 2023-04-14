@@ -429,6 +429,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <configuration>
                     <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>hpi</nonFilteredFileExtension>
                         <nonFilteredFileExtension>tgz</nonFilteredFileExtension>
                         <nonFilteredFileExtension>xml</nonFilteredFileExtension>
                         <nonFilteredFileExtension>yml</nonFilteredFileExtension>
