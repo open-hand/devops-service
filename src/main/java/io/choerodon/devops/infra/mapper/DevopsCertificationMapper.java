@@ -54,4 +54,8 @@ public interface DevopsCertificationMapper extends BaseMapper<CertificationDTO> 
     List<CertificationDTO> listExpireCertificate();
 
     void updateAdvanceDaysToNull(@Param("id") Long id);
+
+    int queryCountWithNullType();
+
+    List<CertificationDTO> listWithNullType();
 }

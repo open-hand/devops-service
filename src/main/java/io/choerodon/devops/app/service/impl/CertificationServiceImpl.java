@@ -824,6 +824,16 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
+    public int queryCountWithNullType() {
+        return devopsCertificationMapper.queryCountWithNullType();
+    }
+
+    @Override
+    public List<CertificationDTO> listWithNullType() {
+        return devopsCertificationMapper.listWithNullType();
+    }
+
+    @Override
     public void baseUpdateCommandId(CertificationDTO certificationDTO) {
         CertificationDTO certificationDTOInDb = devopsCertificationMapper.selectByPrimaryKey(certificationDTO.getId());
         certificationDTOInDb.setCommandId(certificationDTO.getCommandId());
