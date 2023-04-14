@@ -100,6 +100,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
                     stringTemplateJobConfigServiceMap.get(ciTemplateJobVO.getType() + TEMPLATE_JOB_CONFIG_SERVICE).fillCdJobConfig(ciTemplateJobVO);
                 }
             }
+            ciTemplateJobVO.setEnabled(true);
             handTemplateJob(jobStepsMap, ciTemplateJobVO);
         });
         return ciTemplateJobVOS;
