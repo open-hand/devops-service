@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.AssertUtils;
@@ -9,10 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
@@ -239,6 +239,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
             if (ciTemplateJobGroupVO.getBuiltIn()) {
                 ciTemplateJobGroupVO.setCreator(null);
             }
+            ciTemplateJobGroupVO.setEnabled(true);
         });
         return ciTemplateJobVOPage;
     }
