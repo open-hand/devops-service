@@ -28,7 +28,6 @@
         dctsjr.is_enabled as enabled,
         dctj.config_id,
         dctj.tags,
-        dctj.config_file_path,
         dctj.start_in,
         dctj.object_version_number,
         dctj.created_by,
