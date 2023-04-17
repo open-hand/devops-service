@@ -428,6 +428,10 @@ public class GitlabUserServiceImpl implements GitlabUserService {
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
 
             Long gitlabUserId = userAttrDTO.getGitlabUserId();
+            // gitlab账户未同步成功则直接跳过
+            if (gitlabUserId == null) {
+                return;
+            }
             Long devopsAppGroupId = devopsProjectDTO.getDevopsAppGroupId();
             Long devopsEnvGroupId = devopsProjectDTO.getDevopsEnvGroupId();
             Long devopsClusterEnvGroupId = devopsProjectDTO.getDevopsClusterEnvGroupId();
