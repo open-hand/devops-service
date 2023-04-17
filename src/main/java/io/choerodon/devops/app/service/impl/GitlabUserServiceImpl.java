@@ -426,12 +426,12 @@ public class GitlabUserServiceImpl implements GitlabUserService {
             Boolean isProjectAdmin = baseServiceClientOperator.checkIsOrgOrProjectGitlabOwner(userId, projectId);
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-
-            Long gitlabUserId = userAttrDTO.getGitlabUserId();
             // gitlab账户未同步成功则直接跳过
-            if (gitlabUserId == null) {
+            if (userAttrDTO == null || userAttrDTO.getGitlabUserId() == null) {
                 return;
             }
+            Long gitlabUserId = userAttrDTO.getGitlabUserId();
+
             Long devopsAppGroupId = devopsProjectDTO.getDevopsAppGroupId();
             Long devopsEnvGroupId = devopsProjectDTO.getDevopsEnvGroupId();
             Long devopsClusterEnvGroupId = devopsProjectDTO.getDevopsClusterEnvGroupId();
