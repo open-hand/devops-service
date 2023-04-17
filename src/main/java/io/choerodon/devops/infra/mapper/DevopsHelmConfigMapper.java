@@ -1,11 +1,11 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsHelmConfigDTO;
 import io.choerodon.mybatis.common.BaseMapper;
-
-import java.util.List;
 
 public interface DevopsHelmConfigMapper extends BaseMapper<DevopsHelmConfigDTO> {
     void updateAllHelmConfigRepoDefaultToFalse(@Param("projectId") Long projectId);
@@ -25,4 +25,6 @@ public interface DevopsHelmConfigMapper extends BaseMapper<DevopsHelmConfigDTO> 
     void batchInsert(@Param("devopsHelmConfigDTOS") List<DevopsHelmConfigDTO> devopsHelmConfigDTOS);
 
     DevopsHelmConfigDTO listObjectVersionNumberById(@Param("helmConfigId") Long helmConfigId);
+
+    void updateUsernameAndPasswordToNull(@Param("id") Long id);
 }
