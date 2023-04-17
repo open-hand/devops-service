@@ -72,13 +72,12 @@
     </select>
     <select id="selectPipelineByHostId" resultType="io.choerodon.devops.infra.dto.CiCdPipelineDTO">
         SELECT
-            dcp.id,
-            dcp.`name`
+        dcp.id,
+        dcp.`name`
         FROM
-            devops_cd_job dcj
-                JOIN devops_cd_host_deploy_info dchdi ON dcj.deploy_info_id = dchdi.id
-                JOIN devops_cd_stage dcs ON dcs.id= dcj.stage_id
-                JOIN devops_cicd_pipeline dcp ON dcs.pipeline_id = dcp.id
-        WHERE dchdi.host_id = #{hostId}
+        devops_ci_host_deploy_info djhdi
+        JOIN devops_ci_job dcj ON dcj.config_id = djhdi.id
+        JOIN devops_cicd_pipeline dcp ON dcp.id= dcj.ci_pipeline_id
+        WHERE djhdi.host_id = #{hostId}
     </select>
 </mapper>
