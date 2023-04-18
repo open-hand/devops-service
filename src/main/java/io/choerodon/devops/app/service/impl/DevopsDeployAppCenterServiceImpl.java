@@ -206,8 +206,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             detailVO.setLastUpdateDate(appServiceInstanceInfoDTO.getLastUpdateDate());
             detailVO.setUpdater(baseServiceClientOperator.queryUserByUserId(appServiceInstanceInfoDTO.getLastUpdatedBy() == 0L ? centerEnvDTO.getLastUpdatedBy() : appServiceInstanceInfoDTO.getLastUpdatedBy()));
             detailVO.setCheckValuesPolicy(appServiceInstanceInfoDTO.getCheckValuesPolicy());
-            if (centerEnvDTO.getChartSource().equals(AppSourceType.NORMAL.getValue()) ||
-                    centerEnvDTO.getChartSource().equals(AppSourceType.SHARE.getValue())) {
+            if (detailVO.getAppServiceVersionId() == null) {
+                detailVO.setAppServiceVersionId(detailVO.getCommandVersionId());
+            }
+            if (centerEnvDTO.getChartSource().equals(AppSourceType.NORMAL.getValue()) || centerEnvDTO.getChartSource().equals(AppSourceType.SHARE.getValue())) {
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceInstanceInfoDTO.getAppServiceId());
                 detailVO.setAppServiceCode(appServiceDTO.getCode());
                 detailVO.setAppServiceName(appServiceDTO.getName());
