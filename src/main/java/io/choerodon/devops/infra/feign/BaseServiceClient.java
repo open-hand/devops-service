@@ -29,15 +29,15 @@ public interface BaseServiceClient {
     ResponseEntity<String> immutableProjectInfoById(@PathVariable(name = "project_id") Long id);
 
     @GetMapping(value = "/choerodon/v1/projects/{projectId}")
-    ResponseEntity<ProjectDTO> queryIamProject(@PathVariable("projectId") Long projectId,
-                                               @RequestParam(value = "with_category_info") Boolean withCategoryInfo,
-                                               @RequestParam(value = "with_user_info") Boolean withUserInfo,
-                                               @RequestParam(value = "with_agile_info") Boolean withAgileInfo,
-                                               @RequestParam(value = "with_work_group") Boolean withWorkGroup,
-                                               @RequestParam(value = "with_project_classfication") Boolean withProjectClassfication);
+    ResponseEntity<String> queryIamProject(@PathVariable("projectId") Long projectId,
+                                           @RequestParam(value = "with_category_info") Boolean withCategoryInfo,
+                                           @RequestParam(value = "with_user_info") Boolean withUserInfo,
+                                           @RequestParam(value = "with_agile_info") Boolean withAgileInfo,
+                                           @RequestParam(value = "with_work_group") Boolean withWorkGroup,
+                                           @RequestParam(value = "with_project_classfication") Boolean withProjectClassfication);
 
     @GetMapping(value = "/choerodon/v1/projects/{projectId}/basic_info_with_cache")
-    ResponseEntity<ProjectDTO> queryIamProjectBasicInfo(@PathVariable("projectId") Long projectId);
+    ResponseEntity<String> queryIamProjectBasicInfo(@PathVariable("projectId") Long projectId);
 
 
     /**

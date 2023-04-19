@@ -75,13 +75,7 @@ public class BaseServiceClientOperator {
 
 
     public ProjectDTO queryIamProjectBasicInfoById(Long projectId) {
-        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProjectBasicInfo(projectId);
-        ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
-        // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
-        if (projectDTO == null || projectDTO.getId() == null) {
-            throw new CommonException("devops.project.query.by.id", projectId);
-        }
-        return projectDTO;
+        return ResponseUtils.getResponse(baseServiceClient.queryIamProjectBasicInfo(projectId), ProjectDTO.class);
     }
 
     public ProjectDTO queryIamProjectById(Long projectId,
@@ -90,13 +84,13 @@ public class BaseServiceClientOperator {
                                           Boolean withAgileInfo,
                                           Boolean withWorkGroup,
                                           Boolean withProjectClassfication) {
-        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(Objects.requireNonNull(projectId), withCategory, withUserInfo, withAgileInfo, withWorkGroup, withProjectClassfication);
-        ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
-        // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
-        if (projectDTO == null || projectDTO.getId() == null) {
-            throw new CommonException("devops.project.query.by.id", projectId);
-        }
-        return projectDTO;
+        return ResponseUtils.getResponse(baseServiceClient.queryIamProject(Objects.requireNonNull(projectId),
+                        withCategory,
+                        withUserInfo,
+                        withAgileInfo,
+                        withWorkGroup,
+                        withProjectClassfication),
+                ProjectDTO.class);
     }
 
     public Tenant queryOrganizationById(Long organizationId) {

@@ -31,12 +31,12 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<ProjectDTO> queryIamProject(Long projectId, Boolean withCategoryInfo, Boolean withUserInfo, Boolean withAgileInfo, Boolean withWorkGroup, Boolean withProjectClassfication) {
+    public ResponseEntity<String> queryIamProject(Long projectId, Boolean withCategoryInfo, Boolean withUserInfo, Boolean withAgileInfo, Boolean withWorkGroup, Boolean withProjectClassfication) {
         throw new CommonException(ERROR_PROJECT_QUERY_BY_ID, projectId);
     }
 
     @Override
-    public ResponseEntity<ProjectDTO> queryIamProjectBasicInfo(Long projectId) {
+    public ResponseEntity<String> queryIamProjectBasicInfo(Long projectId) {
         throw new CommonException("devops.query.project");
     }
 
