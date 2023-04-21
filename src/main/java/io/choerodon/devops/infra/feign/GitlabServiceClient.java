@@ -982,4 +982,19 @@ public interface GitlabServiceClient {
             @RequestParam(value = "username") String username,
             @RequestParam(value = "password") String password);
 
+    /**
+     * 删除deployKeys
+     *
+     * @param projectId 项目Id
+     * @param userId    用户Id
+     * @Return List
+     */
+    @ApiOperation(value = "删除deployKeys")
+    @DeleteMapping(value = "/v1/projects/deploy_key")
+    ResponseEntity<Void> deleteDeployKeys(
+            @ApiParam(value = "项目ID", required = true)
+            @RequestParam Integer projectId,
+            @ApiParam(value = "用户Id")
+            @RequestParam(required = false) Integer userId,
+            @RequestParam Integer keyId);
 }

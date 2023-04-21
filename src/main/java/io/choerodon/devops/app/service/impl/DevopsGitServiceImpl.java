@@ -771,7 +771,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             handleFiles(operationFiles, deletedFiles, devopsEnvironmentDTO, devopsEnvCommitDTO, path);
 
             // 更新远程仓库的DevOps相关的tag
-            handleTag(git, devopsEnvironmentDTO.getEnvIdRsa(), pushWebHookVO, devopsEnvCommitDTO, tagNotExist);
+            handleTag(devopsEnvironmentDTO, git, devopsEnvironmentDTO.getEnvIdRsa(), pushWebHookVO, devopsEnvCommitDTO, tagNotExist);
 
             devopsEnvironmentDTO.setDevopsSyncCommit(devopsEnvCommitDTO.getId());
             //更新环境 解释commit
@@ -858,17 +858,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-    private void handleTag(Git git, String sshKey, PushWebHookVO pushWebHookVO,
-                           DevopsEnvCommitDTO devopsEnvCommitDTO, Boolean tagNotExist) {
+    private void handleTag(DevopsEnvironmentDTO devopsEnvironmentDTO, Git git, String sshKey, PushWebHookVO pushWebHookVO, DevopsEnvCommitDTO devopsEnvCommitDTO, Boolean tagNotExist) {
         if (Boolean.TRUE.equals(tagNotExist)) {
-            GitUtil.createTagAndPush(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+            GitUtil.createTagAndPush(devopsEnvironmentDTO, git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
             if (getDevopsSyncTag(pushWebHookVO)) {
-                GitUtil.createTagAndPush(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+                GitUtil.createTagAndPush(devopsEnvironmentDTO, git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
             }
         } else {
-            GitUtil.pushTag(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+            GitUtil.pushTag(devopsEnvironmentDTO, git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
             if (getDevopsSyncTag(pushWebHookVO)) {
-                GitUtil.createTagAndPush(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+                GitUtil.createTagAndPush(devopsEnvironmentDTO, git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
             }
         }
     }

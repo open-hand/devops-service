@@ -616,4 +616,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<Void> deletePipelineSchedule(Integer projectId, Integer userId, Integer pipelineScheduleId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.delete.Pipeline.Schedule");
     }
+
+    @Override
+    public ResponseEntity<Void> deleteDeployKeys(Integer projectId, Integer userId, Integer keyId) {
+        throw new CommonException("devops.gitlab.project.deployKey.delete");
+    }
 }

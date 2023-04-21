@@ -1841,4 +1841,7 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public void deleteDeployKey(Integer projectId, Integer userId, Integer keyId) {
+        gitlabServiceClient.deleteDeployKeys(projectId, userId, keyId);
+    }
 }

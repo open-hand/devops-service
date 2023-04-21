@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitConfigVO;
 import io.choerodon.devops.api.vo.GitEnvConfigVO;
@@ -40,10 +41,12 @@ import io.choerodon.devops.app.service.DevopsClusterResourceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.gitlab.DeployKeyDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 
 /**
@@ -75,7 +78,8 @@ public class GitUtil {
     private String gitlabSshUrl;
     @Value("${services.gitlab.internalsshUrl:}")
     private String gitlabInternalsshUrl;
-
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     public String getSshUrl() {
         if (org.apache.commons.lang3.StringUtils.isNotBlank(gitlabInternalsshUrl)) {
@@ -702,7 +706,7 @@ public class GitUtil {
      * @param sha     要打tag的散列值
      * @throws CommonException push error
      */
-    public static void createTagAndPush(Git git, String sshKey, String tagName, String sha) {
+    public static void createTagAndPush(DevopsEnvironmentDTO devopsEnvironmentDTO, Git git, String sshKey, String tagName, String sha) {
         try {
             // 创建之前删除，保证本地不存在要创建的tag
             deleteTag(git, tagName);
@@ -715,7 +719,71 @@ public class GitUtil {
             pushCommand.add(tagName);
             pushCommand.setRemote("origin");
             pushCommand.setForce(true);
-            pushCommand.setTransportConfigCallback(getTransportConfigCallback(sshKey)).call();
+            Iterable<PushResult> call = pushCommand.setTransportConfigCallback(getTransportConfigCallback(sshKey)).call();
+            Iterator<PushResult> iterator = call.iterator();
+            while (iterator.hasNext()) {
+                PushResult pushResult = iterator.next();
+                RemoteRefUpdate remoteUpdate = pushResult.getRemoteUpdate("refs/tags/devops-sync");
+                if (!remoteUpdate.getStatus().name().equals("OK")) {
+                    // 尝试刷新公钥，然后再重新推一次tag
+                    Integer gitlabAdminUserId = GitUserNameUtil.getAdminId();
+                    List<DeployKeyDTO> deployKeyDTOS = ApplicationContextHelper.getContext().getBean(GitlabServiceClientOperator.class).listDeployKey(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), gitlabAdminUserId);
+                    deployKeyDTOS.forEach(key -> {
+                        if (key.getTitle().equals(devopsEnvironmentDTO.getCode())) {
+                            ApplicationContextHelper.getContext().getBean(GitlabServiceClientOperator.class).deleteDeployKey(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), gitlabAdminUserId, key.getId());
+                        }
+                    });
+                    // 以管理员身份创建deploy key
+                    ApplicationContextHelper.getContext().getBean(GitlabServiceClientOperator.class).createDeployKey(
+                            devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(),
+                            devopsEnvironmentDTO.getCode(),
+                            devopsEnvironmentDTO.getEnvIdRsaPub(),
+                            true,
+                            GitUserNameUtil.getAdminId()
+                    );
+                    // 尝试重新推送一次tag
+                    retryCreateTagAndPush(devopsEnvironmentDTO, git, sshKey, tagName, sha);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            throw new CommonException("create tag fail", e);
+        }
+    }
+
+
+    /**
+     * 重新尝试本地创建tag并推送远程仓库
+     *
+     * @param git     git repo
+     * @param sshKey  ssh私钥
+     * @param tagName tag名称
+     * @param sha     要打tag的散列值
+     * @throws CommonException push error
+     */
+    public static void retryCreateTagAndPush(DevopsEnvironmentDTO devopsEnvironmentDTO, Git git, String sshKey, String tagName, String sha) {
+        try {
+            // 创建之前删除，保证本地不存在要创建的tag
+            deleteTag(git, tagName);
+            Repository repository = git.getRepository();
+            ObjectId id = repository.resolve(sha);
+            RevWalk walk = new RevWalk(repository);
+            RevCommit commit = walk.parseCommit(id);
+            git.tag().setObjectId(commit).setName(tagName).call();
+            PushCommand pushCommand = git.push();
+            pushCommand.add(tagName);
+            pushCommand.setRemote("origin");
+            pushCommand.setForce(true);
+            Iterable<PushResult> call = pushCommand.setTransportConfigCallback(getTransportConfigCallback(sshKey)).call();
+            Iterator<PushResult> iterator = call.iterator();
+            while (iterator.hasNext()) {
+                PushResult pushResult = iterator.next();
+                RemoteRefUpdate remoteUpdate = pushResult.getRemoteUpdate("refs/tags/devops-sync");
+                if (!remoteUpdate.getStatus().name().equals("OK")) {
+                    LOGGER.info("failed to push devops-sync tag of env:{}, id :{} ,err code :{}", devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), remoteUpdate.getStatus().name());
+                    throw new CommonException(remoteUpdate.getStatus().name());
+                }
+            }
         } catch (Exception e) {
             throw new CommonException("create tag fail", e);
         }
@@ -771,9 +839,9 @@ public class GitUtil {
      * @param tagName tag名称
      * @param sha     要打tag的commit的散列值
      */
-    public static void pushTag(Git git, String sshKey, String tagName, String sha) {
+    public static void pushTag(DevopsEnvironmentDTO devopsEnvironmentDTO, Git git, String sshKey, String tagName, String sha) {
         deleteTag(git, tagName);
-        createTagAndPush(git, sshKey, tagName, sha);
+        createTagAndPush(devopsEnvironmentDTO, git, sshKey, tagName, sha);
     }
 
     /**
