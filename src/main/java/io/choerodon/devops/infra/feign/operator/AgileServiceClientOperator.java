@@ -51,7 +51,7 @@ public class AgileServiceClientOperator {
     public SprintDTO getActiveSprint(Long projectId, Long organizationId) {
         try {
             return ResponseUtils.getResponse(agileServiceClient.getActiveSprint(projectId, organizationId), SprintDTO.class);
-        } catch (ServiceUnavailableException e) {
+        } catch (Exception e) {
             LOGGER.warn(e.getMessage());
             return null;
         }
