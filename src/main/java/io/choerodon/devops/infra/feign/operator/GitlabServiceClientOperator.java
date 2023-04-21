@@ -1985,4 +1985,8 @@ public class GitlabServiceClientOperator {
     public void deletePipelineTrigger(Integer triggeredPipelineGitlabProjectId, Long userId, Long triggerId) {
         gitlabServiceClient.deletePipelineTrigger(triggeredPipelineGitlabProjectId, userId.intValue(), triggerId.intValue());
     }
+
+    public void deleteDeployKey(Integer projectId, Integer userId, Integer keyId) {
+        gitlabServiceClient.deleteDeployKeys(projectId, userId, keyId);
+    }
 }
