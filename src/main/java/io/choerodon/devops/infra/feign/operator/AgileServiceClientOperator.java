@@ -52,7 +52,7 @@ public class AgileServiceClientOperator {
         try {
             return ResponseUtils.getResponse(agileServiceClient.getActiveSprint(projectId, organizationId), SprintDTO.class);
         } catch (Exception e) {
-            LOGGER.warn(e.getMessage());
+            LOGGER.error("devops.query.active.sprint.failed", e);
             return null;
         }
     }
