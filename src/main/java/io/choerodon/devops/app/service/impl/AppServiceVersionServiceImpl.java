@@ -205,7 +205,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
         try {
             Map<String, Object> image = (Map<String, Object>) jsonObject.get("image");
-            image.replace("repository", repositoryName);
+            if (StringUtils.isNotBlank(image.get("registry").toString())) {
+                image.replace("registry", StringUtils.substringBefore(repositoryName, "/"));
+                image.replace("repository", StringUtils.substringAfter(repositoryName, "/"));
+            } else {
+                image.replace("repository", repositoryName);
+            }
             values = yaml.dump(jsonObject);
 
         } catch (Exception e) {
