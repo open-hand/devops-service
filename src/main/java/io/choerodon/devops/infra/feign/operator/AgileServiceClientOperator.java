@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.feign.operator;
 import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.hzero.core.util.ResponseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,9 +50,9 @@ public class AgileServiceClientOperator {
 
     public SprintDTO getActiveSprint(Long projectId, Long organizationId) {
         try {
-            return FeignClientUtils.doRequest(() -> agileServiceClient.getActiveSprint(projectId, organizationId), SprintDTO.class, "devops.active.sprint.get");
-        } catch (ServiceUnavailableException e) {
-            LOGGER.warn(e.getMessage());
+            return ResponseUtils.getResponse(agileServiceClient.getActiveSprint(projectId, organizationId), SprintDTO.class);
+        } catch (Exception e) {
+            LOGGER.error("devops.query.active.sprint.failed", e);
             return null;
         }
     }

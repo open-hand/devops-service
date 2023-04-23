@@ -24,5 +24,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_docker_compose_value.groovy') {
             column(name: "app_id")
         }
     }
+    changeSet(author: 'wanghao', id: '2023-4-18-updateDataType') {
+        modifyDataType(tableName: 'devops_docker_compose_value', columnName: 'remark', newDataType: 'VARCHAR(512)')
+    }
 
 }

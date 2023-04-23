@@ -156,7 +156,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream()
-                .filter(Boolean.TRUE::equals)
+                .filter(j -> Boolean.TRUE.equals(j.getEnabled()))
                 .collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
 
         for (JobDTO jobDTO : jobDTOS) {

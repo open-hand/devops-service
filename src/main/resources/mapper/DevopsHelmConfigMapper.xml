@@ -92,4 +92,11 @@
     WHERE id=#{helmConfigId}
     AND deleted=0
   </select>
+
+  <update id="updateUsernameAndPasswordToNull">
+    UPDATE devops_helm_config
+    SET username = null,
+    password = null
+    WHERE id = #{id}
+  </update>
 </mapper>

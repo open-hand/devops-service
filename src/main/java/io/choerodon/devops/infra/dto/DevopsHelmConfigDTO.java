@@ -125,4 +125,20 @@ public class DevopsHelmConfigDTO extends AuditDomain {
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
     }
+
+    @Override
+    public String toString() {
+        return "DevopsHelmConfigDTO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", resourceType='" + resourceType + '\'' +
+                ", resourceId=" + resourceId +
+                ", repoPrivate=" + repoPrivate +
+                ", repoDefault=" + repoDefault +
+                ", deleted=" + deleted +
+                '}';
+    }
 }

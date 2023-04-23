@@ -157,6 +157,10 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "devops.helm.config.update");
 
+        if (devopsHelmConfigDTO.getUsername() == null || devopsHelmConfigDTO.getPassword() == null) {
+            devopsHelmConfigMapper.updateUsernameAndPasswordToNull(devopsHelmConfigDTO.getId());
+        }
+
         return ConvertUtils.convertObject(devopsHelmConfigDTO, DevopsHelmConfigVO.class);
     }
 
@@ -280,7 +284,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigMapper.selectByPrimaryKey(helmConfigId);
 
         HttpHeaders headers = new HttpHeaders();
-         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         if (devopsHelmConfigDTO.getRepoPrivate()) {
             String credentials = devopsHelmConfigDTO.getUsername() + ":"
                     + devopsHelmConfigDTO.getPassword();

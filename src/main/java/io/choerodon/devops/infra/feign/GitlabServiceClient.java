@@ -1,16 +1,16 @@
 package io.choerodon.devops.infra.feign;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiVariableVO;
@@ -1168,4 +1168,20 @@ public interface GitlabServiceClient {
             @RequestParam Integer userId,
             @ApiParam(value = "项目id", required = true)
             @RequestBody Integer projectId);
+
+    /**
+     * 删除deployKeys
+     *
+     * @param projectId 项目Id
+     * @param userId    用户Id
+     * @Return List
+     */
+    @ApiOperation(value = "删除deployKeys")
+    @DeleteMapping(value = "/v1/projects/deploy_key")
+    ResponseEntity<Void> deleteDeployKeys(
+            @ApiParam(value = "项目ID", required = true)
+            @RequestParam Integer projectId,
+            @ApiParam(value = "用户Id")
+            @RequestParam(required = false) Integer userId,
+            @RequestParam Integer keyId);
 }

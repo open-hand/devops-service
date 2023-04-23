@@ -1,6 +1,8 @@
 # Pipeline集成
 
-## 一、声明猪齿鱼相关变量
+## Pipeline集成示例
+
+### 一、声明猪齿鱼相关变量
 
 使用猪齿鱼扩展步骤时需要提前声明以下环境变量，否则相关步骤无法正常执行
 
@@ -21,7 +23,7 @@ environment {
 * C7N_APP_SERVICE_CODE：猪齿鱼应用服务编码，如`hzero-gateway`
 * C7N_VERSION: 构建制品时使用的版本号，后续`C7nImageBuild`、`C7nChartBuild`步骤中会使用此变量构建对应版本制品。
 
-## 二、编写构建脚本
+### 二、编写构建脚本
 
 以常用的Maven项目为例，通常包含以下步骤：Maven构建 -> 镜像构建 -> 推送镜像到制品库。
 
