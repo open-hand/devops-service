@@ -1166,6 +1166,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String filePath = null;
         if (instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
             filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                    instanceSagaPayload.getDevopsEnvironmentDTO(),
                     instanceSagaPayload.getProjectId(),
                     instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
                     instanceSagaPayload.getDevopsEnvironmentDTO().getId(),
@@ -1241,6 +1242,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String filePath = null;
         if (instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType().equals(UPDATE)) {
             filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                    instanceSagaPayload.getDevopsEnvironmentDTO(),
                     instanceSagaPayload.getProjectId(),
                     instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
                     instanceSagaPayload.getDevopsEnvironmentDTO().getId(),
@@ -1679,6 +1681,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = clusterConnectionHandler.handDevopsEnvGitRepository(
+                devopsEnvironmentDTO,
                 devopsEnvironmentDTO.getProjectId(),
                 devopsEnvironmentDTO.getCode(),
                 devopsEnvironmentDTO.getId(),

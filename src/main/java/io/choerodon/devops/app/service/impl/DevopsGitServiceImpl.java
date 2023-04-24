@@ -688,7 +688,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         try {
             //更新本地库到最新提交
-            Git git = handDevopsEnvGitRepository(path, url, devopsEnvironmentDTO.getEnvIdRsa());
+            Git git = handDevopsEnvGitRepository(devopsEnvironmentDTO, path, url, devopsEnvironmentDTO.getEnvIdRsa());
             LOGGER.info("更新gitops库成功");
             //查询devops-sync tag是否存在，存在则比较tag和最新commit的diff，不存在则识别gitops库下所有文件为新增文件
             tagNotExist = getDevopsSyncTag(pushWebHookVO);
@@ -1118,11 +1118,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     }
 
-    private Git handDevopsEnvGitRepository(String path, String url, String envIdRsa) {
+    private Git handDevopsEnvGitRepository(DevopsEnvironmentDTO devopsEnvironmentDTO, String path, String url, String envIdRsa) {
         synchronized (path.intern()) {
             File file = new File(path);
             if (!file.exists()) {
-                return gitUtil.cloneBySsh(path, url, envIdRsa);
+                return gitUtil.cloneBySsh(devopsEnvironmentDTO, path, url, envIdRsa);
             } else {
                 if (file.isDirectory() && file.listFiles().length > 0) {
                     try {
@@ -1133,13 +1133,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         if (e instanceof CheckoutConflictException) {
                             // 删除本地gitops文件，然后重新clone
                             FileUtil.deleteDirectory(file);
-                            return gitUtil.cloneBySsh(path, url, envIdRsa);
+                            return gitUtil.cloneBySsh(devopsEnvironmentDTO, path, url, envIdRsa);
                         } else {
                             throw new CommonException("devops.git.pull", e);
                         }
                     }
                 } else {
-                    return gitUtil.cloneBySsh(path, url, envIdRsa);
+                    return gitUtil.cloneBySsh(devopsEnvironmentDTO, path, url, envIdRsa);
                 }
             }
         }

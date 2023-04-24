@@ -181,13 +181,7 @@ public class WorkloadServiceImpl implements WorkloadService {
             gitlabServiceClientOperator.createFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), resourceFilePath, FileUtil.getYaml().dumpAll(objects.iterator()), String.format("【CREATE】%s", resourceFilePath), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         } else {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
-                    devopsEnvironmentDTO.getProjectId(),
-                    devopsEnvironmentDTO.getCode(),
-                    devopsEnvironmentDTO.getId(),
-                    devopsEnvironmentDTO.getEnvIdRsa(),
-                    devopsEnvironmentDTO.getType(),
-                    devopsEnvironmentDTO.getClusterCode());
+            String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
                     resourceFilePath)) {
@@ -269,13 +263,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         handleWorkLoad(null, null, null, resourceType.getType(), resourceName, DELETE_TYPE, id, null, new HashMap<>());
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
-                devopsEnvironmentDTO.getProjectId(),
-                devopsEnvironmentDTO.getCode(),
-                devopsEnvironmentDTO.getId(),
-                devopsEnvironmentDTO.getEnvIdRsa(),
-                devopsEnvironmentDTO.getType(),
-                devopsEnvironmentDTO.getClusterCode());
+        String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         String resourceFileName = String.format(RESOURCE_FILE_TEMPLATE_PATH_MAP.get(resourceType.getType()), resourceName);
 
