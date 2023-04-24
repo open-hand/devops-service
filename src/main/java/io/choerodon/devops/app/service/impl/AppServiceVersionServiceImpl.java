@@ -4,7 +4,6 @@ import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceHelmVersionCode.DEVOPS_HELM_CONFIG_ID_NULL;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceHelmVersionCode.DEVOPS_HELM_CONFIG_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -15,7 +14,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.apache.commons.io.FileUtils;
@@ -38,8 +36,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -196,26 +192,33 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     private static String replaceRepository(String values, String repositoryName) {
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        options.setAllowReadOnlyProperties(true);
-        options.setPrettyFlow(true);
-        Yaml yaml = new Yaml(options);
-        Object data = yaml.load(values);
-        JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
-        try {
-            Map<String, Object> image = (Map<String, Object>) jsonObject.get("image");
-            if (image.get("registry") != null) {
-                image.replace("registry", StringUtils.substringBefore(repositoryName, "/"));
-                image.replace("repository", StringUtils.substringAfter(repositoryName, "/"));
-            } else {
-                image.replace("repository", repositoryName);
-            }
-            values = yaml.dump(jsonObject);
-
-        } catch (Exception e) {
-            throw new CommonException(DEVOPS_YAML_FORMAT_INVALID, e);
-        }
+//        DumperOptions options = new DumperOptions();
+//        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+//        options.setAllowReadOnlyProperties(true);
+//        options.setPrettyFlow(true);
+//        Yaml yaml = new Yaml(options);
+//        Object data = yaml.load(values);
+//        JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
+//        try {
+//            Map<String, Object> image = (Map<String, Object>) jsonObject.get("image");
+//            if (image.get("registry") != null) {
+//                image.replace("registry", StringUtils.substringBefore(repositoryName, "/"));
+//                image.replace("repository", StringUtils.substringAfter(repositoryName, "/"));
+//            } else {
+//                image.replace("repository", repositoryName);
+//            }
+//            values = yaml.dump(jsonObject);
+//
+//        } catch (Exception e) {
+//            throw new CommonException(DEVOPS_YAML_FORMAT_INVALID, e);
+//        }
+        String registryUrl = StringUtils.substringBefore(repositoryName, "/");
+        String repoAndAppCode = StringUtils.substringAfter(repositoryName, "/");
+        String repoCode = StringUtils.substringBeforeLast(repoAndAppCode, "/");
+        String appCode = StringUtils.substringAfterLast(repoAndAppCode, "/");
+        values = values.replace("${CHOERODON_REGISTRY_URL}", registryUrl);
+        values = values.replace("${CHOERODON_REPO_CODE}", repoCode);
+        values = values.replace("${CHOERODON_APP_CODE}", appCode);
         return values;
     }
 
