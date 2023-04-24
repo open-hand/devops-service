@@ -72,6 +72,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
+    @Lazy
     @Autowired
     private DevopsClusterService devopsClusterService;
     @Autowired

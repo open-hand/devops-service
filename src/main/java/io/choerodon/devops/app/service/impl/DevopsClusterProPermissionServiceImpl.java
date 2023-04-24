@@ -7,6 +7,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ import io.choerodon.devops.infra.mapper.DevopsClusterProPermissionMapper;
 public class DevopsClusterProPermissionServiceImpl implements DevopsClusterProPermissionService {
     @Autowired
     private DevopsClusterProPermissionMapper devopsClusterProPermissionMapper;
+    @Lazy
     @Autowired
     private DevopsClusterService devopsClusterService;
 

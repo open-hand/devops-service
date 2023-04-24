@@ -118,6 +118,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsProjectService devopsProjectService;
     @Autowired
     private DevopsEnvGroupService devopsEnvGroupService;
+    @Lazy
     @Autowired
     private DevopsClusterService devopsClusterService;
     @Autowired
