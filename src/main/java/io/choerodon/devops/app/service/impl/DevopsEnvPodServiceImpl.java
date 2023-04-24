@@ -59,6 +59,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     @Autowired
     private AgentPodService agentPodService;
     @Autowired
+    @Lazy
     private DevopsClusterService devopsClusterService;
     @Autowired
     private AgentCommandService agentCommandService;

@@ -124,6 +124,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private CertificationService certificationService;
     @Autowired
     private DevopsSecretService devopsSecretService;
+    @Lazy
     @Autowired
     private DevopsClusterService devopsClusterService;
     @Autowired

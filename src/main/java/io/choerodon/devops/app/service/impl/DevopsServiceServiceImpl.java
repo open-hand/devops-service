@@ -116,6 +116,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     private DevopsEnvPodMapper devopsEnvPodMapper;
     @Autowired
     private AgentPodInfoServiceImpl agentPodInfoService;
+    @Lazy
     @Autowired
     private DevopsClusterService devopsClusterService;
     @Autowired
