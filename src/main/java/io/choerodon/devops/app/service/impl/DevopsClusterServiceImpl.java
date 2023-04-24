@@ -1044,9 +1044,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Async
     public void refreshDeployKeyAndRestart(Long clusterId) {
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
-        devopsEnvironmentDTOS.forEach(GitUtil::refreshDeployKey);
-        devopsClusterMapper.updateClusterStatusToDisconnect(clusterId);
-        agentCommandService.sendRestartAgent(clusterId);
+        try {
+            List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
+            devopsEnvironmentDTOS.forEach(GitUtil::refreshDeployKey);
+            agentCommandService.sendRestartAgent(clusterId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            devopsClusterMapper.updateClusterStatusToDisconnect(clusterId);
+        }
     }
 }
