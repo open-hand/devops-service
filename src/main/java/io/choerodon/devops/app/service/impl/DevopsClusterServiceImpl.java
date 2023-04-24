@@ -34,6 +34,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsClusterValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -1019,6 +1020,24 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public void restartAgent(Long projectId, Long clusterId) {
         clusterConnectionHandler.checkEnvConnection(clusterId);
 
+        agentCommandService.sendRestartAgent(clusterId);
+    }
+
+    @Override
+    public void refreshDeployKey(Long projectId, Long clusterId) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (ObjectUtils.isEmpty(devopsClusterDTO)) {
+            throw new CommonException("devops.devops.cluster.is.not.exist");
+        }
+        clusterConnectionHandler.checkEnvConnection(clusterId);
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        if (!Boolean.TRUE.equals(permissionHelper.isRoot(userId))
+                && Boolean.TRUE.equals(permissionHelper.isOrganizationRoot(userId, devopsClusterDTO.getOrganizationId()))
+                && Boolean.TRUE.equals(permissionHelper.isGitlabProjectOwner(userId, projectId))) {
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST);
+        }
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
+        devopsEnvironmentDTOS.forEach(GitUtil::refreshDeployKey);
         agentCommandService.sendRestartAgent(clusterId);
     }
 }

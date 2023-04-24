@@ -136,6 +136,7 @@ public class ExceptionConstants {
 
     public static class ClusterCode {
         public static final String DEVOPS_CLUSTER_NOT_EXIST = "devops.cluster.not.exist";
+        public static final String DEVOPS_CLUSTER_USER_PERMISSION = "You have no permission to operate this cluster";
     }
 
     public static class CertificationCode {
