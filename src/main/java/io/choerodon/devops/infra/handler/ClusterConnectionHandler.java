@@ -22,6 +22,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.EnvironmentType;
@@ -103,7 +104,7 @@ public class ClusterConnectionHandler {
     }
 
 
-    public String handDevopsEnvGitRepository(Long projectId, String envCode, Long envId, String envRsa, String envType, String clusterCode) {
+    public String handDevopsEnvGitRepository(DevopsEnvironmentDTO devopsEnvironmentDTO, Long projectId, String envCode, Long envId, String envRsa, String envType, String clusterCode) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
@@ -115,7 +116,7 @@ public class ClusterConnectionHandler {
         synchronized (path.intern()) {
             File file = new File(path);
             if (!file.exists()) {
-                gitUtil.cloneBySsh(path, url, envRsa);
+                gitUtil.cloneBySsh(devopsEnvironmentDTO, path, url, envRsa);
             } else {
                 String localPath = String.format("%s%s", path, "/.git");
                 // 如果文件夾存在并且文件夹不为空,去拉取新的配置
@@ -128,13 +129,13 @@ public class ClusterConnectionHandler {
                         if (e instanceof CheckoutConflictException) {
                             // 删除本地gitops文件，然后重新clone
                             FileUtil.deleteDirectory(file);
-                            gitUtil.cloneBySsh(path, url, envRsa);
+                            gitUtil.cloneBySsh(devopsEnvironmentDTO, path, url, envRsa);
                         } else {
                             throw new CommonException("devops.git.pull", e);
                         }
                     }
                 } else {
-                    gitUtil.cloneBySsh(path, url, envRsa);
+                    gitUtil.cloneBySsh(devopsEnvironmentDTO, path, url, envRsa);
                 }
             }
         }

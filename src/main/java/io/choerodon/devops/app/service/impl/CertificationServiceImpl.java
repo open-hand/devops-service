@@ -239,7 +239,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         // 将资源对象生成yaml提交到gitlab
         if (needToUpdateGitOps) {
-            handleCertificationToGitlab(newCertificationDTO.getId(), certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO, c7NCertificationCreateOrUpdateVO.getOperateType(), clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode()));
+            handleCertificationToGitlab(newCertificationDTO.getId(), certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO, c7NCertificationCreateOrUpdateVO.getOperateType(), clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode()));
         }
     }
 
@@ -371,7 +371,7 @@ public class CertificationServiceImpl implements CertificationService {
                                       C7nCertification c7nCertification, String operateType, Long envId, Long certificationId, String filePath) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentDTO, userAttrDTO);
-        clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), EnvironmentType.USER.getValue(), devopsEnvironmentDTO.getClusterCode());
+        clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), EnvironmentType.USER.getValue(), devopsEnvironmentDTO.getClusterCode());
 
         ResourceConvertToYamlHandler<C7nCertification> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(c7nCertification);
@@ -445,7 +445,7 @@ public class CertificationServiceImpl implements CertificationService {
             certificationOperation.operationEnvGitlabFile(
                     null, gitLabEnvProjectId,
                     "delete", userAttrDTO.getGitlabUserId(), certId, certificateType, null, false, certEnvId,
-                    clusterConnectionHandler.handDevopsEnvGitRepository(
+                    clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO,
                             devopsEnvironmentDTO.getProjectId(),
                             devopsEnvironmentDTO.getCode(),
                             devopsEnvironmentDTO.getId(),
