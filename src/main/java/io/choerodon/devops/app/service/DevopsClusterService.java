@@ -275,4 +275,6 @@ public interface DevopsClusterService {
     String disconnectionHost(Long clusterId);
 
     void restartAgent(Long projectId, Long clusterId);
+
+    void refreshDeployKey(Long projectId, Long clusterId);
 }
