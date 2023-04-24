@@ -136,7 +136,7 @@
 
     <select id="listByProject" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
         SELECT
-            *
+        *
         FROM devops_cluster dc
         WHERE
         dc.organization_id = #{organizationId}
@@ -146,4 +146,10 @@
         </foreach>
         order by id desc
     </select>
+
+    <update id="updateClusterStatusToDisconnect">
+        UPDATE devops_cluster dc
+        SET dc.status = 'disconnect'
+        WHERE dc.id = #{clusterId} and dc.status != 'disconnect'
+    </update>
 </mapper>

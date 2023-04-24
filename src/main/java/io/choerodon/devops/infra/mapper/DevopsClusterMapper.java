@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
@@ -82,4 +81,5 @@ public interface DevopsClusterMapper extends BaseMapper<DevopsClusterDTO> {
     List<DevopsClusterDTO> listByProject(@Param("organizationId") Long organizationId,
                                          @Param("projectIds") List<Long> projectIds);
 
+    void updateClusterStatusToDisconnect(Long clusterId);
 }
