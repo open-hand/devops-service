@@ -138,8 +138,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createOrUpdateCertification(Long projectId, C7nCertificationCreateOrUpdateVO c7NCertificationCreateOrUpdateVO,
-                                            MultipartFile key, MultipartFile cert) {
+    public void createOrUpdateCertification(Long projectId, C7nCertificationCreateOrUpdateVO c7NCertificationCreateOrUpdateVO, MultipartFile key, MultipartFile cert) {
         if (ObjectUtils.isEmpty(c7NCertificationCreateOrUpdateVO.getOperateType())) {
             throw new CommonException(DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL);
         }
@@ -167,33 +166,48 @@ public class CertificationServiceImpl implements CertificationService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectDTO.getDevopsComponentCode(), FILE_SEPARATOR, devopsEnvironmentDTO.getCode());
 
-        String certFileName;
-        String keyFileName;
-
+        // status operating
+        CertificationDTO newCertificationDTO = new CertificationDTO(certificationVO.getId(),
+                certificationVO.getCertName(),
+                devopsEnvironmentDTO.getId(),
+                CollectionUtils.isEmpty(certificationVO.getDomains()) ? "[]" : gson.toJson(certificationVO.getDomains()),
+                certificationVO.getStatus(),
+                certificationVO.getCertId(),
+                certificationVO.getType(),
+                certificationVO.getExpireNotice(),
+                certificationVO.getAdvanceDays(),
+                certificationVO.getNotifyObjects(),
+                certificationVO.getObjectVersionNumber());
         //如果是选择上传文件方式
-        if (certificationVO.getType().equals(CertificationType.UPLOAD.getType())) {
+        if (newCertificationDTO.getType().equals(CertificationType.UPLOAD.getType())) {
+            String certFileName;
+            String keyFileName;
             if (key != null && cert != null) {
-                certificationVO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
-                certificationVO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
+                certFileName = cert.getOriginalFilename();
+                keyFileName = key.getOriginalFilename();
+                newCertificationDTO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
+                newCertificationDTO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
             } else {
                 certFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "crt");
                 keyFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "key");
-                FileUtil.saveDataToFile(path, certFileName, certificationVO.getCertValue());
-                FileUtil.saveDataToFile(path, keyFileName, certificationVO.getKeyValue());
+                FileUtil.saveDataToFile(path, certFileName, newCertificationDTO.getCertValue());
+                FileUtil.saveDataToFile(path, keyFileName, newCertificationDTO.getKeyValue());
             }
-            // 因为放开了证书格式限制，所以不同格式有不同的校验逻辑。但是证书内容都是文本，无法正确判断当前上传的证书是什么格式，所以将证书校验这块交给用户自己来控制
-//        File certPath = new File(path + FILE_SEPARATOR + certFileName);
-//        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
-//        try {
-//            SslUtil.validate(certPath, keyPath);
-//        } catch (Exception e) {
-//            FileUtil.deleteFile(certPath);
-//            FileUtil.deleteFile(keyPath);
-//            throw new CommonException(e.getMessage());
-//        }
-//
-//        FileUtil.deleteFile(certPath);
-//        FileUtil.deleteFile(keyPath);
+            File certFile = new File(path + FILE_SEPARATOR + certFileName);
+            File keyFile = new File(path + FILE_SEPARATOR + keyFileName);
+            try {
+                SslUtil.validate(certFile, keyFile);
+                SslUtil.CertInfo certInfo = SslUtil.parseCert(certFile);
+                newCertificationDTO.setDomains(CollectionUtils.isEmpty(certInfo.getDomains()) ? "[]" : gson.toJson(certInfo.getDomains()));
+                newCertificationDTO.setValidFrom(certInfo.getValidFrom());
+                newCertificationDTO.setValidUntil(certInfo.getValidUntil());
+            } catch (CommonException e) {
+                FileUtil.deleteFile(certFile);
+                FileUtil.deleteFile(keyFile);
+                throw e;
+            }
+            FileUtil.deleteFile(certFile);
+            FileUtil.deleteFile(keyFile);
         }
 
         String certName = certificationVO.getCertName();
@@ -205,6 +219,10 @@ public class CertificationServiceImpl implements CertificationService {
         //如果创建的时候选择证书
         if (CertificationType.CHOOSE.getType().equals(type) && certificationVO.getCertId() != null) {
             CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCert(certificationVO.getCertId(), projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+            CertificationDTO orgCertificationDTO = baseQueryById(certificationVO.getCertId());
+            newCertificationDTO.setDomains(orgCertificationDTO.getDomains());
+            newCertificationDTO.setValidFrom(orgCertificationDTO.getValidFrom());
+            newCertificationDTO.setValidUntil(orgCertificationDTO.getValidUntil());
             certificationFileDTO = baseQueryCertFile(baseQueryById(certificationVO.getCertId()).getId());
         }
 
@@ -214,8 +232,6 @@ public class CertificationServiceImpl implements CertificationService {
 
         boolean needToUpdateGitOps = checkNeedToUpdateGitOpsAndSetStatus(certificationVO, c7NCertificationCreateOrUpdateVO.getOperateType());
 
-        // status operating
-        CertificationDTO newCertificationDTO = new CertificationDTO(certificationVO.getId(), certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), certificationVO.getStatus(), certificationVO.getCertId(), type, certificationVO.getExpireNotice(), certificationVO.getAdvanceDays(), certificationVO.getNotifyObjects(), certificationVO.getObjectVersionNumber());
 
         String keyContent;
         String certContent;
@@ -312,8 +328,7 @@ public class CertificationServiceImpl implements CertificationService {
     private void storeCertFile(String keyContent, String certContent, Long certId) {
         if (keyContent != null && certContent != null) {
             CertificationDTO certificationDTO = new CertificationDTO();
-            certificationDTO.setCertificationFileId(baseStoreCertFile(
-                    new CertificationFileDTO(certContent, keyContent)));
+            certificationDTO.setCertificationFileId(baseStoreCertFile(new CertificationFileDTO(certContent, keyContent)));
             certificationDTO.setId(certId);
             baseUpdateCertFileId(certificationDTO);
         }
@@ -329,12 +344,10 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public C7nCertification getV1Alpha1C7nCertification(String name, String type, List<String> domains,
-                                                        String keyContent, String certContent, String envCode) {
+    public C7nCertification getV1Alpha1C7nCertification(String name, String type, List<String> domains, String keyContent, String certContent, String envCode) {
         C7nCertification c7nCertification = new C7nCertification(C7nCertification.API_VERSION_V1ALPHA1);
 
-        c7nCertification.setMetadata(new CertificationMetadata(name,
-                envCode));
+        c7nCertification.setMetadata(new CertificationMetadata(name, envCode));
         CertificationSpec spec = new CertificationSpec(type);
         if (type.equals(CertificationType.REQUEST.getType())) {
             CertificationAcme acme = new CertificationAcme();
@@ -366,18 +379,14 @@ public class CertificationServiceImpl implements CertificationService {
         return c7nCertification;
     }
 
-    private void operateEnvGitLabFile(String certName,
-                                      DevopsEnvironmentDTO devopsEnvironmentDTO,
-                                      C7nCertification c7nCertification, String operateType, Long envId, Long certificationId, String filePath) {
+    private void operateEnvGitLabFile(String certName, DevopsEnvironmentDTO devopsEnvironmentDTO, C7nCertification c7nCertification, String operateType, Long envId, Long certificationId, String filePath) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentDTO, userAttrDTO);
         clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), EnvironmentType.USER.getValue(), devopsEnvironmentDTO.getClusterCode());
 
         ResourceConvertToYamlHandler<C7nCertification> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(c7nCertification);
-        resourceConvertToYamlHandler.operationEnvGitlabFile(CERT_PREFIX + certName,
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), operateType,
-                userAttrDTO.getGitlabUserId(), certificationId, "Certificate", null, false, envId, filePath);
+        resourceConvertToYamlHandler.operationEnvGitlabFile(CERT_PREFIX + certName, TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), operateType, userAttrDTO.getGitlabUserId(), certificationId, "Certificate", null, false, envId, filePath);
     }
 
     @Override
@@ -400,23 +409,16 @@ public class CertificationServiceImpl implements CertificationService {
         Integer gitLabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
         String certificateType = ObjectType.CERTIFICATE.getType();
         String certName = certificationDTO.getName();
-        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                .baseQueryByEnvIdAndResourceId(certEnvId, certId, certificateType);
+        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(certEnvId, certId, certificateType);
 
         if (devopsEnvFileResourceDTO == null) {
             baseDeleteById(certId);
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
-                    CERT_PREFIX + certificationDTO.getName() + ".yaml")) {
-                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        CERT_PREFIX + certificationDTO.getName() + ".yaml",
-                        String.format("【DELETE】%s", CERT_PREFIX + certificationDTO.getName() + ".yaml"),
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
-                        "master");
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER, CERT_PREFIX + certificationDTO.getName() + ".yaml")) {
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), CERT_PREFIX + certificationDTO.getName() + ".yaml", String.format("【DELETE】%s", CERT_PREFIX + certificationDTO.getName() + ".yaml"), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return;
         } else {
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
-                    devopsEnvFileResourceDTO.getFilePath())) {
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER, devopsEnvFileResourceDTO.getFilePath())) {
                 baseDeleteById(certId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 return;
@@ -427,11 +429,8 @@ public class CertificationServiceImpl implements CertificationService {
         certificationDTO.setStatus(CertificationStatus.DELETING.getStatus());
         updateStatus(certificationDTO);
 
-        if (devopsEnvFileResourceDTO.getFilePath() != null
-                && devopsEnvFileResourceService
-                .baseQueryByEnvIdAndPath(certEnvId, devopsEnvFileResourceDTO.getFilePath()).size() == 1) {
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
-                    devopsEnvFileResourceDTO.getFilePath())) {
+        if (devopsEnvFileResourceDTO.getFilePath() != null && devopsEnvFileResourceService.baseQueryByEnvIdAndPath(certEnvId, devopsEnvFileResourceDTO.getFilePath()).size() == 1) {
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER, devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(gitLabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
@@ -442,16 +441,7 @@ public class CertificationServiceImpl implements CertificationService {
             certificationMetadata.setName(certName);
             c7nCertification.setMetadata(certificationMetadata);
             certificationOperation.setType(c7nCertification);
-            certificationOperation.operationEnvGitlabFile(
-                    null, gitLabEnvProjectId,
-                    "delete", userAttrDTO.getGitlabUserId(), certId, certificateType, null, false, certEnvId,
-                    clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO,
-                            devopsEnvironmentDTO.getProjectId(),
-                            devopsEnvironmentDTO.getCode(),
-                            devopsEnvironmentDTO.getId(),
-                            devopsEnvironmentDTO.getEnvIdRsa(),
-                            devopsEnvironmentDTO.getType(),
-                            devopsEnvironmentDTO.getClusterCode()));
+            certificationOperation.operationEnvGitlabFile(null, gitLabEnvProjectId, "delete", userAttrDTO.getGitlabUserId(), certId, certificateType, null, false, certEnvId, clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode()));
         }
         //删除证书资源发送webhook
         sendNotificationService.sendWhenCertSuccessOrDelete(certificationDTO, SendSettingEnum.DELETE_RESOURCE.value());
@@ -618,17 +608,15 @@ public class CertificationServiceImpl implements CertificationService {
         if (!CollectionUtils.isEmpty(certificationNoticeDTOList)) {
             Set<Long> userIds = certificationNoticeDTOList.stream().filter(certificationNoticeDTO -> certificationNoticeDTO.getType().equals("user")).map(CertificationNoticeDTO::getObjectId).collect(Collectors.toSet());
             Map<Long, IamUserDTO> iamUserDTOMap = baseServiceClientOperator.listUsersByIds(new ArrayList<>(userIds)).stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
-            List<CertificationNotifyObject> notifyObjectList = certificationNoticeDTOList.stream()
-                    .map(certificationNoticeDTO -> {
-                        CertificationNotifyObject notifyObject = new CertificationNotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId());
-                        if (notifyObject.getType().equals("user")) {
-                            if (iamUserDTOMap.get(notifyObject.getId()) != null) {
-                                notifyObject.setRealName(iamUserDTOMap.get(notifyObject.getId()).getRealName());
-                            }
-                        }
-                        return notifyObject;
-                    })
-                    .collect(Collectors.toList());
+            List<CertificationNotifyObject> notifyObjectList = certificationNoticeDTOList.stream().map(certificationNoticeDTO -> {
+                CertificationNotifyObject notifyObject = new CertificationNotifyObject(certificationNoticeDTO.getType(), certificationNoticeDTO.getObjectId(), certificationNoticeDTO.getCertificationId());
+                if (notifyObject.getType().equals("user")) {
+                    if (iamUserDTOMap.get(notifyObject.getId()) != null) {
+                        notifyObject.setRealName(iamUserDTOMap.get(notifyObject.getId()).getRealName());
+                    }
+                }
+                return notifyObject;
+            }).collect(Collectors.toList());
             respVO.setNotifyObjects(notifyObjectList);
         }
 
@@ -851,8 +839,7 @@ public class CertificationServiceImpl implements CertificationService {
      * @return true if cert is active, else false
      */
     public Boolean checkValidity(Date date, Date validFrom, Date validUntil) {
-        return validFrom != null && validUntil != null
-                && date.after(validFrom) && date.before(validUntil);
+        return validFrom != null && validUntil != null && date.after(validFrom) && date.before(validUntil);
     }
 
     @Override
@@ -877,8 +864,7 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public void baseClearValidField(Long certId) {
         CertificationDTO certificationDTO = devopsCertificationMapper.selectByPrimaryKey(certId);
-        if (certificationDTO != null
-                && (certificationDTO.getValidFrom() != null || certificationDTO.getValidUntil() != null)) {
+        if (certificationDTO != null && (certificationDTO.getValidFrom() != null || certificationDTO.getValidUntil() != null)) {
             certificationDTO.setValid(null, null);
             devopsCertificationMapper.updateByPrimaryKey(certificationDTO);
         }

@@ -194,19 +194,22 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             FileUtil.saveDataToFile(path, keyFileName, projectCertificationVO.getKeyValue());
         }
 
-        // 因为放开了证书格式限制，所以不同格式有不同的校验逻辑。但是证书内容都是文本，无法正确判断当前上传的证书是什么格式，所以将证书校验这块交给用户自己来控制
-//        File certPath = new File(path + FILE_SEPARATOR + certFileName);
-//        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
-//        try {
-//        SslUtil.validate(certPath, keyPath);
-//        } catch (Exception e) {
-//            FileUtil.deleteFile(certPath);
-//            FileUtil.deleteFile(keyPath);
-//            throw new CommonException(e.getMessage());
-//        }
-//
-//        FileUtil.deleteFile(certPath);
-//        FileUtil.deleteFile(keyPath);
+        File certPath = new File(path + FILE_SEPARATOR + certFileName);
+        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
+        try {
+            SslUtil.validate(certPath, keyPath);
+            SslUtil.CertInfo certInfo = SslUtil.parseCert(certPath);
+            projectCertificationVO.setDomain(CollectionUtils.isEmpty(certInfo.getDomains()) ? "[]" : gson.toJson(certInfo.getDomains()));
+            projectCertificationVO.setValidFrom(certInfo.getValidFrom());
+            projectCertificationVO.setValidUntil(certInfo.getValidUntil());
+        } catch (Exception e) {
+            FileUtil.deleteFile(certPath);
+            FileUtil.deleteFile(keyPath);
+            throw new CommonException(e.getMessage());
+        }
+
+        FileUtil.deleteFile(certPath);
+        FileUtil.deleteFile(keyPath);
 
         if (projectCertificationVO.getType().equals(CREATE)) {
             CertificationDTO certificationDTO = new CertificationDTO();
@@ -215,14 +218,18 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             // 创建项目层证书需要组织id
             certificationDTO.setOrganizationId(organizationDTO.getTenantId());
             certificationDTO.setSkipCheckProjectPermission(true);
-            certificationDTO.setDomains(gson.toJson(Collections.singletonList(projectCertificationVO.getDomain())));
+            certificationDTO.setDomains(projectCertificationVO.getDomain());
             certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(new CertificationFileDTO(projectCertificationVO.getCertValue(), projectCertificationVO.getKeyValue())));
+            certificationDTO.setValidFrom(projectCertificationVO.getValidFrom());
+            certificationDTO.setValidUntil(projectCertificationVO.getValidUntil());
             certificationService.baseCreate(certificationDTO);
         } else {
             CertificationDTO certificationDTO = new CertificationDTO();
             BeanUtils.copyProperties(projectCertificationVO, certificationDTO);
             certificationDTO.setProjectId(projectId);
-            certificationDTO.setDomains(gson.toJson(Collections.singletonList(projectCertificationVO.getDomain())));
+            certificationDTO.setDomains(projectCertificationVO.getDomain());
+            certificationDTO.setValidFrom(projectCertificationVO.getValidFrom());
+            certificationDTO.setValidUntil(projectCertificationVO.getValidUntil());
             devopsCertificationMapper.updateByPrimaryKeySelective(certificationDTO);
 
             CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationDTO.getId());
