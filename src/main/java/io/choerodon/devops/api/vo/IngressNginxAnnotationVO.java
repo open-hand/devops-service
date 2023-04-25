@@ -13,15 +13,15 @@ public class IngressNginxAnnotationVO {
 
     @ApiModelProperty(value = "devops_ingress.id")
     private Long ingressId;
-    private String key;
+    private String annotationKey;
 
-    private String value;
+    private String annotationValue;
 
     private String type;
 
 
-    public IngressNginxAnnotationVO(String key, String type) {
-        this.key = key;
+    public IngressNginxAnnotationVO(String annotationKey, String type) {
+        this.annotationKey = annotationKey;
         this.type = type;
     }
 
@@ -33,20 +33,20 @@ public class IngressNginxAnnotationVO {
         this.ingressId = ingressId;
     }
 
-    public String getValue() {
-        return value;
+    public String getAnnotationValue() {
+        return annotationValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setAnnotationValue(String annotationValue) {
+        this.annotationValue = annotationValue;
     }
 
-    public String getKey() {
-        return key;
+    public String getAnnotationKey() {
+        return annotationKey;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setAnnotationKey(String annotationKey) {
+        this.annotationKey = annotationKey;
     }
 
     public String getType() {

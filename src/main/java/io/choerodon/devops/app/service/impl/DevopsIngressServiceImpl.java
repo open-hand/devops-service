@@ -139,7 +139,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         if (!CollectionUtils.isEmpty(devopsIngressVO.getNginxIngressAnnotations())) {
             annotations.putAll(devopsIngressVO.getNginxIngressAnnotations()
                     .stream()
-                    .collect(Collectors.toMap(IngressNginxAnnotationVO::getKey, IngressNginxAnnotationVO::getValue)));
+                    .collect(Collectors.toMap(IngressNginxAnnotationVO::getAnnotationKey, IngressNginxAnnotationVO::getAnnotationValue)));
         }
         DevopsIngressValidator.checkAnnotations(annotations);
         DevopsIngressValidator.checkHost(devopsIngressVO.getDomain());
@@ -291,7 +291,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         if (!CollectionUtils.isEmpty(devopsIngressVO.getNginxIngressAnnotations())) {
             annotations.putAll(devopsIngressVO.getNginxIngressAnnotations()
                     .stream()
-                    .collect(Collectors.toMap(IngressNginxAnnotationVO::getKey, IngressNginxAnnotationVO::getValue)));
+                    .collect(Collectors.toMap(IngressNginxAnnotationVO::getAnnotationKey, IngressNginxAnnotationVO::getAnnotationValue)));
         }
         DevopsIngressValidator.checkAnnotations(annotations);
         DevopsIngressDTO oldDevopsIngressDTO = baseQuery(id);
