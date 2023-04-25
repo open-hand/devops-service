@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ingress_nginx_annotation.groovy')
                 constraints(primaryKey: true)
             }
             column(name: 'ingress_id', type: 'BIGINT UNSIGNED', remarks: 'devops_ingress.id')
-            column(name: 'key', type: 'VARCHAR(512)', remarks: 'key')
+            column(name: 'key', type: 'VARCHAR(255)', remarks: 'key')
             column(name: 'value', type: 'VARCHAR(512)', remarks: 'value')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
@@ -19,6 +19,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ingress_nginx_annotation.groovy')
         createIndex(tableName: 'devops_ingress_nginx_annotation', indexName: 'devops_ingress_nginx_annotation_n1') {
             column(name: 'ingress_id')
         }
+        addUniqueConstraint(tableName: 'devops_ingress_nginx_annotation', constraintName: 'devops_ingress_nginx_annotation_u1', columnNames: 'ingress_id,key')
     }
 
 }

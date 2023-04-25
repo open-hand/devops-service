@@ -56,13 +56,13 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
     @ApiModelProperty("如果ingress由helm实例产生，此字段为helm实例id")
     private Long instanceId;
 
-    private List<NginxIngressAnnotationVO> nginxIngressAnnotations;
+    private List<IngressNginxAnnotationVO> nginxIngressAnnotations;
 
-    public List<NginxIngressAnnotationVO> getNginxIngressAnnotations() {
+    public List<IngressNginxAnnotationVO> getNginxIngressAnnotations() {
         return nginxIngressAnnotations;
     }
 
-    public void setNginxIngressAnnotations(List<NginxIngressAnnotationVO> nginxIngressAnnotations) {
+    public void setNginxIngressAnnotations(List<IngressNginxAnnotationVO> nginxIngressAnnotations) {
         this.nginxIngressAnnotations = nginxIngressAnnotations;
     }
 

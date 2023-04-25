@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -7,7 +9,10 @@ package io.choerodon.devops.api.vo;
  * @author wanghao
  * @since 2023/4/25 14:50
  */
-public class NginxIngressAnnotationVO {
+public class IngressNginxAnnotationVO {
+
+    @ApiModelProperty(value = "devops_ingress.id")
+    private Long ingressId;
     private String key;
 
     private String value;
@@ -15,9 +20,17 @@ public class NginxIngressAnnotationVO {
     private String type;
 
 
-    public NginxIngressAnnotationVO(String key, String type) {
+    public IngressNginxAnnotationVO(String key, String type) {
         this.key = key;
         this.type = type;
+    }
+
+    public Long getIngressId() {
+        return ingressId;
+    }
+
+    public void setIngressId(Long ingressId) {
+        this.ingressId = ingressId;
     }
 
     public String getValue() {
