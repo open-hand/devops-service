@@ -19,7 +19,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ingress_nginx_annotation.groovy')
         createIndex(tableName: 'devops_ingress_nginx_annotation', indexName: 'devops_ingress_nginx_annotation_n1') {
             column(name: 'ingress_id')
         }
-        addUniqueConstraint(tableName: 'devops_ingress_nginx_annotation', constraintName: 'devops_ingress_nginx_annotation_u1', columnNames: 'ingress_id,key')
+        addUniqueConstraint(tableName: 'devops_ingress_nginx_annotation', constraintName: 'devops_ingress_nginx_annotation_u1', columnNames: 'ingress_id,annotation_key')
     }
 
 }
