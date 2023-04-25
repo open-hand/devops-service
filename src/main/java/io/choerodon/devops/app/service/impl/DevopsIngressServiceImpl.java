@@ -132,7 +132,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         // 校验port是否属于该网络
         Set<Long> appServiceIds = new HashSet<>();
-        Map<String, String> annotations = new HashMap<>(devopsIngressVO.getAnnotations());
+        Map<String, String> annotations = new HashMap<>();
+        if (CollectionUtils.isEmpty(devopsIngressVO.getAnnotations())) {
+            annotations.putAll(devopsIngressVO.getAnnotations());
+        }
         if (!CollectionUtils.isEmpty(devopsIngressVO.getNginxIngressAnnotations())) {
             annotations.putAll(devopsIngressVO.getNginxIngressAnnotations()
                     .stream()
@@ -281,7 +284,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         // 校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         DevopsIngressValidator.checkHost(devopsIngressVO.getDomain());
-        Map<String, String> annotations = new HashMap<>(devopsIngressVO.getAnnotations());
+        Map<String, String> annotations = new HashMap<>();
+        if (CollectionUtils.isEmpty(devopsIngressVO.getAnnotations())) {
+            annotations.putAll(devopsIngressVO.getAnnotations());
+        }
         if (!CollectionUtils.isEmpty(devopsIngressVO.getNginxIngressAnnotations())) {
             annotations.putAll(devopsIngressVO.getNginxIngressAnnotations()
                     .stream()
