@@ -34,10 +34,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
-import io.choerodon.devops.api.vo.ClusterSummaryInfoVO;
-import io.choerodon.devops.api.vo.DevopsIngressPathVO;
-import io.choerodon.devops.api.vo.DevopsIngressVO;
-import io.choerodon.devops.api.vo.DevopsServiceVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.app.service.*;
@@ -1225,6 +1222,18 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         } else {
             return false;
         }
+    }
+
+    @Override
+    public List<NginxIngressAnnotationVO> listNginxIngressAnnotation() {
+        List<NginxIngressAnnotationVO> annotationVOList = new ArrayList<>();
+        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary", "boolean"));
+        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header", "string"));
+        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header-value", "string"));
+        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header-pattern", "string"));
+        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary-weight", "number"));
+        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary-weight-total", "number"));
+        return annotationVOList;
     }
 
 
