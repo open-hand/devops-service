@@ -616,10 +616,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     }
                     break;
                 case JOB:
+                    handleUpdateWorkloadMsg(key, envId, msg, appServiceInstanceDTO == null ? null : appServiceInstanceDTO.getCommandId(), devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
+                    if (appServiceInstanceDTO != null) {
+                        // 保存应用异常数据（采集监控报表数据）
+                        appExceptionRecordService.createOrUpdateExceptionRecord(ResourceType.STATEFULSET.getType(), msg, appServiceInstanceDTO);
+                    }
+                    break;
                 case DAEMONSET:
                 case CRON_JOB:
                 case STATEFULSET:
-                    handleUpdateWorkloadMsg(key, envId, msg, appServiceInstanceDTO == null ? null : appServiceInstanceDTO.getCommandId(), devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
+                    handleUpdateWorkloadMsg(key, envId, msg, null, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
                     if (appServiceInstanceDTO != null) {
                         // 保存应用异常数据（采集监控报表数据）
                         appExceptionRecordService.createOrUpdateExceptionRecord(ResourceType.STATEFULSET.getType(), msg, appServiceInstanceDTO);
