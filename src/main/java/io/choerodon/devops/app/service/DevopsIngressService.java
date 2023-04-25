@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
+import io.choerodon.devops.api.vo.NginxIngressAnnotationVO;
 import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
@@ -161,4 +162,7 @@ public interface DevopsIngressService {
     boolean operateForOldTypeIngressJudgeByClusterVersion(Long clusterId);
 
     boolean operateForOldTypeIngressJudgeByIngressVersion(String version);
+
+    List<NginxIngressAnnotationVO> listNginxIngressAnnotation();
+
 }
