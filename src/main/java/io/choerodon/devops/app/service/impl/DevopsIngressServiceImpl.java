@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -113,6 +114,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     PermissionHelper permissionHelper;
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private IngressNginxAnnotationService ingressNginxAnnotationService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -129,8 +132,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         // 校验port是否属于该网络
         Set<Long> appServiceIds = new HashSet<>();
-
-        DevopsIngressValidator.checkAnnotations(devopsIngressVO.getAnnotations());
+        Map<String, String> annotations = new HashMap<>(devopsIngressVO.getAnnotations());
+        if (!CollectionUtils.isEmpty(devopsIngressVO.getNginxIngressAnnotations())) {
+            annotations.putAll(devopsIngressVO.getNginxIngressAnnotations()
+                    .stream()
+                    .collect(Collectors.toMap(IngressNginxAnnotationVO::getKey, IngressNginxAnnotationVO::getValue)));
+        }
+        DevopsIngressValidator.checkAnnotations(annotations);
         DevopsIngressValidator.checkHost(devopsIngressVO.getDomain());
         devopsIngressVO.getPathList().forEach(devopsIngressPathDTO -> {
             DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsIngressPathDTO.getServiceId());
@@ -153,7 +161,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         boolean operateForOldIngress = operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId());
         // 初始化Ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        KubernetesObject ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations(), operateForOldIngress);
+        KubernetesObject ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, annotations, operateForOldIngress);
 
         // 处理创建域名数据
         DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, ingress, operateForOldIngress);
@@ -273,7 +281,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         // 校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         DevopsIngressValidator.checkHost(devopsIngressVO.getDomain());
-        DevopsIngressValidator.checkAnnotations(devopsIngressVO.getAnnotations());
+        Map<String, String> annotations = new HashMap<>(devopsIngressVO.getAnnotations());
+        if (!CollectionUtils.isEmpty(devopsIngressVO.getNginxIngressAnnotations())) {
+            annotations.putAll(devopsIngressVO.getNginxIngressAnnotations()
+                    .stream()
+                    .collect(Collectors.toMap(IngressNginxAnnotationVO::getKey, IngressNginxAnnotationVO::getValue)));
+        }
+        DevopsIngressValidator.checkAnnotations(annotations);
         DevopsIngressDTO oldDevopsIngressDTO = baseQuery(id);
         if (oldDevopsIngressDTO.getCertId() != null && devopsIngressVO.getCertId() == null) {
             deleteCert = true;
@@ -305,10 +319,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         }
 
         // 判断ingress有没有修改，没有修改直接返回
-        DevopsIngressVO ingressDTO = ConvertUtils.convertObject(baseQuery(id), DevopsIngressVO.class);
-        if (devopsIngressVO.equals(ingressDTO)) {
-            return;
-        }
+//        DevopsIngressVO ingressDTO = ConvertUtils.convertObject(baseQuery(id), DevopsIngressVO.class);
+//        if (devopsIngressVO.equals(ingressDTO)) {
+//            return;
+//        }
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(UPDATE);
 
@@ -316,7 +330,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         // 初始化ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        KubernetesObject v1beta1Ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations(), operateForOldIngress);
+        KubernetesObject v1beta1Ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, annotations, operateForOldIngress);
 
         // 处理域名数据
         devopsIngressVO.setId(id);
@@ -386,6 +400,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(ingressId);
             devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(devopsIngressVO, e));
             devopsIngressDTO.setStatus(devopsIngressDTO.getStatus());
+
+            List<IngressNginxAnnotationDTO> ingressNginxAnnotationDTOS = ingressNginxAnnotationService.listByIngressId(ingressId);
+            if (!CollectionUtils.isEmpty(ingressNginxAnnotationDTOS)) {
+                devopsIngressDTO.setNginxIngressAnnotations(ConvertUtils.convertList(ingressNginxAnnotationDTOS, IngressNginxAnnotationVO.class));
+            }
 
             if (devopsIngressDTO.getAnnotations() != null) {
                 devopsIngressVO.setAnnotations(gson.fromJson(devopsIngressDTO.getAnnotations(), new TypeToken<Map<String, String>>() {
@@ -809,6 +828,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             }
             devopsIngressDO.setAnnotations(annotations);
         }
+        devopsIngressDO.setNginxIngressAnnotations(devopsIngressVO.getNginxIngressAnnotations());
 
         //处理pathlist,生成域名和service的关联对象列表
         List<DevopsIngressPathDTO> devopsIngressPathDTOS = handlerPathList(devopsIngressVO.getPathList(), devopsIngressVO, ingress, operateForOldIngress);
@@ -888,6 +908,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             t.setIngressId(devopsIngressDTO.getId());
             devopsIngressPathMapper.insert(t);
         });
+        ingressNginxAnnotationService.batchSave(devopsIngressDTO.getId(), devopsIngressDTO.getNginxIngressAnnotations());
         return devopsIngressDTO;
     }
 
@@ -913,6 +934,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
                 devopsIngressPathMapper.insert(t);
             });
         }
+        ingressNginxAnnotationService.deleteByIngressId(id);
+        ingressNginxAnnotationService.batchSave(id, devopsIngressDTO.getNginxIngressAnnotations());
     }
 
     public void baseUpdate(DevopsIngressDTO devopsIngressDTO) {
@@ -1225,14 +1248,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     }
 
     @Override
-    public List<NginxIngressAnnotationVO> listNginxIngressAnnotation() {
-        List<NginxIngressAnnotationVO> annotationVOList = new ArrayList<>();
-        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary", "boolean"));
-        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header", "string"));
-        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header-value", "string"));
-        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header-pattern", "string"));
-        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary-weight", "number"));
-        annotationVOList.add(new NginxIngressAnnotationVO("nginx.ingress.kubernetes.io/canary-weight-total", "number"));
+    public List<IngressNginxAnnotationVO> listNginxIngressAnnotation() {
+        List<IngressNginxAnnotationVO> annotationVOList = new ArrayList<>();
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary", "boolean"));
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header", "string"));
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header-value", "string"));
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header-pattern", "string"));
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-weight", "number"));
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-weight-total", "number"));
         return annotationVOList;
     }
 

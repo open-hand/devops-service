@@ -14,7 +14,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
-import io.choerodon.devops.api.vo.NginxIngressAnnotationVO;
+import io.choerodon.devops.api.vo.IngressNginxAnnotationVO;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -224,7 +224,7 @@ public class DevopsIngressController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询NginxIngress可用参数列表")
     @GetMapping(value = "nginx_ingress_annotations")
-    public ResponseEntity<List<NginxIngressAnnotationVO>> listNginxIngressAnnotation(
+    public ResponseEntity<List<IngressNginxAnnotationVO>> listNginxIngressAnnotation(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return ResponseEntity.ok(devopsIngressService.listNginxIngressAnnotation());
