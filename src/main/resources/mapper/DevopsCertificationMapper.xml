@@ -211,4 +211,13 @@
         FROM devops_certification
         WHERE type IS NULL
     </select>
+
+    <select id="queryActive" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
+        SELECT dc.id, dc.name, dc.domains
+        FROM devops_certification dc
+        left join devops_env de on dc.env_id = de.id
+        WHERE `status` = 'active'
+        AND de.project_id = #{projectId}
+        AND de.id = #{envId}
+    </select>
 </mapper>

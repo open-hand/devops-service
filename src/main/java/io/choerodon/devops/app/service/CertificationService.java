@@ -36,7 +36,7 @@ public interface CertificationService {
                                                  String keyContent, String certContent, String envCode);
 
     C7nCertification getV1C7nCertification(String name, String type, List<String> domains,
-                                                 String keyContent, String certContent, String envCode);
+                                           String keyContent, String certContent, String envCode);
 
     void deleteById(Long projectId, Long certId);
 
@@ -85,6 +85,8 @@ public interface CertificationService {
     Page<CertificationDTO> basePage(Long projectId, Long envId, PageRequest pageable, String params);
 
     List<CertificationDTO> baseQueryActiveByDomain(Long projectId, Long clusterId, String domain);
+
+    List<CertificationDTO> baseQueryActive(Long projectId, Long envId);
 
     void baseUpdateCommandId(CertificationDTO certificationDTO);
 
