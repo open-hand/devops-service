@@ -10,6 +10,7 @@ import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
 import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
 import io.choerodon.devops.api.vo.AppServiceVersionVO;
 import io.choerodon.devops.api.vo.AppServiceVersionWithHelmConfigVO;
+import io.choerodon.devops.infra.dto.AppServiceImageVersionDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -264,4 +265,6 @@ public interface AppServiceVersionService {
                                           Long harborConfigId,
                                           String repoType,
                                           String image);
+
+    AppServiceImageVersionDTO queryImageVersion(Long projectId, String code, String version);
 }

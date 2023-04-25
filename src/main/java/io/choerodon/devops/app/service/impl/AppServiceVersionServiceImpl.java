@@ -1260,6 +1260,18 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return appServiceVersionDTO;
     }
 
+    @Override
+    public AppServiceImageVersionDTO queryImageVersion(Long projectId, String code, String version) {
+        AppServiceDTO appServiceDTO = applicationService.baseQueryByCode(code, projectId);
+        if (appServiceDTO != null) {
+            AppServiceVersionDTO appServiceVersionDTO = baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), version);
+            if (appServiceVersionDTO != null) {
+                return appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+            }
+        }
+        return null;
+    }
+
     private Set<AppServiceVersionDTO> checkVersion(Long appServiceId, Set<Long> versionIds) {
         Set<AppServiceVersionDTO> deleteErrorVersion = new HashSet<>();
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
