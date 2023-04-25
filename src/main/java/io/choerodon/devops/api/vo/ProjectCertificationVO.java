@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Date;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -32,6 +33,25 @@ public class ProjectCertificationVO {
 
     @ApiModelProperty("操作类型")
     private String type;
+
+    private Date validFrom;
+    private Date validUntil;
+
+    public Date getValidFrom() {
+        return validFrom;
+    }
+
+    public void setValidFrom(Date validFrom) {
+        this.validFrom = validFrom;
+    }
+
+    public Date getValidUntil() {
+        return validUntil;
+    }
+
+    public void setValidUntil(Date validUntil) {
+        this.validUntil = validUntil;
+    }
 
     public String getType() {
         return type;

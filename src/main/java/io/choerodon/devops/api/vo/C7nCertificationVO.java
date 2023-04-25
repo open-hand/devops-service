@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Date;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -28,6 +29,8 @@ public class C7nCertificationVO {
     private String envName;
     private Boolean envConnected;
     private Long objectVersionNumber;
+    private Date validFrom;
+    private Date validUntil;
 
     private List<CertificationNotifyObject> notifyObjects;
 
@@ -36,6 +39,22 @@ public class C7nCertificationVO {
 
     @ApiModelProperty("到期提前多长时间通知")
     private Integer advanceDays;
+
+    public Date getValidFrom() {
+        return validFrom;
+    }
+
+    public void setValidFrom(Date validFrom) {
+        this.validFrom = validFrom;
+    }
+
+    public Date getValidUntil() {
+        return validUntil;
+    }
+
+    public void setValidUntil(Date validUntil) {
+        this.validUntil = validUntil;
+    }
 
     public List<CertificationNotifyObject> getNotifyObjects() {
         return notifyObjects;
