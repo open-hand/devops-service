@@ -33,7 +33,7 @@ public class IngressNginxAnnotationServiceImpl implements IngressNginxAnnotation
         if (!CollectionUtils.isEmpty(nginxIngressAnnotations)) {
             List<IngressNginxAnnotationDTO> ingressNginxAnnotationDTOS = nginxIngressAnnotations
                     .stream()
-                    .map(nginxIngressAnnotationVO -> new IngressNginxAnnotationDTO(ingressId, nginxIngressAnnotationVO.getKey(), nginxIngressAnnotationVO.getValue()))
+                    .map(nginxIngressAnnotationVO -> new IngressNginxAnnotationDTO(ingressId, nginxIngressAnnotationVO.getAnnotationKey(), nginxIngressAnnotationVO.getAnnotationValue()))
                     .collect(Collectors.toList());
             ingressNginxAnnotationMapper.insertListSelective(ingressNginxAnnotationDTOS);
         }

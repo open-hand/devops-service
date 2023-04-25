@@ -7,8 +7,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ingress_nginx_annotation.groovy')
                 constraints(primaryKey: true)
             }
             column(name: 'ingress_id', type: 'BIGINT UNSIGNED', remarks: 'devops_ingress.id')
-            column(name: 'key', type: 'VARCHAR(255)', remarks: 'key')
-            column(name: 'value', type: 'VARCHAR(512)', remarks: 'value')
+            column(name: 'annotation_key', type: 'VARCHAR(255)', remarks: 'key')
+            column(name: 'annotation_value', type: 'VARCHAR(512)', remarks: 'value')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

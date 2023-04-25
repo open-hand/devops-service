@@ -38,18 +38,18 @@ public class IngressNginxAnnotationDTO extends AuditDomain {
     private Long ingressId;
 
     @ApiModelProperty(value = "key")
-    private String key;
+    private String annotationKey;
 
     @ApiModelProperty(value = "value")
-    private String value;
+    private String annotationValue;
 
     public IngressNginxAnnotationDTO() {
     }
 
-    public IngressNginxAnnotationDTO(Long ingressId, String key, String value) {
+    public IngressNginxAnnotationDTO(Long ingressId, String annotationKey, String annotationValue) {
         this.ingressId = ingressId;
-        this.key = key;
-        this.value = value;
+        this.annotationKey = annotationKey;
+        this.annotationValue = annotationValue;
     }
 
     public Long getId() {
@@ -68,20 +68,20 @@ public class IngressNginxAnnotationDTO extends AuditDomain {
         this.ingressId = ingressId;
     }
 
-    public String getKey() {
-        return key;
+    public String getAnnotationKey() {
+        return annotationKey;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setAnnotationKey(String annotationKey) {
+        this.annotationKey = annotationKey;
     }
 
-    public String getValue() {
-        return value;
+    public String getAnnotationValue() {
+        return annotationValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setAnnotationValue(String annotationValue) {
+        this.annotationValue = annotationValue;
     }
 
 }
