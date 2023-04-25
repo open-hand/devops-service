@@ -558,8 +558,13 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public List<CertificationVO> queryActiveCertificationByDomain(Long projectId, Long envId, String domain) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        return ConvertUtils.convertList(baseQueryActiveByDomain(projectId, devopsEnvironmentDTO.getClusterId(), domain), this::dtoToVo);
+        String wildcardDomain = domain.substring(domain.indexOf("."));
+        List<CertificationDTO> certificationDTOList = baseQueryActive(projectId, envId);
+        return certificationDTOList.stream().filter(c -> {
+            List<String> domains = JsonHelper.unmarshalByJackson(c.getDomains(), new TypeReference<List<String>>() {
+            });
+            return (CollectionUtils.isEmpty(domains)) || domains.contains(domain) || domains.contains(wildcardDomain);
+        }).map(this::dtoToVo).collect(Collectors.toList());
     }
 
     @Override
@@ -726,6 +731,11 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public List<CertificationDTO> baseQueryActiveByDomain(Long projectId, Long clusterId, String domain) {
         return devopsCertificationMapper.queryActiveByDomain(projectId, clusterId, domain);
+    }
+
+    @Override
+    public List<CertificationDTO> baseQueryActive(Long projectId, Long envId) {
+        return devopsCertificationMapper.queryActive(projectId, envId);
     }
 
     @Override
