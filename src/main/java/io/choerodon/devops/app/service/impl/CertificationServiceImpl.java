@@ -357,7 +357,9 @@ public class CertificationServiceImpl implements CertificationService {
             CertificationExistCert existCert = new CertificationExistCert(keyContent, certContent);
             spec.setExistCert(existCert);
         }
-        spec.setCommonName(domains.get(0));
+        if (!CollectionUtils.isEmpty(domains)) {
+            spec.setCommonName(domains.get(0));
+        }
         spec.setDnsNames(domains.size() > 1 ? domains.stream().skip(1).collect(Collectors.toList()) : null);
         c7nCertification.setSpec(spec);
         return c7nCertification;
@@ -456,9 +458,10 @@ public class CertificationServiceImpl implements CertificationService {
             }.getType());
             ProjectCertificationVO projectCertificationVO = new ProjectCertificationVO();
             projectCertificationVO.setName(certificationDTO.getName());
-            projectCertificationVO.setDomain(domains.get(0));
             projectCertificationVO.setId(certificationDTO.getId());
-            projectCertificationVO.setDomain(domains.get(0));
+            if (!CollectionUtils.isEmpty(domains)) {
+                projectCertificationVO.setDomain(domains.get(0));
+            }
             projectCertificationVOS.add(projectCertificationVO);
         });
         return projectCertificationVOS;
@@ -604,7 +607,7 @@ public class CertificationServiceImpl implements CertificationService {
         } else {
             respVO.setDomains(domains);
         }
-        respVO.setCommonName(domains.isEmpty() ? null : domains.get(0));
+        respVO.setCommonName(CollectionUtils.isEmpty(domains) ? null : domains.get(0));
         respVO.setIngresses(listIngressNamesByCertId(certId));
         respVO.setCertId(certificationDTO.getOrgCertId());
         respVO.setCertName(respVO.getName());
