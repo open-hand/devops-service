@@ -420,12 +420,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(devopsIngressVO, e));
             devopsIngressDTO.setStatus(devopsIngressDTO.getStatus());
 
-            devopsIngressDTO.setNginxIngressAnnotations(ingressNginxAnnotationService.listVOByIngressId(ingressId));
-
-            List<IngressNginxAnnotationDTO> ingressNginxAnnotationDTOS = ingressNginxAnnotationService.listByIngressId(ingressId);
-            if (!CollectionUtils.isEmpty(ingressNginxAnnotationDTOS)) {
-                devopsIngressDTO.setNginxIngressAnnotations(ConvertUtils.convertList(ingressNginxAnnotationDTOS, IngressNginxAnnotationVO.class));
-            }
+            devopsIngressVO.setNginxIngressAnnotations(ingressNginxAnnotationService.listVOByIngressId(ingressId));
 
             if (devopsIngressDTO.getAnnotations() != null) {
                 devopsIngressVO.setAnnotations(gson.fromJson(devopsIngressDTO.getAnnotations(), new TypeToken<Map<String, String>>() {
