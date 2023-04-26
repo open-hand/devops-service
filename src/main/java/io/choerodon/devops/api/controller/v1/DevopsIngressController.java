@@ -229,4 +229,13 @@ public class DevopsIngressController {
             @PathVariable(value = "project_id") Long projectId) {
         return ResponseEntity.ok(devopsIngressService.listNginxIngressAnnotation());
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "查询NginxIngress使用指引文档")
+    @GetMapping(value = "nginx_ingress_user_guide")
+    public ResponseEntity<String> queryNginxIngressUserGuide(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return ResponseEntity.ok(devopsIngressService.queryNginxIngressUserGuide());
+    }
 }
