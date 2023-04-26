@@ -20,5 +20,8 @@ public interface IngressNginxAnnotationService {
     List<IngressNginxAnnotationDTO> listByIngressId(Long ingressId);
 
     List<IngressNginxAnnotationVO> listVOByIngressId(Long ingressId);
+
+    List<IngressNginxAnnotationVO> listNginxIngressAnnotation();
+
 }
 

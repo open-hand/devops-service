@@ -1267,14 +1267,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
     @Override
     public List<IngressNginxAnnotationVO> listNginxIngressAnnotation() {
-        List<IngressNginxAnnotationVO> annotationVOList = new ArrayList<>();
-        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary", "boolean"));
-        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header", "string"));
-        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header-value", "string"));
-        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header-pattern", "string"));
-        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-weight", "number"));
-        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-weight-total", "number"));
-        return annotationVOList;
+        return ingressNginxAnnotationService.listNginxIngressAnnotation();
     }
 
     @Override

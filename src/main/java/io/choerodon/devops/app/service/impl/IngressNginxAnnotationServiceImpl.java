@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,26 @@ public class IngressNginxAnnotationServiceImpl implements IngressNginxAnnotation
         if (CollectionUtils.isEmpty(ingressNginxAnnotationDTOS)) {
             return new ArrayList<>();
         }
-        return ConvertUtils.convertList(ingressNginxAnnotationDTOS, IngressNginxAnnotationVO.class);
+        List<IngressNginxAnnotationVO> ingressNginxAnnotationVOS = ConvertUtils.convertList(ingressNginxAnnotationDTOS, IngressNginxAnnotationVO.class);
+        Map<String, String> ingressNginxAnnotationType = listNginxIngressAnnotation()
+                .stream()
+                .collect(Collectors.toMap(IngressNginxAnnotationVO::getAnnotationKey, IngressNginxAnnotationVO::getType));
+        for (IngressNginxAnnotationVO ingressNginxAnnotationVO : ingressNginxAnnotationVOS) {
+            ingressNginxAnnotationVO.setType(ingressNginxAnnotationType.get(ingressNginxAnnotationVO.getAnnotationKey()));
+        }
+        return ingressNginxAnnotationVOS;
+    }
+
+    @Override
+    public List<IngressNginxAnnotationVO> listNginxIngressAnnotation() {
+        List<IngressNginxAnnotationVO> annotationVOList = new ArrayList<>();
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary", "boolean"));
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header", "string"));
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header-value", "string"));
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-by-header-pattern", "string"));
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-weight", "number"));
+        annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-weight-total", "number"));
+        return annotationVOList;
     }
 }
 
