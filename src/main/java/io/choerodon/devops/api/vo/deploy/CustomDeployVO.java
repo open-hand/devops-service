@@ -44,6 +44,9 @@ public class CustomDeployVO {
     @ApiModelProperty("部署文件信息")
     private FileInfoVO fileInfoVO;
 
+    @ApiModelProperty("工作目录")
+    private String workDir;
+
     private Long appId;
 
     public CustomDeployVO() {
@@ -170,6 +173,15 @@ public class CustomDeployVO {
 
     public CustomDeployVO setAppId(Long appId) {
         this.appId = appId;
+        return this;
+    }
+
+    public String getWorkDir() {
+        return workDir;
+    }
+
+    public CustomDeployVO setWorkDir(String workDir) {
+        this.workDir = workDir;
         return this;
     }
 }

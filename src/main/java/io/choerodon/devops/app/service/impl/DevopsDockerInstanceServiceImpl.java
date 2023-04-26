@@ -120,6 +120,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         DockerDeployDTO dockerDeployDTO = getDockerDeployDTO(dockerDeployVO);
         dockerDeployDTO.setVersion(devopsHostAppDTO.getVersion());
         dockerDeployDTO.setAppCode(devopsHostAppDTO.getCode());
+        dockerDeployDTO.setWorkDir(devopsHostAppDTO.getWorkDir());
 
         // 保存实例的信息
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = createDockerInstanceDTO(dockerDeployVO, devopsHostAppDTO, dockerDeployDTO);
@@ -228,6 +229,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             devopsHostAppDTO.setHostId(hostId);
             devopsHostAppDTO.setName(dockerDeployVO.getAppName());
             devopsHostAppDTO.setCode(dockerDeployVO.getAppCode());
+            devopsHostAppDTO.setWorkDir(dockerDeployVO.getWorkDir());
             devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, "devops.save.host.app");
             return devopsHostAppMapper.selectByPrimaryKey(devopsHostAppDTO.getId());
