@@ -56,107 +56,120 @@ public class CustomDeployVO {
         this.postCommand = postCommand;
     }
 
-    public String getPreCommand() {
-        return preCommand;
+    public Long getHostId() {
+        return hostId;
     }
 
-    public void setPreCommand(String preCommand) {
-        this.preCommand = preCommand;
-    }
-
-    public String getRunCommand() {
-        return runCommand;
-    }
-
-    public void setRunCommand(String runCommand) {
-        this.runCommand = runCommand;
-    }
-
-    public String getPostCommand() {
-        return postCommand;
-    }
-
-    public void setPostCommand(String postCommand) {
-        this.postCommand = postCommand;
-    }
-
-    public FileInfoVO getFileInfoVO() {
-        return fileInfoVO;
-    }
-
-    public void setFileInfoVO(FileInfoVO fileInfoVO) {
-        this.fileInfoVO = fileInfoVO;
-    }
-
-    public String getSourceConfig() {
-        return sourceConfig;
-    }
-
-    public void setSourceConfig(String sourceConfig) {
-        this.sourceConfig = sourceConfig;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public String getAppCode() {
-        return appCode;
-    }
-
-    public void setAppCode(String appCode) {
-        this.appCode = appCode;
+    public CustomDeployVO setHostId(Long hostId) {
+        this.hostId = hostId;
+        return this;
     }
 
     public String getSourceType() {
         return sourceType;
     }
 
-    public Long getHostId() {
-        return hostId;
-    }
-
-    public void setHostId(Long hostId) {
-        this.hostId = hostId;
-    }
-
-    public void setSourceType(String sourceType) {
+    public CustomDeployVO setSourceType(String sourceType) {
         this.sourceType = sourceType;
+        return this;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public CustomDeployVO setAppName(String appName) {
+        this.appName = appName;
+        return this;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public CustomDeployVO setAppCode(String appCode) {
+        this.appCode = appCode;
+        return this;
+    }
+
+    public String getSourceConfig() {
+        return sourceConfig;
+    }
+
+    public CustomDeployVO setSourceConfig(String sourceConfig) {
+        this.sourceConfig = sourceConfig;
+        return this;
+    }
+
+    public String getPreCommand() {
+        return preCommand;
+    }
+
+    public CustomDeployVO setPreCommand(String preCommand) {
+        this.preCommand = preCommand;
+        return this;
+    }
+
+    public String getRunCommand() {
+        return runCommand;
+    }
+
+    public CustomDeployVO setRunCommand(String runCommand) {
+        this.runCommand = runCommand;
+        return this;
+    }
+
+    public String getPostCommand() {
+        return postCommand;
+    }
+
+    public CustomDeployVO setPostCommand(String postCommand) {
+        this.postCommand = postCommand;
+        return this;
     }
 
     public String getKillCommand() {
         return killCommand;
     }
 
-    public void setKillCommand(String killCommand) {
+    public CustomDeployVO setKillCommand(String killCommand) {
         this.killCommand = killCommand;
+        return this;
     }
 
     public String getHealthProb() {
         return healthProb;
     }
 
-    public void setHealthProb(String healthProb) {
+    public CustomDeployVO setHealthProb(String healthProb) {
         this.healthProb = healthProb;
+        return this;
     }
 
     public String getOperation() {
         return operation;
     }
 
-    public void setOperation(String operation) {
+    public CustomDeployVO setOperation(String operation) {
         this.operation = operation;
+        return this;
+    }
+
+    public FileInfoVO getFileInfoVO() {
+        return fileInfoVO;
+    }
+
+    public CustomDeployVO setFileInfoVO(FileInfoVO fileInfoVO) {
+        this.fileInfoVO = fileInfoVO;
+        return this;
     }
 
     public Long getAppId() {
         return appId;
     }
 
-    public void setAppId(Long appId) {
+    public CustomDeployVO setAppId(Long appId) {
         this.appId = appId;
+        return this;
     }
 }

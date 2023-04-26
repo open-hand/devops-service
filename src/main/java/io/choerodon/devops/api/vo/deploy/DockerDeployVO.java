@@ -1,12 +1,12 @@
 package io.choerodon.devops.api.vo.deploy;
 
-import io.choerodon.devops.api.vo.harbor.ExternalImageInfo;
-import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
+import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import javax.validation.constraints.NotNull;
+import io.choerodon.devops.api.vo.harbor.ExternalImageInfo;
+import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
 
 /**
  * 〈功能简述〉
@@ -56,115 +56,129 @@ public class DockerDeployVO {
     @ApiModelProperty("外部自定义仓库信息")
     private ExternalImageInfo externalImageInfo;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public ExternalImageInfo getExternalImageInfo() {
-        return externalImageInfo;
-    }
-
-    public Long getHostAppId() {
-        return hostAppId;
-    }
-
-    public void setHostAppId(Long hostAppId) {
-        this.hostAppId = hostAppId;
-    }
-
-    public void setExternalImageInfo(ExternalImageInfo externalImageInfo) {
-        this.externalImageInfo = externalImageInfo;
-    }
-
-    public String getOperation() {
-        return operation;
-    }
-
-    public void setOperation(String operation) {
-        this.operation = operation;
-    }
-
-    public String getRepoType() {
-        return repoType;
-    }
-
-    public void setRepoType(String repoType) {
-        this.repoType = repoType;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public String getAppCode() {
-        return appCode;
-    }
-
-    public void setAppCode(String appCode) {
-        this.appCode = appCode;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public Long getDeployObjectId() {
-        return deployObjectId;
-    }
-
-    public void setDeployObjectId(Long deployObjectId) {
-        this.deployObjectId = deployObjectId;
-    }
-
-    public ProdImageInfoVO getImageInfo() {
-        return imageInfo;
-    }
-
-    public void setImageInfo(ProdImageInfoVO imageInfo) {
-        this.imageInfo = imageInfo;
-    }
-
     public Long getHostId() {
         return hostId;
     }
 
-    public void setHostId(Long hostId) {
+    public DockerDeployVO setHostId(Long hostId) {
         this.hostId = hostId;
+        return this;
     }
 
     public String getContainerName() {
         return containerName;
     }
 
-    public void setContainerName(String containerName) {
+    public DockerDeployVO setContainerName(String containerName) {
         this.containerName = containerName;
+        return this;
     }
 
     public String getSourceType() {
         return sourceType;
     }
 
-    public void setSourceType(String sourceType) {
+    public DockerDeployVO setSourceType(String sourceType) {
         this.sourceType = sourceType;
+        return this;
+    }
+
+    public ProdImageInfoVO getImageInfo() {
+        return imageInfo;
+    }
+
+    public DockerDeployVO setImageInfo(ProdImageInfoVO imageInfo) {
+        this.imageInfo = imageInfo;
+        return this;
+    }
+
+    public Long getDeployObjectId() {
+        return deployObjectId;
+    }
+
+    public DockerDeployVO setDeployObjectId(Long deployObjectId) {
+        this.deployObjectId = deployObjectId;
+        return this;
     }
 
     public Long getMktAppVersionId() {
         return mktAppVersionId;
     }
 
-    public void setMktAppVersionId(Long mktAppVersionId) {
+    public DockerDeployVO setMktAppVersionId(Long mktAppVersionId) {
         this.mktAppVersionId = mktAppVersionId;
+        return this;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public DockerDeployVO setValue(String value) {
+        this.value = value;
+        return this;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public DockerDeployVO setAppName(String appName) {
+        this.appName = appName;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public DockerDeployVO setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public DockerDeployVO setAppCode(String appCode) {
+        this.appCode = appCode;
+        return this;
+    }
+
+    public String getRepoType() {
+        return repoType;
+    }
+
+    public DockerDeployVO setRepoType(String repoType) {
+        this.repoType = repoType;
+        return this;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public DockerDeployVO setOperation(String operation) {
+        this.operation = operation;
+        return this;
+    }
+
+    public Long getHostAppId() {
+        return hostAppId;
+    }
+
+    public DockerDeployVO setHostAppId(Long hostAppId) {
+        this.hostAppId = hostAppId;
+        return this;
+    }
+
+    public ExternalImageInfo getExternalImageInfo() {
+        return externalImageInfo;
+    }
+
+    public DockerDeployVO setExternalImageInfo(ExternalImageInfo externalImageInfo) {
+        this.externalImageInfo = externalImageInfo;
+        return this;
     }
 }
