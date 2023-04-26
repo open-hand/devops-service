@@ -828,8 +828,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         //初始化ingressDO对象
         DevopsIngressDTO devopsIngressDO = new DevopsIngressDTO(devopsIngressVO.getId(), projectId, envId, domain, ingressName, IngressStatus.OPERATING.getStatus());
 
-        if (ingress.getMetadata().getAnnotations() != null) {
-            String annotations = gson.toJson(ingress.getMetadata().getAnnotations());
+        if (devopsIngressVO.getAnnotations() != null) {
+            String annotations = gson.toJson(devopsIngressVO.getAnnotations());
             // 避免数据比数据库结构的size还大
             if (annotations.length() > 2000) {
                 throw new CommonException(DEVOPS_INGRESS_ANNOTATIONS_TOO_LARGE);
