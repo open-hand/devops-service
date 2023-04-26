@@ -85,20 +85,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-v1.24
+  name: nginx-v1-24
 spec:
   replicas: 1
   selector:
     matchLabels:
-      run: nginx-v1.24
+      run: nginx-v1-24
   template:
     metadata:
       labels:
-        run: nginx-v1.24
+        run: nginx-v1-24
     spec:
       containers:
       - image: nginx:1.24
-        name: nginx-v1.24
+        name: nginx-v1-24
         ports:
         - containerPort: 80
           protocol: TCP
@@ -106,14 +106,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-v1.24
+  name: nginx-v1-24
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 80
   selector:
-    run: nginx-v1.24
+    run: nginx-v1-24
 ```
 2. 设置访问新版本服务的路由规则
 - 基于权重的 Canary 规则测试,以下示例中仅50%的流量被路由到新版本服务中
@@ -137,7 +137,7 @@ spec:
       - path: /
         backend:
           service: 
-            name: nginx-v1.24
+            name: nginx-v1-24
             port:
               number: 80
         pathType: ImplementationSpecific
@@ -165,7 +165,7 @@ spec:
       - path: /
         backend:
           service: 
-            name: nginx-v1.24
+            name: nginx-v1-24
             port:
               number: 80
         pathType: ImplementationSpecific
@@ -189,7 +189,7 @@ spec:
       - path: /
         backend:
           service: 
-            name: nginx-v1.24
+            name: nginx-v1-24
             port:
               number: 80
         pathType: ImplementationSpecific
