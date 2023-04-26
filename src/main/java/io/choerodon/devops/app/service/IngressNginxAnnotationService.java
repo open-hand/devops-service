@@ -18,5 +18,7 @@ public interface IngressNginxAnnotationService {
     void deleteByIngressId(Long ingressId);
 
     List<IngressNginxAnnotationDTO> listByIngressId(Long ingressId);
+
+    List<IngressNginxAnnotationVO> listVOByIngressId(Long ingressId);
 }
 

@@ -450,6 +450,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(vo.getId());
         devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(vo, e));
+        // 添加灰度注解信息
+        vo.setNginxIngressAnnotations(ingressNginxAnnotationService.listVOByIngressId(ingressId));
 
         if (devopsIngressDTO.getCreatedBy() != null && devopsIngressDTO.getCreatedBy() != 0) {
             vo.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsIngressDTO.getCreatedBy()));
