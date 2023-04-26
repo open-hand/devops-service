@@ -1,12 +1,11 @@
 package io.choerodon.devops.api.vo.deploy;
 
-import javax.validation.constraints.NotNull;
-
+import io.choerodon.devops.api.vo.harbor.ExternalImageInfo;
+import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.api.vo.harbor.ExternalImageInfo;
-import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
+import javax.validation.constraints.NotNull;
 
 /**
  * 〈功能简述〉
@@ -55,6 +54,18 @@ public class DockerDeployVO {
 
     @ApiModelProperty("外部自定义仓库信息")
     private ExternalImageInfo externalImageInfo;
+
+    @ApiModelProperty("工作目录")
+    private String workDir;
+
+    public String getWorkDir() {
+        return workDir;
+    }
+
+    public DockerDeployVO setWorkDir(String workDir) {
+        this.workDir = workDir;
+        return this;
+    }
 
     public Long getHostId() {
         return hostId;

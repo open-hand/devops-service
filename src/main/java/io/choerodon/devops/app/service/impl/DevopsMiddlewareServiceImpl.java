@@ -1,32 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants.*;
-import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.MySQL;
-import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.Redis;
-import static io.choerodon.devops.infra.enums.deploy.MiddlewareDeployModeEnum.*;
-import static io.choerodon.devops.infra.enums.host.HostCommandEnum.DEPLOY_MIDDLEWARE;
-import static io.choerodon.devops.infra.enums.host.HostInstanceType.MIDDLEWARE_MYSQL;
-
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.commons.io.IOUtils;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
@@ -55,6 +29,31 @@ import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.mapper.DevopsMiddlewareMapper;
 import io.choerodon.devops.infra.util.*;
+import org.apache.commons.io.IOUtils;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants.*;
+import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.MySQL;
+import static io.choerodon.devops.infra.enums.DevopsMiddlewareTypeEnum.Redis;
+import static io.choerodon.devops.infra.enums.deploy.MiddlewareDeployModeEnum.*;
+import static io.choerodon.devops.infra.enums.host.HostCommandEnum.DEPLOY_MIDDLEWARE;
+import static io.choerodon.devops.infra.enums.host.HostInstanceType.MIDDLEWARE_MYSQL;
 
 @Service
 public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
@@ -282,7 +281,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     middlewareRedisHostDeployVO.getAppName(),
                     middlewareRedisHostDeployVO.getAppCode(),
                     RdupmTypeEnum.MIDDLEWARE.value(),
-                    OperationTypeEnum.BASE_COMPONENT.value()
+                    OperationTypeEnum.BASE_COMPONENT.value(),
+                    null
             );
 
             devopsHostAppService.baseCreate(devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_MIDDLEWARE_INSTANCE_FAILED);
@@ -426,7 +426,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     middlewareMySqlHostDeployVO.getAppName(),
                     middlewareMySqlHostDeployVO.getAppCode(),
                     RdupmTypeEnum.MIDDLEWARE.value(),
-                    OperationTypeEnum.BASE_COMPONENT.value()
+                    OperationTypeEnum.BASE_COMPONENT.value(),
+                    null
             );
 
             devopsHostAppService.baseCreate(devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_MIDDLEWARE_INSTANCE_FAILED);

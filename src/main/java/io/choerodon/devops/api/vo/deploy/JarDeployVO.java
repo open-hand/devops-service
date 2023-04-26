@@ -59,6 +59,9 @@ public class JarDeployVO {
     @ApiModelProperty("jar包拉取信息")
     private JarPullInfoDTO jarPullInfoDTO;
 
+    @ApiModelProperty("工作目录")
+    private String workDir;
+
     @JsonIgnore
     @ApiModelProperty(hidden = true)
     private Long appId;
@@ -251,6 +254,15 @@ public class JarDeployVO {
 
     public JarDeployVO setAppId(Long appId) {
         this.appId = appId;
+        return this;
+    }
+
+    public String getWorkDir() {
+        return workDir;
+    }
+
+    public JarDeployVO setWorkDir(String workDir) {
+        this.workDir = workDir;
         return this;
     }
 }

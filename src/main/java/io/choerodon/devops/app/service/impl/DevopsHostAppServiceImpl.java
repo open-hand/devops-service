@@ -721,7 +721,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     customDeployVO.getAppName(),
                     customDeployVO.getAppCode(),
                     RdupmTypeEnum.OTHER.value(),
-                    OperationTypeEnum.CREATE_APP.value());
+                    OperationTypeEnum.CREATE_APP.value(),
+                    customDeployVO.getWorkDir());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_CUSTOM_INSTANCE_FAILED);
 
             devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
@@ -752,7 +753,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
+        String workDir = ObjectUtils.isEmpty(devopsHostAppDTO.getWorkDir()) ? HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion()) : devopsHostAppDTO.getWorkDir();
         if (customDeployVO.getFileInfoVO().getFileName() == null) {
             customDeployVO.getFileInfoVO().setFileName("");
         }
@@ -781,7 +782,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 ObjectUtils.isEmpty(customDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getHealthProb()),
                 customDeployVO.getOperation(),
                 devopsHostAppDTO.getCode(),
-                devopsHostAppDTO.getVersion());
+                devopsHostAppDTO.getVersion(),
+                devopsHostAppDTO.getWorkDir());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -906,7 +908,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     jarDeployVO.getAppName(),
                     jarDeployVO.getAppCode(),
                     RdupmTypeEnum.JAR.value(),
-                    OperationTypeEnum.CREATE_APP.value());
+                    OperationTypeEnum.CREATE_APP.value(),
+                    jarDeployVO.getWorkDir());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
             devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
                     hostId,
@@ -943,7 +946,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
+        String workDir = ObjectUtils.isEmpty(devopsHostAppDTO.getWorkDir()) ? HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion()) : devopsHostAppDTO.getWorkDir();
         params.put("{{ WORK_DIR }}", workDir);
         String downloadCommand;
         String appFile;
@@ -989,7 +992,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getHealthProb()),
                 jarDeployVO.getOperation(),
                 devopsHostAppDTO.getCode(),
-                devopsHostAppDTO.getVersion());
+                devopsHostAppDTO.getVersion(),
+                devopsHostAppDTO.getWorkDir());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -1031,10 +1035,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     private Map<String, String> getRuntimeParams(Long projectId, DevopsHostAppDTO devopsHostAppDTO, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO) {
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
+        String workDir = ObjectUtils.isEmpty(devopsHostAppDTO.getWorkDir()) ? HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion()) : devopsHostAppDTO.getWorkDir();
         String appFileName;
-
-
         if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getSourceType())) {
             appFileName = devopsHostAppInstanceDTO.getCode();
         } else {
