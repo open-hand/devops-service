@@ -19,6 +19,8 @@ public class IngressNginxAnnotationVO {
 
     private String type;
 
+    public IngressNginxAnnotationVO() {
+    }
 
     public IngressNginxAnnotationVO(String annotationKey, String type) {
         this.annotationKey = annotationKey;
