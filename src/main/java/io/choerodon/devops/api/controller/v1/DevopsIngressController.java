@@ -221,7 +221,7 @@ public class DevopsIngressController {
         return ResponseEntity.ok(devopsIngressService.pageByEnv(projectId, envId, pageable, params));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
     @ApiOperation(value = "查询NginxIngress可用参数列表")
     @GetMapping(value = "nginx_ingress_annotations")
     public ResponseEntity<List<IngressNginxAnnotationVO>> listNginxIngressAnnotation(
