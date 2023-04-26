@@ -1,7 +1,5 @@
 # 一、注解说明
-
 Nginx Ingress Controller通过下列`canary-*`Annotation来支持应用服务的灰度发布机制。
-
 - `nginx.ingress.kubernetes.io/canary`: 必须设置该Annotation值为true，否则其它规则将不会生效。
 - `nginx.ingress.kubernetes.io/canary-by-header`: 表示基于请求头的名称进行灰度发布。
   当请求头名称的取值为`always`时，无论什么情况下，流量均会进入灰度服务。当请求头名称的取值为`never`
@@ -23,11 +21,8 @@ Nginx Ingress Controller通过下列`canary-*`Annotation来支持应用服务的
 Controller官网文档：https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#canary
 
 # 二、使用示例
-
 ## 1. 部署正式版本服务
-
 1. 创建Deployment和Service
-
 ```
 apiVersion: apps/v1
 kind: Deployment
@@ -62,9 +57,7 @@ spec:
   selector:
     run: nginx
 ```
-
 2.创建 Ingress 路由规则
-
 ```
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -86,11 +79,8 @@ spec:
 ```
 
 ## 灰度发布新版本服务
-
 发布一个新版本的Nginx服务并配置路由规则。
-
 1. 部署新版本的Deployment和Service
-
 ```
 apiVersion: apps/v1
 kind: Deployment
@@ -125,11 +115,8 @@ spec:
   selector:
     run: nginx-v1.24
 ```
-
 2. 设置访问新版本服务的路由规则
-
 - 基于权重的 Canary 规则测试,以下示例中仅50%的流量被路由到新版本服务中
-
 ```
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -153,10 +140,9 @@ spec:
             name: nginx-v1.24
             port:
               number: 80
+        pathType: ImplementationSpecific
 ```
-
 - 基于用户请求的 Canary 规则测试，以下示例仅请求头中满足foo=bar的客户端请求才能路由到新版本服务
-
 ```
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -182,15 +168,13 @@ spec:
             name: nginx-v1.24
             port:
               number: 80
+        pathType: ImplementationSpecific
 ```
-
 ## 三、删除旧版本服务
 
 系统运行一段时间后，当新版本服务已经稳定并且符合预期后，需要下线老版本的服务
 ，仅保留新版本服务在线上运行。为了达到该目标，需要将生产版本的Ingress指向新版本的Service，并且删除旧版本的Deployment和Service。
-
 1. 修改生产版本Ingress，使其指向新版本Service
-
 ```
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -208,7 +192,7 @@ spec:
             name: nginx-v1.24
             port:
               number: 80
+        pathType: ImplementationSpecific
 ```
-
 2. 删除Canary Ingress
 3. 删除旧版本的Deployment和Service
