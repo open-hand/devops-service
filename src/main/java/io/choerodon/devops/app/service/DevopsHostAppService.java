@@ -81,5 +81,5 @@ public interface DevopsHostAppService {
 
     List<PipelineInstanceReferenceVO> queryPipelineReferenceHostApp(Long projectId, Long appId);
 
-
+    void restart(Long projectId, Long hostId, Long appId);
 }

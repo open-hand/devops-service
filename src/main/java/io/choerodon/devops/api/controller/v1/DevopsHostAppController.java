@@ -82,6 +82,20 @@ public class DevopsHostAppController {
         return ResponseEntity.noContent().build();
     }
 
+    @ApiOperation("重启主机应用")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PutMapping("/{host_id}/apps/{app_id}")
+    public ResponseEntity<Void> restart(@PathVariable("project_id") Long projectId,
+                                        @ApiParam(value = "主机id", required = true)
+                                        @Encrypt
+                                        @PathVariable("host_id") Long hostId,
+                                        @Encrypt
+                                        @ApiParam(value = "主机应用id", required = true)
+                                        @PathVariable("app_id") Long appId) {
+        devopsHostAppService.restart(projectId, hostId, appId);
+        return ResponseEntity.noContent().build();
+    }
+
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "校验名称唯一")
     @GetMapping("/apps/check_name")
