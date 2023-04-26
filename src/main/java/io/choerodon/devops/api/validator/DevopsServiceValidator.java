@@ -89,8 +89,29 @@ public class DevopsServiceValidator {
                 .stream()
                 .filter(s -> !s.getId().equals(targetServiceId))
                 .collect(Collectors.groupingBy(DevopsServiceDTO::getType));
-        switch (devopsServiceReqVO.getType()) {
+        String type = devopsServiceReqVO.getType() == null ? CLUSTER_IP : devopsServiceReqVO.getType();
+        switch (type) {
             // 同一环境下externalIp和servicePort必须唯一
+            case CLUSTER_IP:
+                List<DevopsServiceDTO> serviceOfClusterIp = serviceGroupByType.get(CLUSTER_IP);
+                if (!CollectionUtils.isEmpty(serviceOfClusterIp)) {
+                    serviceOfClusterIp.forEach(s -> {
+                        List<PortMapVO> portMapVOList = JsonHelper.unmarshalByJackson(s.getPorts(), new TypeReference<List<PortMapVO>>() {
+                        });
+                        portMapVOList.forEach(portMapVO -> {
+                            Integer port = portMapVO.getPort();
+                            String externalIp = s.getExternalIp();
+                            devopsServiceReqVO.getPorts().forEach(p -> {
+                                if (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
+                                    if (Objects.equals(port, p.getPort()) && Objects.equals(externalIp, devopsServiceReqVO.getExternalIp())) {
+                                        throw new CommonException("devops.same.externalIp.port.exist");
+                                    }
+                                }
+                            });
+                        });
+                    });
+                }
+                break;
             case NODE_PORT:
                 // 同一环境下，如果nodePort不为空，那么必须唯一
                 List<DevopsServiceDTO> serviceOfNodePort = serviceGroupByType.get(NODE_PORT);
@@ -112,24 +133,6 @@ public class DevopsServiceValidator {
                 }
                 break;
             default:
-                List<DevopsServiceDTO> serviceOfClusterIp = serviceGroupByType.get(CLUSTER_IP);
-                if (!CollectionUtils.isEmpty(serviceOfClusterIp)) {
-                    serviceOfClusterIp.forEach(s -> {
-                        List<PortMapVO> portMapVOList = JsonHelper.unmarshalByJackson(s.getPorts(), new TypeReference<List<PortMapVO>>() {
-                        });
-                        portMapVOList.forEach(portMapVO -> {
-                            Integer port = portMapVO.getPort();
-                            String externalIp = s.getExternalIp();
-                            devopsServiceReqVO.getPorts().forEach(p -> {
-                                if (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
-                                    if (Objects.equals(port, p.getPort()) && Objects.equals(externalIp, devopsServiceReqVO.getExternalIp())) {
-                                        throw new CommonException("devops.same.externalIp.port.exist");
-                                    }
-                                }
-                            });
-                        });
-                    });
-                }
         }
 
     }
