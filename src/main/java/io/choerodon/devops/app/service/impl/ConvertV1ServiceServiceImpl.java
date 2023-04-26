@@ -101,8 +101,8 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
                 }
             }
         }
-        if (v1Service.getSpec().getType() == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.SERVICE_TYPE_NOT_FOUND.getError(), filePath);
-        }
+//        if (v1Service.getSpec().getType() == null) {
+//            throw new GitOpsExplainException(GitOpsObjectError.SERVICE_TYPE_NOT_FOUND.getError(), filePath);
+//        }
     }
 }
