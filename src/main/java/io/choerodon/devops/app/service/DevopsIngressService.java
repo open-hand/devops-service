@@ -165,4 +165,6 @@ public interface DevopsIngressService {
 
     List<IngressNginxAnnotationVO> listNginxIngressAnnotation();
 
+    String queryNginxIngressUserGuide();
+
 }

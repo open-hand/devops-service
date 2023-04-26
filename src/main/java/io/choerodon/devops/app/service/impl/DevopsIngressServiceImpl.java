@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -15,6 +18,7 @@ import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.*;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -78,7 +82,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     private static final Gson gson = new Gson();
     private static final JSON k8sJson = new JSON();
     private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
-
+    private static final String USER_GUIDE_MARKDOWN;
+    private static final String USER_GUIDE_MARKDOWN_LOCATION = "/doc/nginx_ingress_user_guide.md";
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
@@ -116,6 +121,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     private RedisTemplate<String, String> redisTemplate;
     @Autowired
     private IngressNginxAnnotationService ingressNginxAnnotationService;
+
+    static {
+        try (InputStream inputStream = DevopsJenkinsServerServiceImpl.class.getResourceAsStream(USER_GUIDE_MARKDOWN_LOCATION)) {
+            USER_GUIDE_MARKDOWN = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("User guide markdown not found");
+        }
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -1265,6 +1278,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-weight", "number"));
         annotationVOList.add(new IngressNginxAnnotationVO("nginx.ingress.kubernetes.io/canary-weight-total", "number"));
         return annotationVOList;
+    }
+
+    @Override
+    public String queryNginxIngressUserGuide() {
+        return USER_GUIDE_MARKDOWN;
     }
 
 
