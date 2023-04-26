@@ -1,35 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
-import static io.choerodon.devops.app.service.impl.SendNotificationServiceImpl.ENV_AND_CERTIFICATION_LINK;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL;
-
-import java.io.File;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.netflix.servo.util.Strings;
-import org.hzero.boot.message.entity.Receiver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
@@ -54,6 +29,32 @@ import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.boot.message.entity.Receiver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
+import static io.choerodon.devops.app.service.impl.SendNotificationServiceImpl.ENV_AND_CERTIFICATION_LINK;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationExceptionCode.DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.IngressExceptionCode.ERROR_DEVOPS_INGRESS_DOMAIN_INVALID;
 
 /**
  * Created by n!Ck
@@ -63,6 +64,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class CertificationServiceImpl implements CertificationService {
+
+    public static final Pattern DOMAIN_REGEX = Pattern.compile("(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$");
 
     private static final String CERT_PREFIX = "cert-";
     private static final String MASTER = "master";
@@ -561,6 +564,9 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public List<CertificationVO> queryActiveCertificationByDomain(Long projectId, Long envId, String domain) {
+        if (!DOMAIN_REGEX.matcher(domain).matches()) {
+            throw new CommonException(ERROR_DEVOPS_INGRESS_DOMAIN_INVALID, domain);
+        }
         String wildcardDomain = domain.substring(domain.indexOf("."));
         List<CertificationDTO> certificationDTOList = baseQueryActive(projectId, envId);
         return certificationDTOList.stream().filter(c -> {
