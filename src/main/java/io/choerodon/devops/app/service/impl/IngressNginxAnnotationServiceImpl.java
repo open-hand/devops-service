@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,7 @@ import io.choerodon.devops.app.service.IngressNginxAnnotationService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.IngressNginxAnnotationDTO;
 import io.choerodon.devops.infra.mapper.IngressNginxAnnotationMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 
 /**
  * Nginx-Ingress注解配置(IngressNginxAnnotation)应用服务
@@ -56,6 +58,15 @@ public class IngressNginxAnnotationServiceImpl implements IngressNginxAnnotation
         IngressNginxAnnotationDTO ingressNginxAnnotationDTO = new IngressNginxAnnotationDTO();
         ingressNginxAnnotationDTO.setIngressId(ingressId);
         return ingressNginxAnnotationMapper.select(ingressNginxAnnotationDTO);
+    }
+
+    @Override
+    public List<IngressNginxAnnotationVO> listVOByIngressId(Long ingressId) {
+        List<IngressNginxAnnotationDTO> ingressNginxAnnotationDTOS = listByIngressId(ingressId);
+        if (CollectionUtils.isEmpty(ingressNginxAnnotationDTOS)) {
+            return new ArrayList<>();
+        }
+        return ConvertUtils.convertList(ingressNginxAnnotationDTOS, IngressNginxAnnotationVO.class);
     }
 }
 
