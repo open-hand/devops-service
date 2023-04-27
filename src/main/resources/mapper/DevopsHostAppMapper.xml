@@ -305,4 +305,10 @@
       order by dha.id = #{appId} desc, dha.id desc
     </if>
   </select>
+
+  <select id="listWorkDirsByHostId" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+    SELECT id, code, work_dir
+    FROM devops_host_app
+    WHERE host_id = #{hostId}
+  </select>
 </mapper>
