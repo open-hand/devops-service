@@ -1050,6 +1050,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             agentCommandService.sendRestartAgent(clusterId);
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
             devopsClusterMapper.updateClusterStatusToDisconnect(clusterId);
         }
     }
