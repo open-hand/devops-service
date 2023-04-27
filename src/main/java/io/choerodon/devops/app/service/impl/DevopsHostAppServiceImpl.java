@@ -279,18 +279,40 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 if (!CollectionUtils.isEmpty(devopsHostAppInstanceDTOS)) {
                     DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
                     compoundDevopsHostAppVO(devopsHostAppVO, devopsHostAppInstanceDTO);
+                    devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceIdAndType(devopsHostAppInstanceDTO.getId(), HostResourceType.INSTANCE_PROCESS.value()));
                     devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand()));
                     devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppInstanceDTO.getHealthProb()));
-                    devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppInstanceDTO.getId(), HostResourceType.INSTANCE_PROCESS.value()));
+                    devopsHostAppVO.setSourceType(devopsHostAppInstanceDTO.getSourceType());
+                    devopsHostAppVO.setGroupId(devopsHostAppInstanceDTO.getGroupId());
+                    devopsHostAppVO.setArtifactId(devopsHostAppInstanceDTO.getArtifactId());
+                    devopsHostAppVO.setVersion(devopsHostAppInstanceDTO.getVersion());
+                    devopsHostAppVO.setReady(devopsHostAppInstanceDTO.getReady());
+                    devopsHostAppVO.decodeCommand();
                 }
             }
+
             if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppVO.getRdupmType())) {
+                devopsHostAppVO.setRunCommand(devopsHostAppVO.getRunCommand());
+                List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceService.listByAppId(devopsHostAppVO.getId());
+                calculateStatus(devopsHostAppVO, devopsDockerInstanceDTOS);
+
                 devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getId(), HostResourceType.DOCKER_COMPOSE.value()));
                 devopsHostAppVO.setDockerComposeValueDTO(finalDockerComposeValueDTOMap.get(devopsHostAppVO.getEffectValueId()));
 
             }
 
             if (RdupmTypeEnum.DOCKER.value().equals(devopsHostAppVO.getRdupmType())) {
+                DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+                devopsDockerInstanceDTO.setAppId(devopsHostAppVO.getId());
+                List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
+                if (!CollectionUtils.isEmpty(devopsDockerInstanceDTOS)) {
+                    List<DevopsDockerInstanceDTO> dockerInstanceDTOS = devopsDockerInstanceDTOS.stream().sorted(Comparator.comparing(DevopsDockerInstanceDTO::getId).reversed()).collect(Collectors.toList());
+                    devopsHostAppVO.setInstanceId(dockerInstanceDTOS.get(0).getId());
+                    devopsHostAppVO.setStatus(dockerInstanceDTOS.get(0).getStatus());
+                    devopsHostAppVO.setPorts(dockerInstanceDTOS.get(0).getPorts());
+                    DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceDTOS.stream().sorted(Comparator.comparing(DevopsDockerInstanceDTO::getId).reversed()).collect(Collectors.toList()).get(0);
+                    devopsHostAppVO.setDevopsDockerInstanceVO(ConvertUtils.convertObject(dockerInstanceDTO, DevopsDockerInstanceVO.class));
+                }
                 devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryDockerInstanceLatest(devopsHostAppVO.getId(), HostResourceType.DOCKER_PROCESS.value()));
             }
             DevopsHostDTO devopsHostDTO = hostDTOMap.get(devopsHostAppVO.getHostId());
