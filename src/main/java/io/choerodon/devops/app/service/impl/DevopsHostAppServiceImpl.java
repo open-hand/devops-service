@@ -287,7 +287,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     devopsHostAppVO.setArtifactId(devopsHostAppInstanceDTO.getArtifactId());
                     devopsHostAppVO.setVersion(devopsHostAppInstanceDTO.getVersion());
                     devopsHostAppVO.setReady(devopsHostAppInstanceDTO.getReady());
-                    devopsHostAppVO.decodeCommand();
                 }
             }
 
