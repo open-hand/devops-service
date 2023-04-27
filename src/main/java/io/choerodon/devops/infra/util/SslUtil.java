@@ -1,5 +1,17 @@
 package io.choerodon.devops.infra.util;
 
+import io.choerodon.core.exception.CommonException;
+import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -14,19 +26,6 @@ import java.security.spec.RSAPrivateKeySpec;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-
-import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.choerodon.core.exception.CommonException;
 
 /**
  * Created by Sheep on 2019/5/30.
@@ -271,7 +270,6 @@ public class SslUtil {
 
             // 获取证书的主题
             String subject = cert.getSubjectDN().getName();
-            System.out.println("Subject: " + subject);
 
             List<String> domains = new ArrayList<>();
             for (List<?> subjectAlternativeName : cert.getSubjectAlternativeNames()) {
@@ -279,8 +277,9 @@ public class SslUtil {
             }
 
             // 获取证书的有效期
-            certInfo.validFrom = cert.getNotBefore();
-            certInfo.validUntil = cert.getNotAfter();
+            certInfo.setValidFrom(cert.getNotBefore());
+            certInfo.setValidUntil(cert.getNotAfter());
+            certInfo.setDomains(domains);
         } catch (CertificateException | IOException e) {
             throw new CommonException("error.parse.crt", e.getMessage());
         }
