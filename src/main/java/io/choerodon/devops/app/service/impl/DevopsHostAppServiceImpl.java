@@ -691,6 +691,19 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
     }
 
+    @Override
+    public List<String> listWorkDirs(Long projectId, Long hostId) {
+        List<DevopsHostAppVO> devopsHostAppVOS = devopsHostAppMapper.listWorkDirsByHostId(hostId);
+        return devopsHostAppVOS.stream()
+                .map(a -> {
+                    if (ObjectUtils.isEmpty(a.getWorkDir())) {
+                        return "/var/choerodon/" + a.getCode();
+                    } else {
+                        return a.getWorkDir();
+                    }
+                }).collect(Collectors.toList());
+    }
+
     private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO) {
         if (!RdupmTypeEnum.DOCKER.value().equals(devopsHostAppVO.getRdupmType())) {
             if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {

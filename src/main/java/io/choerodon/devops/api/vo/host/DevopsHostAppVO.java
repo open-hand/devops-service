@@ -1,10 +1,5 @@
 package io.choerodon.devops.api.vo.host;
 
-import java.util.Date;
-
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
 import io.choerodon.devops.api.vo.deploy.FileInfoVO;
 import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
@@ -15,6 +10,10 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.util.Base64Util;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import java.util.Date;
 
 /**
  * 〈功能简述〉
@@ -79,6 +78,17 @@ public class DevopsHostAppVO {
     private String hostStatus;
     @ApiModelProperty(value = "当前生效的配置id,为docker_compose部署类型时才需要")
     private Long effectValueId;
+    @ApiModelProperty(value = "工作目录")
+    private String workDir;
+
+    public String getWorkDir() {
+        return workDir;
+    }
+
+    public DevopsHostAppVO setWorkDir(String workDir) {
+        this.workDir = workDir;
+        return this;
+    }
 
     public void decodeCommand() {
         this.preCommand = Base64Util.decodeBuffer(this.preCommand);
