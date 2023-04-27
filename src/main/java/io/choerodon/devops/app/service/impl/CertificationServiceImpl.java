@@ -563,7 +563,7 @@ public class CertificationServiceImpl implements CertificationService {
         if (!DOMAIN_REGEX.matcher(domain).matches()) {
             throw new CommonException(ERROR_DEVOPS_INGRESS_DOMAIN_INVALID, domain);
         }
-        String wildcardDomain = domain.substring(domain.indexOf("."));
+        String wildcardDomain = "*" + domain.substring(domain.indexOf("."));
         List<CertificationDTO> certificationDTOList = baseQueryActive(projectId, envId);
         return certificationDTOList.stream().filter(c -> {
             List<String> domains = JsonHelper.unmarshalByJackson(c.getDomains(), new TypeReference<List<String>>() {
