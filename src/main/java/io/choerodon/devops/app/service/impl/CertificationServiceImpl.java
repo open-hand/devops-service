@@ -215,8 +215,6 @@ public class CertificationServiceImpl implements CertificationService {
 
         String certName = certificationVO.getCertName();
         String type = certificationVO.getType();
-        List<String> domains = certificationVO.getDomains();
-
 
         CertificationFileDTO certificationFileDTO = null;
         //如果创建的时候选择证书
@@ -258,7 +256,8 @@ public class CertificationServiceImpl implements CertificationService {
 
         // 将资源对象生成yaml提交到gitlab
         if (needToUpdateGitOps) {
-            handleCertificationToGitlab(newCertificationDTO.getId(), certManagerVersion, certName, type, domains, keyContent, certContent, devopsEnvironmentDTO, c7NCertificationCreateOrUpdateVO.getOperateType(), clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode()));
+            handleCertificationToGitlab(newCertificationDTO.getId(), certManagerVersion, certName, type, JsonHelper.unmarshalByJackson(newCertificationDTO.getDomains(), new TypeReference<List<String>>() {
+            }), keyContent, certContent, devopsEnvironmentDTO, c7NCertificationCreateOrUpdateVO.getOperateType(), clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode()));
         }
     }
 
