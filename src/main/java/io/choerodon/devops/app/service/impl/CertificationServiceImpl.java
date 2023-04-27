@@ -232,6 +232,7 @@ public class CertificationServiceImpl implements CertificationService {
         }
 
         boolean needToUpdateGitOps = checkNeedToUpdateGitOpsAndSetStatus(certificationVO, c7NCertificationCreateOrUpdateVO.getOperateType());
+        newCertificationDTO.setStatus(certificationVO.getStatus());
 
 
         String keyContent;
