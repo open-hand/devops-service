@@ -239,8 +239,8 @@ public class CertificationServiceImpl implements CertificationService {
         String keyContent;
         String certContent;
         if (certificationFileDTO == null) {
-            keyContent = certificationVO.getKeyValue();
-            certContent = certificationVO.getCertValue();
+            keyContent = newCertificationDTO.getKeyValue();
+            certContent = newCertificationDTO.getCertValue();
         } else {
             keyContent = certificationFileDTO.getKeyFile();
             certContent = certificationFileDTO.getCertFile();
@@ -658,7 +658,9 @@ public class CertificationServiceImpl implements CertificationService {
         certificationVO.setCertName(certificationDTO.getName());
         certificationVO.setDomains(gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
         }.getType()));
-        certificationVO.setCommonName(certificationVO.getDomains().get(0));
+        if (!CollectionUtils.isEmpty(certificationVO.getDomains())) {
+            certificationVO.setCommonName(certificationVO.getDomains().get(0));
+        }
         certificationVO.setCertId(certificationDTO.getOrgCertId());
         return certificationVO;
     }
