@@ -71,6 +71,9 @@ public class DevopsCiHostDeployInfoVO {
     @ApiModelProperty("dockercompose执行命令")
     private String dockerComposeRunCommand;
 
+    @ApiModelProperty("工作目录")
+    private String workDir;
+
     private String value;
 
     public String getHostName() {
@@ -287,6 +290,15 @@ public class DevopsCiHostDeployInfoVO {
 
     public void setImageJobName(String imageJobName) {
         this.imageJobName = imageJobName;
+    }
+
+    public String getWorkDir() {
+        return workDir;
+    }
+
+    public DevopsCiHostDeployInfoVO setWorkDir(String workDir) {
+        this.workDir = workDir;
+        return this;
     }
 
     public static class JarDeploy {

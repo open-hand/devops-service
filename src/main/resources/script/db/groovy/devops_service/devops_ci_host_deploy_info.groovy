@@ -37,4 +37,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_host_deploy_info.groovy') {
             column(name: 'ci_pipeline_id')
         }
     }
+
+    changeSet(author: 'lihao', id: '2023-04-26-add-column') {
+        addColumn(tableName: 'devops_ci_host_deploy_info') {
+            column(name: 'work_dir', type: 'VARCHAR(1024)', remarks: '应用的工作目录')
+        }
+    }
 }
