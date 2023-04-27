@@ -1,8 +1,8 @@
 package io.choerodon.devops.api.vo;
 
-import javax.validation.constraints.NotNull;
-
 import io.swagger.annotations.ApiModelProperty;
+
+import javax.validation.constraints.NotNull;
 
 public class ProjectCertificationCreateUpdateVO {
     /**
@@ -23,7 +23,6 @@ public class ProjectCertificationCreateUpdateVO {
     private String certValue;
 
     @ApiModelProperty("域名")
-    @NotNull(message = "{devops.domain.null}")
     private String domain;
 
     @ApiModelProperty("是否跳过权限校验")
