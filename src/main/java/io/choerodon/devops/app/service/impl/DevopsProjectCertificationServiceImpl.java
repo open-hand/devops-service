@@ -1,22 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectCertificationCreateUpdateVO;
@@ -39,6 +25,19 @@ import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DevopsProjectCertificationServiceImpl implements DevopsProjectCertificationService {
@@ -339,7 +338,9 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
                 ProjectCertificationVO orgCertificationVO = new ProjectCertificationVO();
                 orgCertificationVO.setId(certificationDTO.getId());
                 orgCertificationVO.setName(certificationDTO.getName());
-                orgCertificationVO.setDomain(stringList.get(0));
+                if (!CollectionUtils.isEmpty(stringList)) {
+                    orgCertificationVO.setDomain(stringList.get(0));
+                }
                 orgCertificationVO.setSkipCheckProjectPermission(certificationDTO.getSkipCheckProjectPermission());
                 orgCertificationVO.setObjectVersionNumber(certificationDTO.getObjectVersionNumber());
                 orgCertifications.add(orgCertificationVO);
