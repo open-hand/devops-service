@@ -1,5 +1,24 @@
 package io.choerodon.devops.app.service.impl;
 
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.hzero.core.base.BaseConstants;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -47,24 +66,6 @@ import io.choerodon.devops.infra.mapper.DevopsHostCommandMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 /**
  * 〈功能简述〉
@@ -83,6 +84,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     private static final String CONNECTED = "connected";
     private static final String DISCONNECTED = "disconnected";
+
+    private static final String DEFAULT_WORK_DIR_TEMPLATE = "/var/choerodon/%s";
 
     @Lazy
     @Autowired
@@ -285,8 +288,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     devopsHostAppVO.setSourceType(devopsHostAppInstanceDTO.getSourceType());
                     devopsHostAppVO.setGroupId(devopsHostAppInstanceDTO.getGroupId());
                     devopsHostAppVO.setArtifactId(devopsHostAppInstanceDTO.getArtifactId());
-                    devopsHostAppVO.setVersion(devopsHostAppInstanceDTO.getVersion());
                     devopsHostAppVO.setReady(devopsHostAppInstanceDTO.getReady());
+                    if (ObjectUtils.isEmpty(devopsHostAppVO.getWorkDir())) {
+                        devopsHostAppVO.setWorkDir(String.format(DEFAULT_WORK_DIR_TEMPLATE, devopsHostAppVO.getVersion().equals("1") ? devopsHostAppInstanceDTO.getId() : devopsHostAppVO.getCode()));
+                    }
                 }
             }
 
@@ -297,7 +302,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
                 devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getId(), HostResourceType.DOCKER_COMPOSE.value()));
                 devopsHostAppVO.setDockerComposeValueDTO(finalDockerComposeValueDTOMap.get(devopsHostAppVO.getEffectValueId()));
-
+                if (ObjectUtils.isEmpty(devopsHostAppVO.getWorkDir())) {
+                    devopsHostAppVO.setWorkDir(String.format(DEFAULT_WORK_DIR_TEMPLATE, devopsHostAppVO.getVersion().equals("1") ? devopsHostAppVO.getId() : devopsHostAppVO.getCode()));
+                }
             }
 
             if (RdupmTypeEnum.DOCKER.value().equals(devopsHostAppVO.getRdupmType())) {
@@ -311,6 +318,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     devopsHostAppVO.setPorts(dockerInstanceDTOS.get(0).getPorts());
                     DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceDTOS.stream().sorted(Comparator.comparing(DevopsDockerInstanceDTO::getId).reversed()).collect(Collectors.toList()).get(0);
                     devopsHostAppVO.setDevopsDockerInstanceVO(ConvertUtils.convertObject(dockerInstanceDTO, DevopsDockerInstanceVO.class));
+                    if (ObjectUtils.isEmpty(devopsHostAppVO.getWorkDir())) {
+                        devopsHostAppVO.setWorkDir(String.format(DEFAULT_WORK_DIR_TEMPLATE, devopsHostAppVO.getVersion().equals("1") ? dockerInstanceDTOS.get(0).getId() : devopsHostAppVO.getCode()));
+                    }
                 }
                 devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryDockerInstanceLatest(devopsHostAppVO.getId(), HostResourceType.DOCKER_PROCESS.value()));
             }
