@@ -358,7 +358,9 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         ProjectCertificationVO projectCertificationVO = new ProjectCertificationVO();
         projectCertificationVO.setId(certificationDTO.getId());
         projectCertificationVO.setName(certificationDTO.getName());
-        projectCertificationVO.setDomain(stringList.get(0));
+        if (!CollectionUtils.isEmpty(stringList)) {
+            projectCertificationVO.setDomain(stringList.get(0));
+        }
         projectCertificationVO.setSkipCheckProjectPermission(certificationDTO.getSkipCheckProjectPermission());
         projectCertificationVO.setObjectVersionNumber(certificationDTO.getObjectVersionNumber());
         projectCertificationVO.setKeyValue(certificationDTO.getKeyValue());
