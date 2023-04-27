@@ -1537,9 +1537,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             // 发送资源创建失败通知
             sendNotificationService.sendWhenCertificationCreationFailure(certificationDTO, certificationDTO.getCreatedBy(), certificationDTO.getCommandId());
             updateStatus = CertificationStatus.FAILED;
-            int updated = certificationService.updateStatusIfOperating(certificationDTO.getId(), updateStatus);
-            LOGGER.info("GitOps sync event: update certification with id {} to status {}, result {}", certificationDTO.getId(), updateStatus.getStatus(), updated);
+        } else {
+            // 如果此时证书的状态不是 active, 就更新为 applying
+            updateStatus = CertificationStatus.APPLYING;
         }
+        int updated = certificationService.updateStatusIfOperating(certificationDTO.getId(), updateStatus);
+        LOGGER.info("GitOps sync event: update certification with id {} to status {}, result {}", certificationDTO.getId(), updateStatus.getStatus(), updated);
     }
 
     private void syncService(Long envId, List<DevopsEnvFileErrorDTO> errorDevopsFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
@@ -2326,11 +2329,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 X509Certificate certificate = CertificateUtil.decodeCert(Base64Util.base64Decoder(crt));
                 Date validFrom = certificate.getNotBefore();
                 Date validUntil = certificate.getNotAfter();
-                if (!(validFrom.equals(certificationDTO.getValidFrom())
-                        && validUntil.equals(certificationDTO.getValidUntil()))) {
-                    certificationDTO.setValid(validFrom, validUntil);
-                    certificationService.baseUpdateValidField(certificationDTO);
-                }
+                certificationDTO.setValid(validFrom, validUntil);
+                certificationService.baseUpdateValidField(certificationDTO);
                 boolean commandNotExist = commandDTO == null;
                 if (commandNotExist) {
                     commandDTO = new DevopsEnvCommandDTO();
