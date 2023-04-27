@@ -547,10 +547,6 @@ public class CertificationServiceImpl implements CertificationService {
                 certificationDTO.setKeyValue(certificationFileDTO.getKeyFile());
                 certificationDTO.setCertValue(certificationFileDTO.getCertFile());
             }
-            if (CertificationType.CHOOSE.getType().equals(certificationDTO.getType())) {
-                certificationDTO.setDomains(getPrefixDomains(JsonHelper.unmarshalByJackson(finalOrgCertificationDTOMap.get(certificationDTO.getCertId()).getDomains(), new TypeReference<List<String>>() {
-                }).get(0), certificationDTO.getDomains()));
-            }
 
             DevopsEnvironmentDTO devopsEnvironmentDTO = environmentMap.get(certificationDTO.getEnvId());
             if (devopsEnvironmentDTO != null) {
@@ -606,14 +602,8 @@ public class CertificationServiceImpl implements CertificationService {
         List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
         }.getType());
         respVO.setFullDomains(new ArrayList<>(domains));
-        if (respVO.getType().equals(CertificationType.CHOOSE.getType())) {
-            CertificationDTO orgCertificationDTO = devopsCertificationMapper.queryById(certificationDTO.getOrgCertId());
-            respVO.setDomains(getPrefixDomains(JsonHelper.unmarshalByJackson(orgCertificationDTO.getDomains(), new TypeReference<List<String>>() {
-            }).get(0), domains));
-        } else {
-            respVO.setDomains(domains);
-        }
-        respVO.setCommonName(CollectionUtils.isEmpty(domains) ? null : domains.get(0));
+        respVO.setDomains(domains);
+        respVO.setCommonName(Strings.join(",", domains.iterator()));
         respVO.setIngresses(listIngressNamesByCertId(certId));
         respVO.setCertId(certificationDTO.getOrgCertId());
         respVO.setCertName(respVO.getName());
@@ -962,15 +952,6 @@ public class CertificationServiceImpl implements CertificationService {
         certificationVO.setEnvId(KeyDecryptHelper.decryptValue(c7NCertificationCreateOrUpdateVO.getEnvId()));
         certificationVO.setId(KeyDecryptHelper.decryptValue(c7NCertificationCreateOrUpdateVO.getId()));
         return certificationVO;
-    }
-
-    private List<String> getPrefixDomains(String suffix, List<String> domains) {
-        List<String> prefixDomains = new ArrayList<>();
-        domains.forEach(domain -> {
-            int i = domain.indexOf(suffix);
-            prefixDomains.add(domain.substring(0, i - 1));
-        });
-        return prefixDomains;
     }
 
     private boolean checkNeedToUpdateGitOpsAndSetStatus(C7nCertificationVO certificationVO, String operateType) {
