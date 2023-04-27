@@ -391,6 +391,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             defaultDevopsHostCommandDTO.setError("Operation missing");
             devopsHostAppVO.setDevopsHostCommandDTO(defaultDevopsHostCommandDTO);
         }
+        if (ObjectUtils.isEmpty(devopsHostAppVO.getWorkDir())) {
+            devopsHostAppVO.setWorkDir(String.format("/var/choerodon/%s", devopsHostAppVO.getCode()));
+        }
         return devopsHostAppVO;
     }
 
