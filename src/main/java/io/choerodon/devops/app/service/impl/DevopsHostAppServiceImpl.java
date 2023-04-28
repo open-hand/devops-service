@@ -691,11 +691,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                         .setSourceType(devopsHostAppInstanceDTO.getSourceType())
                         .setOperation(MiscConstants.UPDATE_TYPE)
                         .setAppId(appId)
-                        .setPreCommand(devopsHostAppInstanceDTO.getPreCommand())
-                        .setRunCommand(devopsHostAppInstanceDTO.getRunCommand())
-                        .setPostCommand(devopsHostAppInstanceDTO.getPostCommand())
-                        .setKillCommand(devopsHostAppInstanceDTO.getKillCommand())
-                        .setHealthProb(devopsHostAppInstanceDTO.getHealthProb());
+                        .setPreCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getPreCommand()))
+                        .setRunCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getRunCommand()))
+                        .setPostCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getPostCommand()))
+                        .setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()))
+                        .setHealthProb(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getHealthProb()));
                 if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
                     jarDeployVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), ProdJarInfoVO.class));
                 } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
@@ -714,11 +714,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                         .setSourceType(devopsHostAppInstanceDTO.getSourceType())
                         .setOperation(MiscConstants.UPDATE_TYPE)
                         .setAppId(appId)
-                        .setPreCommand(devopsHostAppInstanceDTO.getPreCommand())
-                        .setRunCommand(devopsHostAppInstanceDTO.getRunCommand())
-                        .setPostCommand(devopsHostAppInstanceDTO.getPostCommand())
-                        .setKillCommand(devopsHostAppInstanceDTO.getKillCommand())
-                        .setHealthProb(devopsHostAppInstanceDTO.getHealthProb());
+                        .setPreCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getPreCommand()))
+                        .setRunCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getRunCommand()))
+                        .setPostCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getPostCommand()))
+                        .setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()))
+                        .setHealthProb(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getHealthProb()));
                 customDeployVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), FileInfoVO.class));
                 deployCustomInstance(projectId, devopsHostDTO, devopsHostAppDTO, devopsHostAppInstanceDTO, customDeployVO);
                 break;
@@ -878,7 +878,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String artifactId = null;
         String version = null;
         // 校验主机已连接
-        hostConnectionHandler.checkHostConnection(devopsHostDTO.getId());
+//        hostConnectionHandler.checkHostConnection(devopsHostDTO.getId());
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
