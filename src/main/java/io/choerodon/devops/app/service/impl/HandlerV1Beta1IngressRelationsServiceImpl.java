@@ -150,12 +150,12 @@ public class HandlerV1Beta1IngressRelationsServiceImpl implements HandlerObjectF
                         if (devopsIngressVO.equals(ingressVO)) {
                             isNotChange = true;
                         }
-                        if (!devopsIngressVO.getPathList().stream()
-                                .allMatch(t ->
-                                        devopsIngressService.baseCheckPath(envId, devopsIngressVO.getDomain(),
-                                                t.getPath(), devopsIngressDTO.getId()))) {
-                            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
-                        }
+//                        if (!devopsIngressVO.getPathList().stream()
+//                                .allMatch(t ->
+//                                        devopsIngressService.baseCheckPath(envId, devopsIngressVO.getDomain(),
+//                                                t.getPath(), devopsIngressDTO.getId()))) {
+//                            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
+//                        }
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsIngressDTO.getCommandId());
                         if (!isNotChange) {
                             devopsIngressService.updateIngressByGitOps(devopsIngressDTO.getId(), devopsIngressVO, projectId, userId);
