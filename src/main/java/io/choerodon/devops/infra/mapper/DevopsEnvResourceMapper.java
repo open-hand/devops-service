@@ -36,4 +36,9 @@ public interface DevopsEnvResourceMapper extends BaseMapper<DevopsEnvResourceDTO
 
     List<DevopsEnvResourceDTO> getResourceWithDetailByInstanceIdAndKind(@Param("instanceId") Long instanceId, @Param("kind") String kind);
 
+    List<Long> listInstanceIdsDuplicatedStatefulset();
+
+    List<DevopsEnvResourceDTO> listStatefulsetByInstanceIds(@Param("instanceIds") List<Long> instanceIds);
+
+    void deleteByIds(@Param("resourceIdsToDelete") List<Long> resourceIdsToDelete);
 }

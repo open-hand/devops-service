@@ -76,4 +76,19 @@ public class DevopsFixDataTask {
         }
     }
 
+
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_STATEFULSET, description = "修复statefulset数据")
+    @TimedTask(name = FIX_STATEFULSET,
+            description = "修复statefulset数据",
+            repeatInterval = 1,
+            repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS,
+            params = {})
+    public void fixStatefulset(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(FIX_STATEFULSET);
+        } catch (Exception e) {
+            logger.error("devops.fix.data", e);
+        }
+    }
+
 }
