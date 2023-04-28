@@ -296,6 +296,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             }
 
             if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppVO.getRdupmType())) {
+                devopsHostAppVO.setKillCommandExist(true);
                 devopsHostAppVO.setRunCommand(devopsHostAppVO.getRunCommand());
                 List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceService.listByAppId(devopsHostAppVO.getId());
                 calculateStatus(devopsHostAppVO, devopsDockerInstanceDTOS);
@@ -308,6 +309,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             }
 
             if (RdupmTypeEnum.DOCKER.value().equals(devopsHostAppVO.getRdupmType())) {
+                devopsHostAppVO.setKillCommandExist(true);
                 DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
                 devopsDockerInstanceDTO.setAppId(devopsHostAppVO.getId());
                 List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
@@ -339,6 +341,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
         devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
         if (org.apache.commons.lang3.StringUtils.equals(devopsHostAppVO.getRdupmType(), RdupmTypeEnum.DOCKER.value())) {
+            devopsHostAppVO.setKillCommandExist(true);
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
             devopsDockerInstanceDTO.setAppId(devopsHostAppVO.getId());
             List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
@@ -356,6 +359,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         // 表示中间件，需要查询额外字段
         if (RdupmTypeEnum.MIDDLEWARE.value().equals(devopsHostAppVO.getRdupmType())) {
+            devopsHostAppVO.setKillCommandExist(true);
             DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareService.queryByInstanceId(devopsHostAppVO.getId());
             devopsHostAppVO.setMiddlewareMode(DevopsMiddlewareServiceImpl.MODE_MAP.get(devopsMiddlewareDTO.getMode()));
             devopsHostAppVO.setMiddlewareVersion(devopsMiddlewareDTO.getVersion());
@@ -380,6 +384,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppVO.getRdupmType())) {
+            devopsHostAppVO.setKillCommandExist(true);
             DevopsHostAppDTO devopsHostAppDTO = baseQuery(id);
             devopsHostAppVO.setRunCommand(devopsHostAppDTO.getRunCommand());
             devopsHostAppVO.setDockerComposeValueDTO(dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId()));
