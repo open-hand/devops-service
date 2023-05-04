@@ -645,7 +645,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsEnvironmentService.baseUpdateSagaSyncEnvCommit(devopsEnvironmentDTO);
         LOGGER.info("update devopsCommit successfully: {}", pushWebHookVO.getCheckoutSha());
 
-        producer.apply(StartSagaBuilder.newBuilder().withLevel(ResourceLevel.PROJECT).withSourceId(devopsEnvironmentDTO.getProjectId()).withRefType("env").withSagaCode(SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS), builder -> builder.withPayloadAndSerialize(pushWebHookVO).withRefId(devopsEnvironmentDTO.getId().toString()));
+        producer.apply(StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(devopsEnvironmentDTO.getProjectId())
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS),
+                builder -> builder.withPayloadAndSerialize(pushWebHookVO).withRefId(devopsEnvironmentDTO.getId().toString()));
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
