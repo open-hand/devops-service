@@ -104,6 +104,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
         }
     }
     changeSet(author: 'wanghao', id: '2023-04-04-udpate-column') {
+        preConditions(onFail: "MARK_RAN") {
+            tableExists(tableName: "devops_ci_step")
+        }
         sql("""
             UPDATE devops_ci_job 
             SET image = "registry.cn-shanghai.aliyuncs.com/c7n/sonar-scanner:4.6"
