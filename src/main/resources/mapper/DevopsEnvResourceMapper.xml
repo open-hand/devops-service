@@ -95,9 +95,36 @@
             resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
         SELECT re.*, detail.message
         FROM devops_env_resource re
-                     INNER JOIN devops_env_resource_detail detail
-                ON re.resource_detail_id = detail.id
+                 INNER JOIN devops_env_resource_detail detail
+                            ON re.resource_detail_id = detail.id
         WHERE re.instance_id = #{instanceId}
           AND re.kind = #{kind}
     </select>
+
+    <select id="listInstanceIdsDuplicatedStatefulset" resultType="java.lang.Long">
+        select instance_id
+        from devops_env_resource
+        where kind = 'StatefulSet'
+        group by instance_id
+        having count(*) > 1;
+    </select>
+
+    <select id="listStatefulsetByInstanceIds" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
+        SELECT id, instance_id, name, last_update_date
+        FROM devops_env_resource
+        WHERE kind = 'StatefulSet'
+          AND instance_id IN
+        <foreach collection="instanceIds" item="instanceId" separator="," open="(" close=")">
+            #{instanceId}
+        </foreach>
+    </select>
+
+    <delete id="deleteByIds">
+        DELETE
+        FROM devops_env_resource
+        WHERE id IN
+        <foreach collection="resourceIdsToDelete" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>

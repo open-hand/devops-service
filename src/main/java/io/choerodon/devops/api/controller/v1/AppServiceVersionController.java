@@ -21,6 +21,7 @@ import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
 import io.choerodon.devops.api.vo.AppServiceVersionVO;
 import io.choerodon.devops.api.vo.AppServiceVersionWithHelmConfigVO;
 import io.choerodon.devops.app.service.AppServiceVersionService;
+import io.choerodon.devops.infra.dto.AppServiceImageVersionDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -419,5 +420,17 @@ public class AppServiceVersionController {
             @ApiParam(value = "taz包", required = true)
             @RequestParam MultipartFile file) {
         return ResponseEntity.ok(appServiceVersionService.saveHelmVersion(projectId, code, version, commit, file));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "查询应用服务版本下的镜像版本信息")
+    @GetMapping(value = "/image_version")
+    public ResponseEntity<AppServiceImageVersionDTO> queryImageVersion(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "code") String code,
+            @ApiParam(value = "版本", required = true)
+            @RequestParam String version) {
+        return ResponseEntity.ok(appServiceVersionService.queryImageVersion(projectId, code, version));
     }
 }

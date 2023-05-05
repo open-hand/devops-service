@@ -332,7 +332,7 @@ stage('代码检查') {
     }
   }
   steps {
-	withChoerodonEnv('sonar'){
+    withChoerodonEnv('sonar'){
        sh 'sonar-scanner -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN}  -Dsonar.projectKey=${SONAR_KEY_PREFIX}:${C7N_APP_SERVICE_CODE -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=./'
     }
   }

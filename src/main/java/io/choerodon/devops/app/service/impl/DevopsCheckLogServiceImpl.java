@@ -1,8 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -15,15 +13,9 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
-import io.choerodon.devops.infra.dto.CertificationDTO;
-import io.choerodon.devops.infra.dto.CiTemplateStageDTO;
-import io.choerodon.devops.infra.dto.CiTemplateStageJobRelDTO;
-import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CertificationType;
-import io.choerodon.devops.infra.mapper.CiTemplateStageBusMapper;
-import io.choerodon.devops.infra.mapper.CiTemplateStageJobRelBusMapper;
-import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiStepMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -32,20 +24,13 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
 
-    public static final String FIX_APP_CENTER_DATA = "fixAppCenterData";
-    public static final String FIX_PIPELINE_DATA = "fixPipelineData";
-    public static final String FIX_HELM_REPO_DATA = "fixHelmRepoData";
-    public static final String FIX_HELM_VERSION_DATA = "fixHelmVersionData";
-
     public static final String FIX_PIPELINE_SONAR_DATA = "fix_pipeline_sonar_data";
-    public static final String FIX_IMAGE_VERSION_DATA = "fixImageVersionData";
-    public static final String MIGRATION_CD_PIPELINE_DATE = "migrationCdPipelineDate";
     public static final String FIX_CERTIFICATE_TYPE = "fix_certificate_type";
+    public static final String FIX_STATEFULSET = "fix_statefulset";
 
     public static final String DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA = "deleteDevopsEnvResourceDetailData";
 
 
-    public static final String FIX_HELM_IMAGE_VERSION_OF_NULL_DATA = "fixHelmImageVersionOfNullData";
     @Autowired
     private DevopsCheckLogMapper devopsCheckLogMapper;
     @Autowired
@@ -59,6 +44,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private CiTemplateStageJobRelBusMapper ciTemplateStageJobRelBusMapper;
     @Autowired
     private CertificationService certificationService;
+    @Autowired
+    private DevopsEnvResourceMapper devopsEnvResourceMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -78,6 +65,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             case FIX_CERTIFICATE_TYPE:
                 fixCertificateType();
                 break;
+            case FIX_STATEFULSET:
+                fixStatefulset();
+                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -85,6 +75,30 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    private void fixStatefulset() {
+        // 查出所有有重复记录的statefulset
+        List<Long> instanceIds = devopsEnvResourceMapper.listInstanceIdsDuplicatedStatefulset().stream().filter(Objects::nonNull).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(instanceIds)) {
+            return;
+        }
+        // 查出详细的StatefulSet信息
+        List<DevopsEnvResourceDTO> devopsEnvResourceDTOS = devopsEnvResourceMapper.listStatefulsetByInstanceIds(instanceIds);
+        Map<String, List<DevopsEnvResourceDTO>> grouppingByInstanceAndName = devopsEnvResourceDTOS.stream().collect(Collectors.groupingBy(e -> e.getInstanceId() + "-" + e.getName()));
+        List<Long> resourceIdsToDelete = new ArrayList<>();
+        grouppingByInstanceAndName.forEach((key, value) -> {
+            if (value.size() > 1) {
+                List<DevopsEnvResourceDTO> sortedEnvResource = value.stream().sorted(Comparator.comparing(DevopsEnvResourceDTO::getLastUpdateDate).reversed()).collect(Collectors.toList());
+                sortedEnvResource.subList(1, sortedEnvResource.size()).forEach(e -> {
+                    resourceIdsToDelete.add(e.getId());
+                });
+            }
+        });
+        if (CollectionUtils.isEmpty(resourceIdsToDelete)) {
+            return;
+        }
+        devopsEnvResourceMapper.deleteByIds(resourceIdsToDelete);
     }
 
     private void fixCertificateType() {
@@ -147,5 +161,4 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             });
         }
     }
-
 }
