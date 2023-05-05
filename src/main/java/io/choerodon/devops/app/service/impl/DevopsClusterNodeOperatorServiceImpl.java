@@ -57,6 +57,7 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private DevopsClusterOperatingRecordService devopsClusterOperatingRecordService;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Lazy
     @Autowired
     private DevopsClusterService devopsClusterService;
 

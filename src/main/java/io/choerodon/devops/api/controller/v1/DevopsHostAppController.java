@@ -1,15 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
@@ -19,6 +9,15 @@ import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -82,6 +81,20 @@ public class DevopsHostAppController {
         return ResponseEntity.noContent().build();
     }
 
+    @ApiOperation("重启主机应用")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PutMapping("/{host_id}/apps/{app_id}")
+    public ResponseEntity<Void> restart(@PathVariable("project_id") Long projectId,
+                                        @ApiParam(value = "主机id", required = true)
+                                        @Encrypt
+                                        @PathVariable("host_id") Long hostId,
+                                        @Encrypt
+                                        @ApiParam(value = "主机应用id", required = true)
+                                        @PathVariable("app_id") Long appId) {
+        devopsHostAppService.restart(projectId, hostId, appId);
+        return ResponseEntity.noContent().build();
+    }
+
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "校验名称唯一")
     @GetMapping("/apps/check_name")
@@ -115,5 +128,17 @@ public class DevopsHostAppController {
             @ApiParam(value = "应用ID", required = true)
             @PathVariable(value = "app_id") Long appId) {
         return ResponseEntity.ok(devopsHostAppService.queryPipelineReferenceHostApp(projectId, appId));
+    }
+
+    @ApiOperation("查询主机设置的应用工作目录")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/{host_id}/list_work_dirs")
+    public ResponseEntity<List<String>> listWorkDirs(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "主机id", required = true)
+            @PathVariable(value = "host_id") Long hostId) {
+        return ResponseEntity.ok(devopsHostAppService.listWorkDirs(projectId, hostId));
     }
 }

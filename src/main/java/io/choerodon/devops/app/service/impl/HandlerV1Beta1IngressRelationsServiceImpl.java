@@ -23,6 +23,7 @@ import io.choerodon.devops.api.vo.DevopsIngressPathVO;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitOpsUtil;
@@ -150,14 +151,15 @@ public class HandlerV1Beta1IngressRelationsServiceImpl implements HandlerObjectF
                         if (devopsIngressVO.equals(ingressVO)) {
                             isNotChange = true;
                         }
-                        if (!devopsIngressVO.getPathList().stream()
-                                .allMatch(t ->
-                                        devopsIngressService.baseCheckPath(envId, devopsIngressVO.getDomain(),
-                                                t.getPath(), devopsIngressDTO.getId()))) {
-                            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
-                        }
+//                        if (!devopsIngressVO.getPathList().stream()
+//                                .allMatch(t ->
+//                                        devopsIngressService.baseCheckPath(envId, devopsIngressVO.getDomain(),
+//                                                t.getPath(), devopsIngressDTO.getId()))) {
+//                            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
+//                        }
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsIngressDTO.getCommandId());
-                        if (!isNotChange) {
+                        // 如果操作状态不是operating则认为是直接修改的gitops文件
+                        if (!CommandStatus.OPERATING.getStatus().equals(devopsEnvCommandDTO.getStatus())) {
                             devopsIngressService.updateIngressByGitOps(devopsIngressDTO.getId(), devopsIngressVO, projectId, userId);
                             DevopsIngressDTO newdevopsIngressDTO = devopsIngressService.baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                             devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(newdevopsIngressDTO.getCommandId());

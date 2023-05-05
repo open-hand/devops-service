@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
@@ -9,6 +7,8 @@ import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -81,5 +81,7 @@ public interface DevopsHostAppService {
 
     List<PipelineInstanceReferenceVO> queryPipelineReferenceHostApp(Long projectId, Long appId);
 
+    void restart(Long projectId, Long hostId, Long appId);
 
+    List<String> listWorkDirs(Long projectId, Long hostId);
 }

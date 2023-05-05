@@ -83,12 +83,17 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
     }
 
     changeSet(author: 'lihao', id: '2023-01-17-add-column') {
-        addColumn(tableName: 'devops_host_app'){
-            column(name: 'version',type: 'VARCHAR(3)',defaultValue: '2',remarks: '应用版本号，该字段添加时间之前生成的应用版本号为1，之后的版本号为2')
+        addColumn(tableName: 'devops_host_app') {
+            column(name: 'version', type: 'VARCHAR(3)', defaultValue: '2', remarks: '应用版本号，该字段添加时间之前生成的应用版本号为1，之后的版本号为2')
         }
         sql(
                 "UPDATE devops_host_app SET version=1 "
         )
     }
 
+    changeSet(author: 'lihao', id: '2023-04-26-add-column') {
+        addColumn(tableName: 'devops_host_app') {
+            column(name: 'work_dir', type: 'VARCHAR(1024)', remarks: '应用的工作目录')
+        }
+    }
 }

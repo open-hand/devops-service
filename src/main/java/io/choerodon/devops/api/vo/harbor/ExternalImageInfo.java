@@ -18,6 +18,16 @@ public class ExternalImageInfo {
     @ApiModelProperty("仓库是不是私库有")
     private Boolean privateRepository;
 
+    public ExternalImageInfo() {
+    }
+
+    public ExternalImageInfo(String imageUrl, String username, String password, Boolean privateRepository) {
+        this.imageUrl = imageUrl;
+        this.username = username;
+        this.password = password;
+        this.privateRepository = privateRepository;
+    }
+
     public String getImageUrl() {
         return imageUrl;
     }

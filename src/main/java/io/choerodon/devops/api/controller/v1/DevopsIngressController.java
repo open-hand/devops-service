@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -12,6 +14,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
+import io.choerodon.devops.api.vo.IngressNginxAnnotationVO;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -200,9 +203,7 @@ public class DevopsIngressController {
      * @param params    搜索参数
      * @return Page
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @CustomPageRequest
     @ApiOperation(value = "环境下分页查询域名")
     @PostMapping(value = "/{env_id}/page_by_env")
@@ -218,5 +219,23 @@ public class DevopsIngressController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return ResponseEntity.ok(devopsIngressService.pageByEnv(projectId, envId, pageable, params));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "查询NginxIngress可用参数列表")
+    @GetMapping(value = "nginx_ingress_annotations")
+    public ResponseEntity<List<IngressNginxAnnotationVO>> listNginxIngressAnnotation(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return ResponseEntity.ok(devopsIngressService.listNginxIngressAnnotation());
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionLogin = true)
+    @ApiOperation(value = "查询NginxIngress使用指引文档")
+    @GetMapping(value = "nginx_ingress_user_guide")
+    public ResponseEntity<String> queryNginxIngressUserGuide(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return ResponseEntity.ok(devopsIngressService.queryNginxIngressUserGuide());
     }
 }

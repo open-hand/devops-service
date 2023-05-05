@@ -1,13 +1,12 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.*;
-
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import javax.persistence.*;
 
 /**
  * 〈功能简述〉
@@ -55,6 +54,9 @@ public class DevopsCiHostDeployInfoDTO extends AuditDomain {
     @ApiModelProperty("dockercompose执行命令")
     @Transient
     private String dockerComposeRunCommand;
+
+    @ApiModelProperty("工作目录")
+    private String workDir;
 
     public String getDockerComposeRunCommand() {
         return dockerComposeRunCommand;
@@ -192,5 +194,12 @@ public class DevopsCiHostDeployInfoDTO extends AuditDomain {
         this.healthProb = healthProb;
     }
 
+    public String getWorkDir() {
+        return workDir;
+    }
 
+    public DevopsCiHostDeployInfoDTO setWorkDir(String workDir) {
+        this.workDir = workDir;
+        return this;
+    }
 }

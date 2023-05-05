@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.Map;
+
 import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1ServicePort;
 import org.slf4j.Logger;
@@ -7,9 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-
-import java.util.List;
-import java.util.Map;
 
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsServiceService;
@@ -90,9 +90,9 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
             throw new GitOpsExplainException(GitOpsObjectError.SERVICE_PORTS_NOT_FOUND.getError(), filePath);
         } else {
             for (V1ServicePort v1ServicePort : v1ServicePorts) {
-                if (v1ServicePort.getName() == null) {
-                    throw new GitOpsExplainException(GitOpsObjectError.SERVICE_PORTS_NAME_NOT_FOUND.getError(), filePath);
-                }
+//                if (v1ServicePort.getName() == null) {
+//                    throw new GitOpsExplainException(GitOpsObjectError.SERVICE_PORTS_NAME_NOT_FOUND.getError(), filePath);
+//                }
                 if (v1ServicePort.getPort() == null) {
                     throw new GitOpsExplainException(GitOpsObjectError.SERVICE_PORTS_PORT_NOT_FOUND.getError(), filePath);
                 }
@@ -101,8 +101,8 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
                 }
             }
         }
-        if (v1Service.getSpec().getType() == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.SERVICE_TYPE_NOT_FOUND.getError(), filePath);
-        }
+//        if (v1Service.getSpec().getType() == null) {
+//            throw new GitOpsExplainException(GitOpsObjectError.SERVICE_TYPE_NOT_FOUND.getError(), filePath);
+//        }
     }
 }

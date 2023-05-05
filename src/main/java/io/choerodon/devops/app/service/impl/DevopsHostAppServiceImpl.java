@@ -24,10 +24,9 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsHostAdditionalCheckValidator;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
-import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
-import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
-import io.choerodon.devops.api.vo.deploy.FileInfoVO;
-import io.choerodon.devops.api.vo.deploy.JarDeployVO;
+import io.choerodon.devops.api.vo.deploy.*;
+import io.choerodon.devops.api.vo.harbor.ExternalImageInfo;
+import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
@@ -53,6 +52,7 @@ import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
+import io.choerodon.devops.infra.enums.host.DevopsHostDeployType;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
@@ -84,6 +84,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     private static final String CONNECTED = "connected";
     private static final String DISCONNECTED = "disconnected";
+
+    private static final String DEFAULT_WORK_DIR_TEMPLATE = "/var/choerodon/%s";
 
     @Lazy
     @Autowired
@@ -129,6 +131,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Autowired
     @Lazy
     private DevopsCiJobService devopsCiJobService;
+    @Autowired
+    private DockerComposeService dockerComposeService;
 
     @Override
     @Transactional
@@ -278,18 +282,48 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 if (!CollectionUtils.isEmpty(devopsHostAppInstanceDTOS)) {
                     DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
                     compoundDevopsHostAppVO(devopsHostAppVO, devopsHostAppInstanceDTO);
+                    devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceIdAndType(devopsHostAppInstanceDTO.getId(), HostResourceType.INSTANCE_PROCESS.value()));
                     devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand()));
                     devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppInstanceDTO.getHealthProb()));
-                    devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppInstanceDTO.getId(), HostResourceType.INSTANCE_PROCESS.value()));
+                    devopsHostAppVO.setSourceType(devopsHostAppInstanceDTO.getSourceType());
+                    devopsHostAppVO.setGroupId(devopsHostAppInstanceDTO.getGroupId());
+                    devopsHostAppVO.setArtifactId(devopsHostAppInstanceDTO.getArtifactId());
+                    devopsHostAppVO.setReady(devopsHostAppInstanceDTO.getReady());
+                    if (ObjectUtils.isEmpty(devopsHostAppVO.getWorkDir())) {
+                        devopsHostAppVO.setWorkDir(String.format(DEFAULT_WORK_DIR_TEMPLATE, devopsHostAppVO.getVersion().equals("1") ? devopsHostAppInstanceDTO.getId() : devopsHostAppVO.getCode()));
+                    }
                 }
             }
+
             if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppVO.getRdupmType())) {
+                devopsHostAppVO.setKillCommandExist(true);
+                devopsHostAppVO.setRunCommand(devopsHostAppVO.getRunCommand());
+                List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceService.listByAppId(devopsHostAppVO.getId());
+                calculateStatus(devopsHostAppVO, devopsDockerInstanceDTOS);
+
                 devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getId(), HostResourceType.DOCKER_COMPOSE.value()));
                 devopsHostAppVO.setDockerComposeValueDTO(finalDockerComposeValueDTOMap.get(devopsHostAppVO.getEffectValueId()));
-
+                if (ObjectUtils.isEmpty(devopsHostAppVO.getWorkDir())) {
+                    devopsHostAppVO.setWorkDir(String.format(DEFAULT_WORK_DIR_TEMPLATE, devopsHostAppVO.getVersion().equals("1") ? devopsHostAppVO.getId() : devopsHostAppVO.getCode()));
+                }
             }
 
             if (RdupmTypeEnum.DOCKER.value().equals(devopsHostAppVO.getRdupmType())) {
+                devopsHostAppVO.setKillCommandExist(true);
+                DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+                devopsDockerInstanceDTO.setAppId(devopsHostAppVO.getId());
+                List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
+                if (!CollectionUtils.isEmpty(devopsDockerInstanceDTOS)) {
+                    List<DevopsDockerInstanceDTO> dockerInstanceDTOS = devopsDockerInstanceDTOS.stream().sorted(Comparator.comparing(DevopsDockerInstanceDTO::getId).reversed()).collect(Collectors.toList());
+                    devopsHostAppVO.setInstanceId(dockerInstanceDTOS.get(0).getId());
+                    devopsHostAppVO.setStatus(dockerInstanceDTOS.get(0).getStatus());
+                    devopsHostAppVO.setPorts(dockerInstanceDTOS.get(0).getPorts());
+                    DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceDTOS.stream().sorted(Comparator.comparing(DevopsDockerInstanceDTO::getId).reversed()).collect(Collectors.toList()).get(0);
+                    devopsHostAppVO.setDevopsDockerInstanceVO(ConvertUtils.convertObject(dockerInstanceDTO, DevopsDockerInstanceVO.class));
+                    if (ObjectUtils.isEmpty(devopsHostAppVO.getWorkDir())) {
+                        devopsHostAppVO.setWorkDir(String.format(DEFAULT_WORK_DIR_TEMPLATE, devopsHostAppVO.getVersion().equals("1") ? dockerInstanceDTOS.get(0).getId() : devopsHostAppVO.getCode()));
+                    }
+                }
                 devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryDockerInstanceLatest(devopsHostAppVO.getId(), HostResourceType.DOCKER_PROCESS.value()));
             }
             DevopsHostDTO devopsHostDTO = hostDTOMap.get(devopsHostAppVO.getHostId());
@@ -307,6 +341,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
         devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
         if (org.apache.commons.lang3.StringUtils.equals(devopsHostAppVO.getRdupmType(), RdupmTypeEnum.DOCKER.value())) {
+            devopsHostAppVO.setKillCommandExist(true);
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
             devopsDockerInstanceDTO.setAppId(devopsHostAppVO.getId());
             List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
@@ -324,6 +359,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         // 表示中间件，需要查询额外字段
         if (RdupmTypeEnum.MIDDLEWARE.value().equals(devopsHostAppVO.getRdupmType())) {
+            devopsHostAppVO.setKillCommandExist(true);
             DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareService.queryByInstanceId(devopsHostAppVO.getId());
             devopsHostAppVO.setMiddlewareMode(DevopsMiddlewareServiceImpl.MODE_MAP.get(devopsMiddlewareDTO.getMode()));
             devopsHostAppVO.setMiddlewareVersion(devopsMiddlewareDTO.getVersion());
@@ -348,6 +384,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppVO.getRdupmType())) {
+            devopsHostAppVO.setKillCommandExist(true);
             DevopsHostAppDTO devopsHostAppDTO = baseQuery(id);
             devopsHostAppVO.setRunCommand(devopsHostAppDTO.getRunCommand());
             devopsHostAppVO.setDockerComposeValueDTO(dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId()));
@@ -368,6 +405,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             defaultDevopsHostCommandDTO.setStatus("failed");
             defaultDevopsHostCommandDTO.setError("Operation missing");
             devopsHostAppVO.setDevopsHostCommandDTO(defaultDevopsHostCommandDTO);
+        }
+        if (ObjectUtils.isEmpty(devopsHostAppVO.getWorkDir())) {
+            devopsHostAppVO.setWorkDir(String.format("/var/choerodon/%s", devopsHostAppVO.getCode()));
         }
         return devopsHostAppVO;
     }
@@ -609,6 +649,100 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         return devopsCiJobService.queryPipelineReferenceHostApp(projectId, appId);
     }
 
+    @Override
+    public void restart(Long projectId, Long hostId, Long appId) {
+        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(appId);
+        DevopsHostAppInstanceDTO devopsHostAppInstanceDTO;
+        switch (RdupmTypeEnum.valueOf(devopsHostAppDTO.getRdupmType().toUpperCase())) {
+            case DOCKER:
+                DevopsDockerInstanceVO devopsDockerInstanceVO = devopsDockerInstanceMapper.listByAppId(appId, null, null)
+                        .get(0);
+                DockerDeployVO dockerDeployVO = new DockerDeployVO();
+                dockerDeployVO.setHostId(hostId)
+                        .setHostAppId(appId)
+                        .setOperation(MiscConstants.UPDATE_TYPE)
+                        .setContainerName(devopsDockerInstanceVO.getName()).setName(devopsHostAppDTO.getName())
+                        .setRepoType(devopsDockerInstanceVO.getRepoType())
+                        .setSourceType(devopsDockerInstanceVO.getSourceType())
+                        .setValue(devopsDockerInstanceVO.getDockerCommand());
+                if (DevopsHostDeployType.DEFAULT.value().equals(dockerDeployVO.getRepoType())) {
+                    ProdImageInfoVO prodImageInfoVO = new ProdImageInfoVO(devopsDockerInstanceVO.getRepoName(),
+                            devopsDockerInstanceVO.getRepoType(),
+                            devopsDockerInstanceVO.getRepoId(),
+                            devopsDockerInstanceVO.getImageName(),
+                            devopsDockerInstanceVO.getTag(),
+                            devopsDockerInstanceVO.getPrivateRepository(),
+                            devopsDockerInstanceVO.getImage());
+                    dockerDeployVO.setImageInfo(prodImageInfoVO);
+                } else {
+                    ExternalImageInfo externalImageInfo = new ExternalImageInfo(devopsDockerInstanceVO.getImage(),
+                            devopsDockerInstanceVO.getUserName(),
+                            devopsDockerInstanceVO.getPassWord(),
+                            devopsDockerInstanceVO.getPrivateRepository());
+                    dockerDeployVO.setExternalImageInfo(externalImageInfo);
+                }
+                devopsDockerInstanceService.deployDockerInstance(projectId, dockerDeployVO);
+                break;
+            case DOCKER_COMPOSE:
+                dockerComposeService.restartDockerComposeApp(projectId, appId);
+                break;
+            case JAR:
+                devopsHostAppInstanceDTO = devopsHostAppInstanceService.listByAppId(appId).get(0);
+                JarDeployVO jarDeployVO = new JarDeployVO();
+                jarDeployVO.setHostId(hostId)
+                        .setAppName(devopsHostAppDTO.getName())
+                        .setAppCode(devopsHostAppDTO.getCode())
+                        .setSourceType(devopsHostAppInstanceDTO.getSourceType())
+                        .setOperation(MiscConstants.UPDATE_TYPE)
+                        .setAppId(appId)
+                        .setPreCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getPreCommand()))
+                        .setRunCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getRunCommand()))
+                        .setPostCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getPostCommand()))
+                        .setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()))
+                        .setHealthProb(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getHealthProb()));
+                if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
+                    jarDeployVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), ProdJarInfoVO.class));
+                } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
+                    jarDeployVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), FileInfoVO.class));
+                } else if (AppSourceType.CUSTOM_JAR.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
+                    jarDeployVO.setJarPullInfoDTO(JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), JarPullInfoDTO.class));
+                }
+                deployJavaInstance(projectId, devopsHostDTO, devopsHostAppDTO, devopsHostAppInstanceDTO, jarDeployVO);
+                break;
+            case OTHER:
+                devopsHostAppInstanceDTO = devopsHostAppInstanceService.listByAppId(appId).get(0);
+                CustomDeployVO customDeployVO = new CustomDeployVO();
+                customDeployVO.setHostId(hostId)
+                        .setAppName(devopsHostAppDTO.getName())
+                        .setAppCode(devopsHostAppDTO.getCode())
+                        .setSourceType(devopsHostAppInstanceDTO.getSourceType())
+                        .setOperation(MiscConstants.UPDATE_TYPE)
+                        .setAppId(appId)
+                        .setPreCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getPreCommand()))
+                        .setRunCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getRunCommand()))
+                        .setPostCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getPostCommand()))
+                        .setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()))
+                        .setHealthProb(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getHealthProb()));
+                customDeployVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), FileInfoVO.class));
+                deployCustomInstance(projectId, devopsHostDTO, devopsHostAppDTO, devopsHostAppInstanceDTO, customDeployVO);
+                break;
+        }
+    }
+
+    @Override
+    public List<String> listWorkDirs(Long projectId, Long hostId) {
+        List<DevopsHostAppVO> devopsHostAppVOS = devopsHostAppMapper.listWorkDirsByHostId(hostId);
+        return devopsHostAppVOS.stream()
+                .map(a -> {
+                    if (ObjectUtils.isEmpty(a.getWorkDir())) {
+                        return "/var/choerodon/" + a.getCode();
+                    } else {
+                        return a.getWorkDir();
+                    }
+                }).collect(Collectors.toList());
+    }
+
     private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO) {
         if (!RdupmTypeEnum.DOCKER.value().equals(devopsHostAppVO.getRdupmType())) {
             if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
@@ -639,7 +773,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     customDeployVO.getAppName(),
                     customDeployVO.getAppCode(),
                     RdupmTypeEnum.OTHER.value(),
-                    OperationTypeEnum.CREATE_APP.value());
+                    OperationTypeEnum.CREATE_APP.value(),
+                    customDeployVO.getWorkDir());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_CUSTOM_INSTANCE_FAILED);
 
             devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
@@ -670,7 +805,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
+        String workDir = ObjectUtils.isEmpty(devopsHostAppDTO.getWorkDir()) ? HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion()) : devopsHostAppDTO.getWorkDir();
         if (customDeployVO.getFileInfoVO().getFileName() == null) {
             customDeployVO.getFileInfoVO().setFileName("");
         }
@@ -699,7 +834,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 ObjectUtils.isEmpty(customDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getHealthProb()),
                 customDeployVO.getOperation(),
                 devopsHostAppDTO.getCode(),
-                devopsHostAppDTO.getVersion());
+                devopsHostAppDTO.getVersion(),
+                devopsHostAppDTO.getWorkDir());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -747,7 +883,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String artifactId = null;
         String version = null;
         // 校验主机已连接
-        hostConnectionHandler.checkHostConnection(devopsHostDTO.getId());
+//        hostConnectionHandler.checkHostConnection(devopsHostDTO.getId());
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
@@ -824,7 +960,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     jarDeployVO.getAppName(),
                     jarDeployVO.getAppCode(),
                     RdupmTypeEnum.JAR.value(),
-                    OperationTypeEnum.CREATE_APP.value());
+                    OperationTypeEnum.CREATE_APP.value(),
+                    jarDeployVO.getWorkDir());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
             devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
                     hostId,
@@ -861,7 +998,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
+        String workDir = ObjectUtils.isEmpty(devopsHostAppDTO.getWorkDir()) ? HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion()) : devopsHostAppDTO.getWorkDir();
         params.put("{{ WORK_DIR }}", workDir);
         String downloadCommand;
         String appFile;
@@ -907,7 +1044,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getHealthProb()),
                 jarDeployVO.getOperation(),
                 devopsHostAppDTO.getCode(),
-                devopsHostAppDTO.getVersion());
+                devopsHostAppDTO.getVersion(),
+                devopsHostAppDTO.getWorkDir());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -949,10 +1087,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     private Map<String, String> getRuntimeParams(Long projectId, DevopsHostAppDTO devopsHostAppDTO, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO) {
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
+        String workDir = ObjectUtils.isEmpty(devopsHostAppDTO.getWorkDir()) ? HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion()) : devopsHostAppDTO.getWorkDir();
         String appFileName;
-
-
         if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getSourceType())) {
             appFileName = devopsHostAppInstanceDTO.getCode();
         } else {

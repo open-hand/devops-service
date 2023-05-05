@@ -124,6 +124,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private CertificationService certificationService;
     @Autowired
     private DevopsSecretService devopsSecretService;
+    @Lazy
     @Autowired
     private DevopsClusterService devopsClusterService;
     @Autowired
@@ -2334,11 +2335,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 X509Certificate certificate = CertificateUtil.decodeCert(Base64Util.base64Decoder(crt));
                 Date validFrom = certificate.getNotBefore();
                 Date validUntil = certificate.getNotAfter();
-                if (!(validFrom.equals(certificationDTO.getValidFrom())
-                        && validUntil.equals(certificationDTO.getValidUntil()))) {
-                    certificationDTO.setValid(validFrom, validUntil);
-                    certificationService.baseUpdateValidField(certificationDTO);
-                }
+                certificationDTO.setValid(validFrom, validUntil);
+                certificationService.baseUpdateValidField(certificationDTO);
                 boolean commandNotExist = commandDTO == null;
                 if (commandNotExist) {
                     commandDTO = new DevopsEnvCommandDTO();

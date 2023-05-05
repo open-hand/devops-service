@@ -116,6 +116,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     private DevopsEnvPodMapper devopsEnvPodMapper;
     @Autowired
     private AgentPodInfoServiceImpl agentPodInfoService;
+    @Lazy
     @Autowired
     private DevopsClusterService devopsClusterService;
     @Autowired
@@ -396,7 +397,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         baseUpdate(devopsServiceDTO);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         //查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
@@ -1197,6 +1198,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             String filePath = null;
             if (!serviceSagaPayLoad.getCreated()) {
                 filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                        serviceSagaPayLoad.getDevopsEnvironmentDTO(),
                         serviceSagaPayLoad.getProjectId(),
                         serviceSagaPayLoad.getDevopsEnvironmentDTO().getCode(),
                         serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(),

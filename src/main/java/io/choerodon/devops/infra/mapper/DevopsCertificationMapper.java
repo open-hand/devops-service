@@ -58,4 +58,6 @@ public interface DevopsCertificationMapper extends BaseMapper<CertificationDTO> 
     int queryCountWithNullType();
 
     List<CertificationDTO> listWithNullType();
+
+    List<CertificationDTO> queryActive(@Param("projectId") Long projectId, @Param("envId") Long envId);
 }
