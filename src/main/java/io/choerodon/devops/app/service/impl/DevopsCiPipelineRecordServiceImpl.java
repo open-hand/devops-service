@@ -463,10 +463,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 if (ciAuditRecordService.queryAuditRecordIsFinish(devopsCiJobRecordDTO.getAppServiceId(),
                         pipelineWebHookVO.getObjectAttributes().getId(),
                         devopsCiJobRecordDTO.getName())) {
+                    AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+                    AppExternalConfigDTO appExternalConfigDTO = null;
+                    if (appServiceDTO.getExternalConfigId() != null) {
+                        appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+                    }
                     gitlabServiceClientOperator.playJob(TypeUtil.objToInteger(pipelineWebHookVO.getProject().getId()),
                             TypeUtil.objToInteger(ciJobWebHookVO.getId()),
                             null,
-                            null);
+                            appExternalConfigDTO);
                 } else if (statusChangedFlag) {
                     ciAuditRecordService.sendJobAuditMessage(devopsCiJobRecordDTO.getAppServiceId(),
                             ciPipelineId,

@@ -87,6 +87,9 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     @Lazy
     private JobOperator jobOperator;
 
+    @Autowired
+    private AppExternalConfigService appExternalConfigService;
+
     @Override
     public DevopsCiJobRecordDTO queryByAppServiceIdAndGitlabJobId(Long appServiceId, Long gitlabJobId) {
         Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
@@ -334,10 +337,15 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         }
         // 审核结束则执行job
         if (auditFinishFlag) {
+            AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+            AppExternalConfigDTO appExternalConfigDTO = null;
+            if (appServiceDTO.getExternalConfigId() != null) {
+                appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+            }
             gitlabServiceClientOperator.playJob(TypeUtil.objToInteger(gitlabProjectId),
                     TypeUtil.objToInteger(gitlabJobId),
                     null,
-                    null);
+                    appExternalConfigDTO);
         }
 
         return auditResultVO;
