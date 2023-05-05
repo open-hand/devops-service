@@ -667,10 +667,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineVO.setAppServiceType(appServiceDTO.getType());
         ciCdPipelineVO.setAppServiceName(appServiceDTO.getName());
 
-        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        ciCdPipelineVO.setGitlabUrl(
-                gitlabUrl + urlSlash + info.getTenantNum() + "-" + info.getDevopsComponentCode() + "/"
-                        + appServiceDTO.getCode() + ".git");
+        if (appServiceDTO.getExternalConfigId() == null) {
+            String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+            ciCdPipelineVO.setGitlabUrl(
+                    gitlabUrl + urlSlash + info.getTenantNum() + "-" + info.getDevopsComponentCode() + "/"
+                            + appServiceDTO.getCode() + ".git");
+        } else {
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithoutPasswordAndToken(appServiceDTO.getExternalConfigId());
+            ciCdPipelineVO.setGitlabUrl(appExternalConfigDTO.getRepositoryUrl());
+        }
 
         return appServiceDTO;
     }
