@@ -835,13 +835,15 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     public AppServiceVersionDTO baseQuery(Long appServiceServiceId) {
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(appServiceServiceId);
         AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
-        appServiceVersionDTO.setValueId(appServiceHelmVersionDTO.getValueId());
-        appServiceVersionDTO.setReadmeValueId(appServiceHelmVersionDTO.getReadmeValueId());
-        appServiceVersionDTO.setRepository(appServiceHelmVersionDTO.getRepository());
-        appServiceVersionDTO.setImage(appServiceHelmVersionDTO.getImage());
-        appServiceVersionDTO.setHarborConfigId(appServiceHelmVersionDTO.getHarborConfigId());
-        appServiceVersionDTO.setRepoType(appServiceHelmVersionDTO.getHarborRepoType());
-        appServiceVersionDTO.setHelmConfigId(appServiceHelmVersionDTO.getHelmConfigId());
+        if (appServiceHelmVersionDTO != null) {
+            appServiceVersionDTO.setValueId(appServiceHelmVersionDTO.getValueId());
+            appServiceVersionDTO.setReadmeValueId(appServiceHelmVersionDTO.getReadmeValueId());
+            appServiceVersionDTO.setRepository(appServiceHelmVersionDTO.getRepository());
+            appServiceVersionDTO.setImage(appServiceHelmVersionDTO.getImage());
+            appServiceVersionDTO.setHarborConfigId(appServiceHelmVersionDTO.getHarborConfigId());
+            appServiceVersionDTO.setRepoType(appServiceHelmVersionDTO.getHarborRepoType());
+            appServiceVersionDTO.setHelmConfigId(appServiceHelmVersionDTO.getHelmConfigId());
+        }
         return appServiceVersionDTO;
     }
 
