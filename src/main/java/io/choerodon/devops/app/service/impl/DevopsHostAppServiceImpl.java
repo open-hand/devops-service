@@ -1,24 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.hzero.core.base.BaseConstants;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -66,6 +47,24 @@ import io.choerodon.devops.infra.mapper.DevopsHostCommandMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 /**
  * 〈功能简述〉
@@ -289,6 +288,13 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     devopsHostAppVO.setGroupId(devopsHostAppInstanceDTO.getGroupId());
                     devopsHostAppVO.setArtifactId(devopsHostAppInstanceDTO.getArtifactId());
                     devopsHostAppVO.setReady(devopsHostAppInstanceDTO.getReady());
+                    devopsHostAppVO.setPreCommand(devopsHostAppInstanceDTO.getPreCommand());
+                    devopsHostAppVO.setRunCommand(devopsHostAppInstanceDTO.getRunCommand());
+                    devopsHostAppVO.setPostCommand(devopsHostAppInstanceDTO.getPostCommand());
+                    devopsHostAppVO.setKillCommand(devopsHostAppInstanceDTO.getKillCommand());
+                    devopsHostAppVO.setHealthProb(devopsHostAppInstanceDTO.getHealthProb());
+                    devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand()));
+                    devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppInstanceDTO.getHealthProb()));
                     if (ObjectUtils.isEmpty(devopsHostAppVO.getWorkDir())) {
                         devopsHostAppVO.setWorkDir(String.format(DEFAULT_WORK_DIR_TEMPLATE, devopsHostAppVO.getVersion().equals("1") ? devopsHostAppInstanceDTO.getId() : devopsHostAppVO.getCode()));
                     }
