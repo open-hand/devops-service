@@ -174,6 +174,7 @@ spec:
 
 系统运行一段时间后，当新版本服务已经稳定并且符合预期后，需要下线老版本的服务
 ，仅保留新版本服务在线上运行。为了达到该目标，需要将生产版本的Ingress指向新版本的Service，并且删除旧版本的Deployment和Service。
+
 1. 修改生产版本Ingress，使其指向新版本Service
 ```
 apiVersion: networking.k8s.io/v1
