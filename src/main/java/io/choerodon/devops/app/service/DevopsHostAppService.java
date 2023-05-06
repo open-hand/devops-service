@@ -9,6 +9,7 @@ import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 〈功能简述〉
@@ -83,5 +84,5 @@ public interface DevopsHostAppService {
 
     void restart(Long projectId, Long hostId, Long appId);
 
-    List<String> listWorkDirs(Long projectId, Long hostId);
+    Set<String> listWorkDirs(Long projectId, Long hostId);
 }
