@@ -180,7 +180,9 @@ public class CertificationServiceImpl implements CertificationService {
                 certificationVO.getExpireNotice(),
                 certificationVO.getAdvanceDays(),
                 certificationVO.getNotifyObjects(),
-                certificationVO.getObjectVersionNumber());
+                certificationVO.getObjectVersionNumber(),
+                certificationVO.getKeyValue(),
+                certificationVO.getCertValue());
         //如果是选择上传文件方式
         if (newCertificationDTO.getType().equals(CertificationType.UPLOAD.getType())) {
             String certFileName;
