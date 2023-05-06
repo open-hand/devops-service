@@ -737,7 +737,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     @Override
-    public List<String> listWorkDirs(Long projectId, Long hostId) {
+    public Set<String> listWorkDirs(Long projectId, Long hostId) {
         List<DevopsHostAppVO> devopsHostAppVOS = devopsHostAppMapper.listWorkDirsByHostId(hostId);
         return devopsHostAppVOS.stream()
                 .map(a -> {
@@ -746,7 +746,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     } else {
                         return a.getWorkDir();
                     }
-                }).collect(Collectors.toList());
+                }).collect(Collectors.toSet());
     }
 
     private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO) {

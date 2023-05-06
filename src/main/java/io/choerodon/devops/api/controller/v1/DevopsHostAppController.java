@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 〈功能简述〉
@@ -133,7 +134,7 @@ public class DevopsHostAppController {
     @ApiOperation("查询主机设置的应用工作目录")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{host_id}/list_work_dirs")
-    public ResponseEntity<List<String>> listWorkDirs(
+    public ResponseEntity<Set<String>> listWorkDirs(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
