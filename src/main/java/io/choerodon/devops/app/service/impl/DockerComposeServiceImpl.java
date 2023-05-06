@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -330,7 +331,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 devopsHostAppDTO.getId(),
                 new DeploySourceVO(AppSourceType.DOCKER_COMPOSE, projectDTO.getName()));
 
-        runCommand = appendCmd(appId, devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion(), runCommand);
+        runCommand = appendCmd(appId, devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion(), runCommand, workDir);
 
         // 发送部署指令给aegent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
@@ -346,9 +347,10 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         return devopsHostCommandDTO;
     }
 
-    private String appendCmd(Long appId, String appCode, String version, String runCommand) {
-        String workingDir = HostDeployUtil.getWorkingDir(appId, appCode, version);
+    private String appendCmd(Long appId, String appCode, String version, String runCommand, String workDir) {
+        String workingDir = ObjectUtils.isEmpty(workDir) ? HostDeployUtil.getWorkingDir(appId, appCode, version) : workDir;
+        String environment = "WORK_DIR=" + workingDir;
         String intoWorkdir = "cd " + workingDir;
-        return intoWorkdir + "\n" + runCommand;
+        return environment + "\n" + intoWorkdir + "\n" + runCommand;
     }
 }
