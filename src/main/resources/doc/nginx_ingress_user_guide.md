@@ -80,6 +80,7 @@ spec:
 
 ## 灰度发布新版本服务
 发布一个新版本的Nginx服务并配置路由规则。
+
 1. 部署新版本的Deployment和Service
 ```
 apiVersion: apps/v1
