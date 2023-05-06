@@ -54,7 +54,7 @@ public class HostDeployUtil {
 
         String result = "";
         result += "WORK_DIR=" + (ObjectUtils.isEmpty(dockerDeployDTO.getWorkDir()) ? HostDeployUtil.getWorkingDir(Long.parseLong(dockerDeployDTO.getInstanceId()), dockerDeployDTO.getAppCode(), dockerDeployDTO.getVersion()) : dockerDeployDTO.getWorkDir()) + "\n";
-        result += "cd ${WORK_DIR" + "\n";
+        result += "cd ${WORK_DIR}" + "\n";
         result += "export IMAGE_TAG=" + tag + "\n";
         result += values;
         return result;
@@ -119,7 +119,7 @@ public class HostDeployUtil {
         String values = value.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
         String result = "";
         result += "WORK_DIR=" + (ObjectUtils.isEmpty(dockerDeployDTO.getWorkDir()) ? HostDeployUtil.getWorkingDir(Long.parseLong(dockerDeployDTO.getInstanceId()), dockerDeployDTO.getAppCode(), dockerDeployDTO.getVersion()) : dockerDeployDTO.getWorkDir()) + "\n";
-        result += "cd ${WORK_DIR" + "\n";
+        result += "cd ${WORK_DIR}" + "\n";
         result += "export IMAGE_TAG=" + tag + "\n";
         result += values;
         return result;
