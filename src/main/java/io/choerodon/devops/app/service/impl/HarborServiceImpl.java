@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.google.gson.Gson;
+import feign.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,7 +166,9 @@ public class HarborServiceImpl implements HarborService {
 
     @Override
     public List<DevopsConfigDTO> queryHarborConfigByHarborConfigIds(Set<Long> harborConfigIds) {
-        ResponseEntity<List<HarborRepoDTO>> listResponseEntity = rdupmClient.queryHarborReposByIds(harborConfigIds);
+        // 镜像刷新权限的时候查询镜像配置的接口可能超时，这里调大此接口的超时时间（仅限于刷新镜像调用此接口）
+        Request.Options options = new Request.Options(5L, TimeUnit.SECONDS, 30L, TimeUnit.SECONDS, true);
+        ResponseEntity<List<HarborRepoDTO>> listResponseEntity = rdupmClient.queryHarborReposByIds(harborConfigIds, options);
         List<HarborRepoDTO> body = listResponseEntity.getBody();
         if (CollectionUtils.isEmpty(body)) {
             return Collections.emptyList();

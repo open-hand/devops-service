@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.feign.fallback;
 import java.util.List;
 import java.util.Set;
 
+import feign.Request;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -128,7 +129,7 @@ public class RdupmClientFallback implements RdupmClient {
     }
 
     @Override
-    public ResponseEntity<List<HarborRepoDTO>> queryHarborReposByIds(Set<Long> harborConfigIds) {
+    public ResponseEntity<List<HarborRepoDTO>> queryHarborReposByIds(Set<Long> harborConfigIds, Request.Options options) {
         throw new CommonException("devops.query.harbor.config.by.ids");
     }
 
