@@ -288,11 +288,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     devopsHostAppVO.setGroupId(devopsHostAppInstanceDTO.getGroupId());
                     devopsHostAppVO.setArtifactId(devopsHostAppInstanceDTO.getArtifactId());
                     devopsHostAppVO.setReady(devopsHostAppInstanceDTO.getReady());
-                    devopsHostAppVO.setPreCommand(devopsHostAppInstanceDTO.getPreCommand());
-                    devopsHostAppVO.setRunCommand(devopsHostAppInstanceDTO.getRunCommand());
-                    devopsHostAppVO.setPostCommand(devopsHostAppInstanceDTO.getPostCommand());
-                    devopsHostAppVO.setKillCommand(devopsHostAppInstanceDTO.getKillCommand());
-                    devopsHostAppVO.setHealthProb(devopsHostAppInstanceDTO.getHealthProb());
+                    devopsHostAppVO.setPreCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getPreCommand()));
+                    devopsHostAppVO.setRunCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getRunCommand()));
+                    devopsHostAppVO.setPostCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getPostCommand()));
+                    devopsHostAppVO.setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()));
+                    devopsHostAppVO.setHealthProb(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getHealthProb()));
                     devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand()));
                     devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppInstanceDTO.getHealthProb()));
                     if (ObjectUtils.isEmpty(devopsHostAppVO.getWorkDir())) {
