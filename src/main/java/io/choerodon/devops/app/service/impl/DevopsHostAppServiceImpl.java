@@ -889,7 +889,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String artifactId = null;
         String version = null;
         // 校验主机已连接
-//        hostConnectionHandler.checkHostConnection(devopsHostDTO.getId());
+        hostConnectionHandler.checkHostConnection(devopsHostDTO.getId());
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
@@ -957,7 +957,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             deployObjectName = nexusComponentDTOList.get(0).getName();
             deployVersion = nexusComponentDTOList.get(0).getVersion();
-            packaging = nexusComponentDTOList.get(0).getExtension();
+            packaging = ObjectUtils.isEmpty(nexusComponentDTOList.get(0).getExtension()) ? "jar" : nexusComponentDTOList.get(0).getExtension();
         }
 
         if (devopsHostAppDTO == null) {
