@@ -89,7 +89,8 @@ public class DevopsServiceValidator {
                 .stream()
                 .filter(s -> !s.getId().equals(targetServiceId))
                 .collect(Collectors.groupingBy(DevopsServiceDTO::getType));
-        switch (devopsServiceReqVO.getType()) {
+        String type = devopsServiceReqVO.getType() == null ? CLUSTER_IP : devopsServiceReqVO.getType();
+        switch (type) {
             // 同一环境下externalIp和servicePort必须唯一
             case CLUSTER_IP:
                 List<DevopsServiceDTO> serviceOfClusterIp = serviceGroupByType.get(CLUSTER_IP);
@@ -133,5 +134,6 @@ public class DevopsServiceValidator {
                 break;
             default:
         }
+
     }
 }

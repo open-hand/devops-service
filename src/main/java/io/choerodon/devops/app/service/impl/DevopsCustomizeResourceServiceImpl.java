@@ -156,7 +156,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                     String.format("【CREATE】%s", resourceFilePath), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         } else {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
+            String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO,
                     devopsEnvironmentDTO.getProjectId(),
                     devopsEnvironmentDTO.getCode(),
                     devopsEnvironmentDTO.getId(),
@@ -215,7 +215,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         handleCustomResource(null, null, null, null, null, DELETE, resourceId, null, null);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
+        String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO,
                 devopsEnvironmentDTO.getProjectId(),
                 devopsEnvironmentDTO.getCode(),
                 devopsEnvironmentDTO.getId(),

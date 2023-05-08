@@ -1,22 +1,23 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -51,6 +52,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private static final String PERCENTAGE_FORMAT = "%.2f%%";
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterNodeInfoServiceImpl.class);
 
+    @Lazy
     @Autowired
     private DevopsClusterService devopsClusterService;
     @Autowired

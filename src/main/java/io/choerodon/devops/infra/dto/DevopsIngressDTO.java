@@ -6,6 +6,7 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.vo.IngressNginxAnnotationVO;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -46,6 +47,9 @@ public class DevopsIngressDTO extends AuditDomain {
     private String namespace;
     @Transient
     private List<DevopsIngressPathDTO> devopsIngressPathDTOS;
+
+    @Transient
+    private List<IngressNginxAnnotationVO> nginxIngressAnnotations;
     @Transient
     private String commandType;
     @Transient
@@ -70,6 +74,14 @@ public class DevopsIngressDTO extends AuditDomain {
         this.envId = envId;
         this.domain = domain;
         this.name = name;
+    }
+
+    public List<IngressNginxAnnotationVO> getNginxIngressAnnotations() {
+        return nginxIngressAnnotations;
+    }
+
+    public void setNginxIngressAnnotations(List<IngressNginxAnnotationVO> nginxIngressAnnotations) {
+        this.nginxIngressAnnotations = nginxIngressAnnotations;
     }
 
     public DevopsIngressDTO(Long projectId) {

@@ -47,6 +47,18 @@ public class DockerDeployDTO {
     @ApiModelProperty("自定义仓库是否是私库")
     private Boolean privateRepository;
 
+    @ApiModelProperty("工作目录")
+    private String workDir;
+
+    public String getWorkDir() {
+        return workDir;
+    }
+
+    public DockerDeployDTO setWorkDir(String workDir) {
+        this.workDir = workDir;
+        return this;
+    }
+
     public String getVersion() {
         return version;
     }

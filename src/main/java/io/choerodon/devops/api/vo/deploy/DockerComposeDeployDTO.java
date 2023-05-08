@@ -18,6 +18,17 @@ public class DockerComposeDeployDTO {
     private String appCode;
     @ApiModelProperty("应用版本")
     private String version;
+    @ApiModelProperty("工作目录")
+    private String workDir;
+
+    public String getWorkDir() {
+        return workDir;
+    }
+
+    public DockerComposeDeployDTO setWorkDir(String workDir) {
+        this.workDir = workDir;
+        return this;
+    }
 
     public String getAppCode() {
         return appCode;
@@ -45,7 +56,7 @@ public class DockerComposeDeployDTO {
         this.runCommand = runCommand;
     }
 
-    public DockerComposeDeployDTO(String hostId, String appCode, String appVersion, String instanceId, String value, String runCommand, Boolean downFlag) {
+    public DockerComposeDeployDTO(String hostId, String appCode, String appVersion, String instanceId, String value, String runCommand, Boolean downFlag, String workDir) {
         this.hostId = hostId;
         this.appCode = appCode;
         this.version = appVersion;
@@ -53,7 +64,7 @@ public class DockerComposeDeployDTO {
         this.value = value;
         this.runCommand = runCommand;
         this.downFlag = downFlag;
-
+        this.workDir = workDir;
     }
 
     public Boolean getDownFlag() {

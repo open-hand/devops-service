@@ -136,6 +136,7 @@ public class ExceptionConstants {
 
     public static class ClusterCode {
         public static final String DEVOPS_CLUSTER_NOT_EXIST = "devops.cluster.not.exist";
+        public static final String DEVOPS_CLUSTER_USER_PERMISSION = "You have no permission to operate this cluster";
     }
 
     public static class CertificationCode {
@@ -225,7 +226,11 @@ public class ExceptionConstants {
         public static final String ERROR_DEVOPS_CERTIFICATION_EXISTCERT_FILED_NULL = "error.devops.certification.existCert.filed.null";
         public static final String DEVOPS_CERTIFICATION_OPERATE_TYPE_NULL = "devops.certification.operateType.null";
         public static final String ERROR_DEVOPS_CERTIFICATION_READ_NOTIFY_OBJECTS = "devops.certification.read.notify.object";
-        public static final String ERROR_DEVOPS_CERTIFICATION_TYPE_UNKNOWN ="devops.certification.type.unknown";
+        public static final String ERROR_DEVOPS_CERTIFICATION_TYPE_UNKNOWN = "devops.certification.type.unknown";
+    }
+
+    public static class IngressExceptionCode {
+        public static final String ERROR_DEVOPS_INGRESS_DOMAIN_INVALID = "error.ingress.domain.invalid";
     }
 
 }

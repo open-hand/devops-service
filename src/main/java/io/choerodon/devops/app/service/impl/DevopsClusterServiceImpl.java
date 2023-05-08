@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +32,11 @@ import org.springframework.util.StringUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsClusterValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -1020,5 +1023,35 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         clusterConnectionHandler.checkEnvConnection(clusterId);
 
         agentCommandService.sendRestartAgent(clusterId);
+    }
+
+    @Override
+    public void refreshDeployKey(Long projectId, Long clusterId) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (ObjectUtils.isEmpty(devopsClusterDTO)) {
+            throw new CommonException("devops.devops.cluster.is.not.exist");
+        }
+        clusterConnectionHandler.checkEnvConnection(clusterId);
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        if (!Boolean.TRUE.equals(permissionHelper.isRoot(userId))
+                && Boolean.TRUE.equals(permissionHelper.isOrganizationRoot(userId, devopsClusterDTO.getOrganizationId()))
+                && Boolean.TRUE.equals(permissionHelper.isGitlabProjectOwner(userId, projectId))) {
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST);
+        }
+        devopsClusterMapper.updateClusterStatusToOperating(clusterId);
+        ApplicationContextHelper.getContext().getBean(DevopsClusterServiceImpl.class).refreshDeployKeyAndRestart(clusterId);
+    }
+
+    @Async
+    public void refreshDeployKeyAndRestart(Long clusterId) {
+        try {
+            List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
+            devopsEnvironmentDTOS.forEach(GitUtil::refreshDeployKey);
+            agentCommandService.sendRestartAgent(clusterId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            devopsClusterMapper.updateClusterStatusToDisconnect(clusterId);
+        }
     }
 }

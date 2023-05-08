@@ -180,9 +180,9 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
         if (spec == null) {
             throw new GitOpsExplainException(GitOpsObjectError.CERT_SPEC_NOT_FOUND.getError(), filePath);
         } else {
-            if (CollectionUtils.isEmpty(spec.getDnsNames())) {
-                throw new GitOpsExplainException(GitOpsObjectError.CERT_DOMAINS_ILLEGAL.getError(), filePath);
-            }
+//            if (CollectionUtils.isEmpty(spec.getDnsNames())) {
+//                throw new GitOpsExplainException(GitOpsObjectError.CERT_DOMAINS_ILLEGAL.getError(), filePath);
+//            }
             if (!certName.equals(spec.getSecretName())) {
                 throw new GitOpsExplainException(GitOpsObjectError.CERT_SECRET_NAME_SHOULD_EQUAL_TO_NAME.getError(), filePath);
 
