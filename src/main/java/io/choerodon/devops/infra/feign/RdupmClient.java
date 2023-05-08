@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.feign;
 import java.util.List;
 import java.util.Set;
 
+import feign.Request;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -213,7 +214,7 @@ public interface RdupmClient {
 
     @ApiOperation(value = "根据仓库id集合查询仓库列表")
     @PostMapping("/v1/harbor-choerodon-repos/harbor_repo_config/by_ids")
-    ResponseEntity<List<HarborRepoDTO>> queryHarborReposByIds(@RequestBody Set<Long> harborConfigIds);
+    ResponseEntity<List<HarborRepoDTO>> queryHarborReposByIds(@RequestBody Set<Long> harborConfigIds, Request.Options options);
 
 
     @ApiOperation(value = "组织层-查询关联应用服务列表")
