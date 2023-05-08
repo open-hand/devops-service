@@ -730,6 +730,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                         .setPostCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getPostCommand()))
                         .setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()))
                         .setHealthProb(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getHealthProb()));
+                customDeployVO.setFileInfoVO(new FileInfoVO());
                 if (!ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getSourceConfig())) {
                     customDeployVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), FileInfoVO.class));
                 }
