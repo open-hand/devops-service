@@ -1517,6 +1517,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
+        dockerDeployDTO.setInstanceId(devopsDockerInstanceDTO.getId().toString());
+
         dockerDeployDTO.setImage(image);
         dockerDeployDTO.setContainerName(imageDeploy.getContainerName());
         dockerDeployDTO.setCmd(HostDeployUtil.getDockerRunCmd(dockerDeployDTO, Base64Util.decodeBuffer(devopsCiHostDeployInfoDTO.getDockerCommand())));
