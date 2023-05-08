@@ -1,18 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
-import io.kubernetes.client.openapi.models.V1Endpoints;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
@@ -36,6 +23,18 @@ import io.choerodon.devops.infra.util.ComponentVersionUtil;
 import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.openapi.models.V1Endpoints;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -375,6 +374,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             appServiceDeployVO.setAppName(c7nHelmRelease.getMetadata().getName());
             appServiceDeployVO.setAppCode(c7nHelmRelease.getMetadata().getName());
         }
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceVersionDTO.getAppServiceId());
+        appServiceInstanceService.getSecret(appServiceDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
         return appServiceDeployVO;
     }
 
