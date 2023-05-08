@@ -131,6 +131,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         //保存命令
         DevopsHostCommandDTO devopsHostCommandDTO = saveDevopsHostCommandDTO(hostDTO, devopsDockerInstanceDTO);
 
+        dockerDeployDTO.setInstanceId(devopsDockerInstanceDTO.getId().toString());
+
         //保存部署记录
         saveDeployRecord(projectId, dockerDeployVO, hostDTO, devopsHostAppDTO, deploySourceVO, dockerDeployDTO, devopsDockerInstanceDTO);
 
