@@ -656,6 +656,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     @Override
+    @Transactional
     public void restart(Long projectId, Long hostId, Long appId) {
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(appId);
