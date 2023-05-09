@@ -74,6 +74,7 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -2812,6 +2813,33 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             throw new CommonException("devops.value.not.exist");
         }
         return appServiceInstanceMapper.listInstanceByValueId(valueDTO.getEnvId(), valueDTO.getAppServiceId(), params);
+    }
+
+    @Override
+    public void setImagePullSecrets(DevopsEnvironmentDTO devopsEnvironmentDTO, Map<String, C7nHelmRelease> c7nHelmReleases, String commitSha) {
+        Map<String, String> pathContentMap = new HashMap<>();
+        List<String> fileNames = new ArrayList<>();
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
+        Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+        c7nHelmReleases.forEach((filePath, c7nHelmRelease) -> {
+            AppServiceVersionDTO appServiceVersionDTO;
+            appServiceVersionDTO = HandlerC7nReleaseRelationsServiceImpl.findVersion(c7nHelmRelease, devopsEnvironmentDTO.getProjectId(), organization.getTenantId(), filePath, "create", devopsEnvironmentDTO.getId());
+            AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceVersionDTO.getAppServiceId());
+            String secretName = getSecret(appServiceDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
+            c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
+
+            //在gitops库处理instance文件
+            ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(c7nHelmRelease);
+
+            String instanceContent = resourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+            fileNames.add(filePath);
+            pathContentMap.put(filePath, instanceContent);
+        });
+
+        gitlabServiceClientOperator.updateGitlabFiles(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitUserNameUtil.getAdminId(), GitOpsConstants.MASTER, pathContentMap, "BATCH UPDATE IMAGE PULL SECRET:" + String.join(",", fileNames), commitSha);
     }
 
     private String[] parseMarketRepo(String harborRepo) {

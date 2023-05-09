@@ -52,6 +52,13 @@ public class CommitActionDTO {
         this.content = content;
     }
 
+    public CommitActionDTO(Action action, String filePath, String content, String lastCommitId) {
+        this.action = action;
+        this.filePath = filePath;
+        this.content = content;
+        this.lastCommitId = lastCommitId;
+    }
+
     public Action getAction() {
         return action;
     }

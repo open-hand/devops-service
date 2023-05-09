@@ -2,11 +2,13 @@ package io.choerodon.devops.app.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
+import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
@@ -463,4 +465,6 @@ public interface AppServiceInstanceService {
     void syncValueToDeploy(Long projectId, AppServiceSyncValueDeployVO syncValueDeployVO);
 
     List<AppServiceInstanceVO> listInstanceByValueId(Long projectId, Long valueId, String params);
+
+    void setImagePullSecrets(DevopsEnvironmentDTO devopsEnvironmentDTO, Map<String, C7nHelmRelease> c7nHelmReleases, String commitSha);
 }

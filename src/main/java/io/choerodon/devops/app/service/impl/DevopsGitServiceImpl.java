@@ -5,6 +5,7 @@ import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.D
 import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_IN_GITLAB_PROJECT;
 import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
 import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
+import static io.choerodon.devops.infra.enums.UserEnvSupportedResourceType.C7NHELMRELEASE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,6 +48,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.PageUtils;
 import io.choerodon.devops.api.vo.MergeRequestVO;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.app.service.*;
@@ -156,6 +158,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private DevopsIngressService devopsIngressService;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private AppServiceInstanceService appServiceInstanceService;
 
     /**
      * 初始化转换类和处理关系的类
@@ -713,8 +717,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             Map<Class, List> resourceKindMap = initResourceKindContainer();
 
+            Map<String, C7nHelmRelease> c7nHelmReleaseWithoutPullSecrets = new HashMap<>();
+
             //从文件中读出对象,序列化为K8S对象
-            objectPath = convertFileToK8sObjects(operationFiles, path, EnvironmentType.forValue(devopsEnvironmentDTO.getType()), resourceKindMap, devopsEnvironmentDTO.getId(), new ArrayList<>(beforeSyncDelete));
+            objectPath = convertFileToK8sObjects(operationFiles, path, EnvironmentType.forValue(devopsEnvironmentDTO.getType()), resourceKindMap, devopsEnvironmentDTO.getId(), new ArrayList<>(beforeSyncDelete), c7nHelmReleaseWithoutPullSecrets);
+
+            // 如果有release没有配置secret，那么为实例配置secret，终止此次操作。将新的c7nhelmrelease提交到gitops后重新同步
+            if (!CollectionUtils.isEmpty(c7nHelmReleaseWithoutPullSecrets)) {
+                appServiceInstanceService.setImagePullSecrets(devopsEnvironmentDTO, c7nHelmReleaseWithoutPullSecrets, devopsEnvCommitDTO.getCommitSha());
+                return;
+            }
 
             LOGGER.info("序列化k8s对象成功！");
 
@@ -871,7 +883,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
      * @param beforeSyncDelete  删除的文件的 资源文件关联关系
      * @return 对象hashcode和对象所处文件名对映射
      */
-    private Map<String, String> convertFileToK8sObjects(List<String> files, String path, EnvironmentType environmentType, Map<Class, List> resourceContainer, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete) {
+    private Map<String, String> convertFileToK8sObjects(List<String> files, String path, EnvironmentType environmentType, Map<Class, List> resourceContainer, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, C7nHelmRelease> c7nHelmReleaseWithoutPullSecrets) {
         Map<String, String> objectPath = new HashMap<>();
         Yaml yaml = new Yaml();
         final Map<String, ConvertK8sObjectService> converters = EnvironmentType.USER == environmentType ? userEnvSupportedResourceConverters : systemEnvSupportedResourceConverters;
@@ -939,6 +951,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
                 Object resource = currentHandler.serializableObject(jsonObject.toJSONString(), filePath, objectPath, envId);
                 resourceContainer.computeIfAbsent(resource.getClass(), t -> new ArrayList<>());
+
+                // 这里查找没有配置imagePullSecrets的release
+                if (type.equals(C7NHELMRELEASE.getType())) {
+                    ConvertC7nHelmReleaseServiceImpl.checkPullSecrets((C7nHelmRelease) resource, c7nHelmReleaseWithoutPullSecrets, objectPath);
+                }
 
                 // 校验参数
                 currentHandler.checkParameters(resource, objectPath);
