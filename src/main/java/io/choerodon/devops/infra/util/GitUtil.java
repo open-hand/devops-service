@@ -193,9 +193,8 @@ public class GitUtil {
     }
 
     public static String getFileLatestCommit(String path, String filePath) {
-        if (filePath != null) {
-            String[] fileName = filePath.split("/");
-            return GitUtil.getLog(path, fileName[fileName.length - 1]);
+        if (!ObjectUtils.isEmpty(filePath)) {
+            return GitUtil.getLog(path, filePath);
         }
         return "";
     }
