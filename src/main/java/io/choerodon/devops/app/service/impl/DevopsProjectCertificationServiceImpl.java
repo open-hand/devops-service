@@ -340,6 +340,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
                 orgCertificationVO.setDomain(certificationDTO.getDomains());
                 orgCertificationVO.setSkipCheckProjectPermission(certificationDTO.getSkipCheckProjectPermission());
                 orgCertificationVO.setObjectVersionNumber(certificationDTO.getObjectVersionNumber());
+                orgCertificationVO.setValidFrom(certificationDTO.getValidFrom());
+                orgCertificationVO.setValidUntil(certificationDTO.getValidUntil());
                 orgCertifications.add(orgCertificationVO);
             });
         }
