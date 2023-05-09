@@ -466,5 +466,5 @@ public interface AppServiceInstanceService {
 
     List<AppServiceInstanceVO> listInstanceByValueId(Long projectId, Long valueId, String params);
 
-    void setImagePullSecrets(DevopsEnvironmentDTO devopsEnvironmentDTO, Map<String, C7nHelmRelease> c7nHelmReleases, String commitSha);
+    void setImagePullSecrets(Integer userId, DevopsEnvironmentDTO devopsEnvironmentDTO, Map<String, C7nHelmRelease> c7nHelmReleases, String commitSha);
 }

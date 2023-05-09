@@ -2816,7 +2816,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public void setImagePullSecrets(DevopsEnvironmentDTO devopsEnvironmentDTO, Map<String, C7nHelmRelease> c7nHelmReleases, String commitSha) {
+    public void setImagePullSecrets(Integer userId, DevopsEnvironmentDTO devopsEnvironmentDTO, Map<String, C7nHelmRelease> c7nHelmReleases, String commitSha) {
         Map<String, String> pathContentMap = new HashMap<>();
         List<String> fileNames = new ArrayList<>();
 
@@ -2839,7 +2839,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             pathContentMap.put(filePath, instanceContent);
         });
 
-        gitlabServiceClientOperator.updateGitlabFiles(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitUserNameUtil.getAdminId(), GitOpsConstants.MASTER, pathContentMap, "BATCH UPDATE IMAGE PULL SECRET:" + String.join(",", fileNames), commitSha);
+        gitlabServiceClientOperator.updateGitlabFiles(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), userId, GitOpsConstants.MASTER, pathContentMap, "BATCH UPDATE IMAGE PULL SECRET:" + String.join(",", fileNames), commitSha);
     }
 
     private String[] parseMarketRepo(String harborRepo) {
