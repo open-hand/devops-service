@@ -69,7 +69,7 @@ function export_commit_tag() {
     elif [ $CIRCLE_TAG ]; then
       export C7N_VERSION=$CIRCLE_TAG
     else
-      export C7N_VERSION={{ C7N_VERSION_DEFAULT }}  # $C7N_COMMIT_TIME-$C7N_BRANCH
+      export C7N_VERSION={{ C7N_VERSION_RULE }}  # $C7N_COMMIT_TIME-$C7N_BRANCH
     fi
 
     export $C7N_VERSION
