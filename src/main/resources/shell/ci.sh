@@ -42,10 +42,7 @@ function export_commit_tag() {
    # 判断是否有git命令，没有退出此函数
    if ! which git > /dev/null;
    then
-       return
-   fi
-   # 没有git目录也不处理
-   if [ ! -d ".git" ]; then
+       echo '未找到 Git 命令行，无法生成 tag。'
        return
    fi
 
@@ -72,16 +69,13 @@ function export_commit_tag() {
     elif [ $CIRCLE_TAG ]; then
       export C7N_VERSION=$CIRCLE_TAG
     else
-      export C7N_VERSION=$C7N_COMMIT_TIME-$C7N_BRANCH
+      export C7N_VERSION={{ C7N_VERSION_DEFAULT }}  # $C7N_COMMIT_TIME-$C7N_BRANCH
     fi
 
-    export CI_COMMIT_TAG=$C7N_VERSION
-
+    export $C7N_VERSION
 }
 
-export_commit_tag
-
-# 参数为要合并的远程分支名,默认develop
+# 参数为要合并的远程分支名,默认 develop
 # e.g. git_merge develop
 function git_merge() {
   git config user.name ${GITLAB_USER_NAME}
@@ -100,10 +94,11 @@ function node_module() {
 
 # 开发使用devbuild，构建镜像使用build
 function node_build() {
+  export_commit_tag
   cd boot
   ./node_modules/.bin/gulp start
   cnpm run ${1:-"build"}
-  find dist -name '*.js' | xargs sed -i "s/localhost:version/$CI_COMMIT_TAG/g"
+  find dist -name '*.js' | xargs sed -i "s/localhost:version/$C7N_VERSION/g"
 }
 
 function cache_dist() {
@@ -114,19 +109,20 @@ function cache_dist() {
 # 更新maven项目本版本号
 # $1 填入true表示用项目根目录的settings.xml文件，其他任何值都不使用本地settings.xml
 function update_pom_version() {
+  export_commit_tag
   if [ "$1" == "true" -a -f settings.xml ];then
       echo "Update pom version: using custom settings.xml..."
-      mvn versions:set -DnewVersion=${CI_COMMIT_TAG} -s settings.xml ||
+      mvn versions:set -DnewVersion=${C7N_VERSION} -s settings.xml ||
               find . -name pom.xml | xargs xml ed -L \
                 -N x=http://maven.apache.org/POM/4.0.0 \
-                -u '/x:project/x:version' -v "${CI_COMMIT_TAG}"
+                -u '/x:project/x:version' -v "${C7N_VERSION}"
       mvn versions:commit -s settings.xml
   else
       echo "Update pom version: using default settings.xml..."
-      mvn versions:set -DnewVersion=${CI_COMMIT_TAG} ||
+      mvn versions:set -DnewVersion=${C7N_VERSION} ||
         find . -name pom.xml | xargs xml ed -L \
           -N x=http://maven.apache.org/POM/4.0.0 \
-          -u '/x:project/x:version' -v "${CI_COMMIT_TAG}"
+          -u '/x:project/x:version' -v "${C7N_VERSION}"
       mvn versions:commit
   fi
 }
@@ -152,31 +148,32 @@ $1: skipTlsVerify 是否跳过证书校验
 $2: dockerBuildContextDir docker构建上下文
 $3: dockerFilePath Dockerfile路径
 function kaniko_build() {
+  export_commit_tag
   if [ -z $KUBERNETES_SERVICE_HOST ];then
       ssh -o StrictHostKeyChecking=no root@kaniko DOCKER_CONFIG=${DOCKER_CONFIG} /kaniko/kaniko $1  --no-push \
-      -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
+      -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION} \
       --tarPath ${PWD}/${PROJECT_NAME}.tar --force
   else
       ssh -o StrictHostKeyChecking=no root@127.0.0.1 DOCKER_CONFIG=${DOCKER_CONFIG} /kaniko/kaniko $1  --no-push \
-      -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
+      -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION} \
       --tarPath ${PWD}/${PROJECT_NAME}.tar --force
   fi
 }
 
 function skopeo_copy() {
-  echo "Pushing image to docker repo, image tag is ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
-  skopeo copy --dest-tls-verify=false --dest-creds=${DOCKER_USERNAME}:${DOCKER_PASSWORD} docker-archive:${PWD}/${PROJECT_NAME}.tar docker://${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+  export_commit_tag
+  echo "Pushing image to docker repo, image tag is ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}";
+  skopeo copy --dest-tls-verify=false --dest-creds=${DOCKER_USERNAME}:${DOCKER_PASSWORD} docker-archive:${PWD}/${PROJECT_NAME}.tar docker://${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}
 }
 
 #################################### 构建镜像 ####################################
 function docker_build() {
-  # 8位sha值
-  export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
+  export_commit_tag
   cp /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}-jar/app.jar ${1:-"src/main/docker"}/app.jar || true
   cp -r /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/* ${1:-"."} || true
-  docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"."} || true
-  docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"src/main/docker"} || true
-  docker push ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+  docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION} ${1:-"."} || true
+  docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION} ${1:-"src/main/docker"} || true
+  docker push ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}
 }
 
 #################################### 清理缓存 ####################################
@@ -189,11 +186,8 @@ function clean_cache() {
 # 此项为上传构建并上传chart包到Choerodon中，只有通过此函数Choerodon才会有相应版本记录。
 # $1 helm 仓库id
 function chart_build() {
-  # 8位sha值
-  export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
-
+  export_commit_tag
   rewrite_image_info_for_chart
-
   # 查找Chart.yaml文件
   CHART_PATH=$(find . -maxdepth 3 -name Chart.yaml)
   # 重置values.yaml文件中image属性
@@ -213,7 +207,7 @@ function chart_build() {
     sed -i "s,^name:.*$,name: ${PROJECT_NAME},g" ${CHART_PATH%/*}/Chart.yaml
   fi
   # 构建chart包，重写version与app-version为当前版本
-  helm package -u ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
+  helm package -u ${CHART_PATH%/*} --version ${C7N_VERSION} --app-version ${C7N_VERSION}
   TEMP=${CHART_PATH%/*}
   FILE_NAME=${TEMP##*/}
   # 通过Choerodon API上传chart包到devops-service
@@ -222,13 +216,13 @@ function chart_build() {
     -F "token=${Token}" \
     -F "harbor_config_id=${HARBOR_CONFIG_ID}" \
     -F "repo_type=${REPO_TYPE}" \
-    -F "version=${CI_COMMIT_TAG}" \
-    -F "file=@${PROJECT_NAME}-${CI_COMMIT_TAG}.tgz" \
+    -F "version=${C7N_VERSION}" \
+    -F "file=@${PROJECT_NAME}-${C7N_VERSION}.tgz" \
     -F "commit=${CI_COMMIT_SHA}" \
     -F "ref=${CI_COMMIT_REF_NAME}" \
     -F "gitlabPipelineId=${CI_PIPELINE_ID}" \
     -F "jobName=${CI_JOB_NAME}" \
-    -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}" \
+    -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}" \
     -F "helm_repo_id=$1" \
     -F "gitlab_user_id=${GITLAB_USER_ID}" \
     "${CHOERODON_URL}/devops/ci" \
@@ -249,14 +243,12 @@ function chart_build() {
 
 #################################### 发布应用服务版本 ####################################
 function publish_app_version() {
-  # 8位sha值
-  export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
-
+  export_commit_tag
   # 通过Choerodon API上传chart包到devops-service
   result_upload_to_devops=$(curl -X POST \
     -H 'Expect:' \
     -F "token=${Token}" \
-    -F "version=${CI_COMMIT_TAG}" \
+    -F "version=${C7N_VERSION}" \
     -F "commit=${CI_COMMIT_SHA}" \
     -F "ref=${CI_COMMIT_REF_NAME}" \
     -F "gitlabPipelineId=${CI_PIPELINE_ID}" \
@@ -315,16 +307,17 @@ function downloadConfigFileByUId() {
 # 此函数上传镜像构建元数据, 只有任务(job)通过这个函数上传了镜像元数据,
 # 在CD阶段的主机部署-镜像部署中选中了这个任务(job)的任务才能正确部署镜像
 function saveImageMetadata() {
+    export_commit_tag
     result_upload_to_devops=$(curl -X POST "${CHOERODON_URL}/devops/ci/record_image" \
       --header 'Content-Type: application/json' \
       -d "{
         \"token\": \"${Token}\",
         \"gitlabPipelineId\": ${CI_PIPELINE_ID},
         \"jobName\": \"${CI_JOB_NAME}\",
-        \"imageTag\": \"${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}\",
+        \"imageTag\": \"${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}\",
         \"harborRepoId\": ${HARBOR_CONFIG_ID},
         \"repoType\": \"${REPO_TYPE}\",
-        \"version\": \"${CI_COMMIT_TAG}\"
+        \"version\": \"${C7N_VERSION}\"
       }" \
       -o "${CI_COMMIT_SHA}-ci.response" \
       -w %{http_code})
@@ -344,6 +337,7 @@ function saveImageMetadata() {
 # $2 mvn_settings_id    mvn_settings_id
 # $3 sequence   猪齿鱼的CI流水线的步骤的序列号
 function saveJarInfo() {
+  export_commit_tag
   result_upload_to_devops=""
   if [ -n "${CHOERODON_MAVEN_POM_LOCATION}" ]; then
       result_upload_to_devops=$(curl -X POST \
@@ -353,7 +347,7 @@ function saveJarInfo() {
           -F "sequence=$2" \
           -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
           -F "job_name=${CI_JOB_NAME}" \
-          -F "version=${CI_COMMIT_TAG}" \
+          -F "version=${C7N_VERSION}" \
           -F "file=@pom.xml" \
           "${CHOERODON_URL}/devops/ci/save_jar_info" \
           -o "${CI_COMMIT_SHA}-ci.response" \
@@ -366,7 +360,7 @@ function saveJarInfo() {
                 -F "sequence=$2" \
                 -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
                 -F "job_name=${CI_JOB_NAME}" \
-                -F "version=${CI_COMMIT_TAG}" \
+                -F "version=${C7N_VERSION}" \
                 -F "group_id=${CHOERODON_MAVEN_GROUP_ID}" \
                 -F "artifact_id=${CHOERODON_MAVEN_ARTIFACT_ID}" \
                 -F "jar_version=${CHOERODON_MAVEN_VERSION}" \
@@ -394,6 +388,7 @@ function saveJarInfo() {
 # $4 username   目标仓库用户名
 # $5 password   目标仓库用户密码
 function saveCustomJarInfo() {
+  export_commit_tag
   result_upload_to_devops=""
   if [ -n "${CHOERODON_MAVEN_POM_LOCATION}" ]; then
     result_upload_to_devops=$(curl -X POST \
@@ -405,7 +400,7 @@ function saveCustomJarInfo() {
         -F "password='$4'" \
         -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
         -F "job_name=${CI_JOB_NAME}" \
-        -F "version=${CI_COMMIT_TAG}" \
+        -F "version=${C7N_VERSION}" \
         -F "file=@pom.xml" \
         "${CHOERODON_URL}/devops/ci/save_jar_info" \
         -o "${CI_COMMIT_SHA}-ci.response" \
@@ -420,7 +415,7 @@ function saveCustomJarInfo() {
             -F "password='$4'" \
             -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
             -F "job_name=${CI_JOB_NAME}" \
-            -F "version=${CI_COMMIT_TAG}" \
+            -F "version=${C7N_VERSION}" \
             -F "groupId${CHOERODON_MAVEN_GROUP_ID}" \
             -F "artifactId=${CHOERODON_MAVEN_ARTIFACT_ID}" \
             -F "jarVersion=${CHOERODON_MAVEN_VERSION}" \
@@ -491,25 +486,28 @@ function saveSonarInfo() {
 ############################### 解析ci阶段镜像扫描产生的json文件，存于数据库 ###############################
 # $2 ciJobId    猪齿鱼的CI的JOB的id
 function trivyScanImage() {
+  export_commit_tag
   which trivy > /dev/null || echo "cibase不包含trivy指令，请升级"
   which ssh > /dev/null || echo "cibase不包含ssh指令，请升级"
   export TRIVY_INSECURE='true'
   startDate=$(date +"%Y-%m-%d %H:%M:%S")
-  trivy image  --skip-update -f json -o results-${CI_COMMIT_TAG}.json  --input ${PWD}/${PROJECT_NAME}.tar
+  trivy image  --skip-update -f json -o results-${C7N_VERSION}.json  --input ${PWD}/${PROJECT_NAME}.tar
   endDate=$(date +"%Y-%m-%d %H:%M:%S")
   upload_trivy_sacn_result
 }
 
 function trivyScanImageForDocker() {
+  export_commit_tag
   which trivy > /dev/null || echo "cibase不包含trivy指令，请升级"
   which ssh > /dev/null || echo "cibase不包含ssh指令，请升级"
   export TRIVY_INSECURE='true'
   startDate=$(date +"%Y-%m-%d %H:%M:%S")
-  trivy image --skip-update -f json -o results-${CI_COMMIT_TAG}.json ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+  trivy image --skip-update -f json -o results-${C7N_VERSION}.json ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}
   endDate=$(date +"%Y-%m-%d %H:%M:%S")
   upload_trivy_sacn_result
 }
 function upload_trivy_sacn_result() {
+  export_commit_tag
   result_upload_to_devops=$(curl -X POST \
   -H 'Expect:' \
   -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
@@ -518,7 +516,7 @@ function upload_trivy_sacn_result() {
   -F "job_name=${CI_JOB_NAME}" \
   -F "start_date=${startDate}" \
   -F "end_date=${endDate}" \
-  -F "file=@results-${CI_COMMIT_TAG}.json" \
+  -F "file=@results-${C7N_VERSION}.json" \
   "${CHOERODON_URL}/devops/ci/resolve_image_scan_json" \
   -o "${CI_COMMIT_SHA}-ci.response" \
   -w %{http_code})

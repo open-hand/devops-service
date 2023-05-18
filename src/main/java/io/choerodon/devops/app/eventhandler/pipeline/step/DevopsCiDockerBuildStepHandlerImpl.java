@@ -31,8 +31,8 @@ public class DevopsCiDockerBuildStepHandlerImpl extends DevopsCiImageBuildStepHa
      */
     protected void generateBuildAndScanImageCmd(boolean skipTlsVerify, boolean imageScan, Long jobId, String dockerBuildContextDir, String dockerFilePath, List<String> commands) {
 
-        String dockerBuildCmd = "docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} --file %s %s";
-        String dockerPushCmd = "docker push ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
+        String dockerBuildCmd = "docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION} --file %s %s";
+        String dockerPushCmd = "docker push ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}";
         commands.add(String.format(dockerBuildCmd, dockerFilePath, dockerBuildContextDir));
         if (imageScan) {
             String resolveCommond = "trivyScanImageForDocker %s";

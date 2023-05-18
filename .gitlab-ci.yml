@@ -60,7 +60,7 @@ include: https://api.choerodon.com.cn/devops/v1/projects/261899051275677696/ci_c
 ##        -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
 ##    - mvn package spring-boot:repackage
 ##    - mv target/app.jar $PWD/docker
-##    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+##    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}
 ##  except:
 ##    changes:
 ##      - .editorconfig
@@ -93,7 +93,7 @@ include: https://api.choerodon.com.cn/devops/v1/projects/261899051275677696/ci_c
 ##        -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
 ##    - mvn package spring-boot:repackage
 ##    - mv target/app.jar $PWD/docker
-##    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+##    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}
 ##  only:
 ##    - tags
 ##
@@ -119,7 +119,7 @@ include: https://api.choerodon.com.cn/devops/v1/projects/261899051275677696/ci_c
 ##    - npm run dist
 ##    - mv src/main/resources/lib/dist docker
 ##    - cp /usr/bin/kaniko $PWD/docker
-##    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile-combine -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+##    - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile-combine -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}
 ##  only:
 ##    variables:
 ##      - $CI_COMMIT_MESSAGE =~ /combine/
