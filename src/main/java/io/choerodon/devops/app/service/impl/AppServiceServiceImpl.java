@@ -1268,11 +1268,19 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             params.put("{{ REPO_TYPE }}", harborConfigDTO.getType());
             params.put("{{ CHOERODON_URL }}", gatewayUrl);
-            String ciStr = FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
-            StringBuilder stringBuilder = new StringBuilder(ciStr);
+
 
             // 查询应用服务关联的流水线, 添加自定义函数
             CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+            if (ciCdPipelineDTO == null) {
+                params.put("{{ C7N_VERSION_RULE }}", "$C7N_COMMIT_TIME-$C7N_BRANCH");
+            } else {
+                params.put("{{ C7N_VERSION_RULE }}", ciCdPipelineDTO.getVersionName() == null ? "$C7N_COMMIT_TIME-$C7N_BRANCH" : ciCdPipelineDTO.getVersionName());
+            }
+
+            String ciStr = FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
+            StringBuilder stringBuilder = new StringBuilder(ciStr);
+
             if (ciCdPipelineDTO != null) {
                 List<DevopsCiPipelineFunctionDTO> functionDTOS = new ArrayList<>();
                 List<DevopsCiPipelineFunctionDTO> defaultCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(PipelineConstants.DEFAULT_CI_PIPELINE_FUNCTION_ID);
@@ -1284,6 +1292,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     functionDTOS.forEach(functionDTO -> stringBuilder.append(functionDTO.getScript()).append(System.lineSeparator()));
                 }
             }
+
             return stringBuilder.toString();
         } catch (CommonException e) {
             throw new DevopsCiInvalidException(e.getCode(), e, e.getParameters());

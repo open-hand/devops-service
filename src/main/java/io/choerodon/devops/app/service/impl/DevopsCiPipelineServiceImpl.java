@@ -1502,7 +1502,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         });
 
         gitlabCi.setStages(stageNames);
-        buildBeforeScript(gitlabCi, ciCdPipelineDTO.getVersionName());
+        buildBeforeScript(gitlabCi);
         return gitlabCi;
     }
 
@@ -1560,11 +1560,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return cache;
     }
 
-    private void buildBeforeScript(GitlabCi gitlabCi, String versionName) {
+    private void buildBeforeScript(GitlabCi gitlabCi) {
         List<String> beforeScripts = ArrayUtil.singleAsList(GitOpsConstants.CHOERODON_BEFORE_SCRIPT);
-        if (!StringUtils.isEmpty(versionName)) {
-            beforeScripts.add(String.format("CI_COMMIT_TAG=%s", versionName));
-        }
         // 如果有job启用了缓存设置, 就创建缓存目录
         // 如果全部都是自定义任务, 这个map是空的
         if (!CollectionUtils.isEmpty(gitlabCi.getJobs())
