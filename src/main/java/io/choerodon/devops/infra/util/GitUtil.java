@@ -193,9 +193,8 @@ public class GitUtil {
     }
 
     public static String getFileLatestCommit(String path, String filePath) {
-        if (filePath != null) {
-            String[] fileName = filePath.split("/");
-            return GitUtil.getLog(path, fileName[fileName.length - 1]);
+        if (!ObjectUtils.isEmpty(filePath)) {
+            return GitUtil.getLog(path, filePath);
         }
         return "";
     }
@@ -280,7 +279,22 @@ public class GitUtil {
      * @param path target path
      * @param url  git repo url
      */
-    public Git cloneBySsh(String path, String url, String sshKeyRsa) {
+    public Git cloneBySsh(DevopsEnvironmentDTO devopsEnvironmentDTO, String path, String url, String sshKeyRsa) {
+        CloneCommand cloneCommand = Git.cloneRepository();
+        cloneCommand.setURI(url);
+        cloneCommand.setBranch(MASTER);
+        cloneCommand.setTransportConfigCallback(getTransportConfigCallback(sshKeyRsa));
+        try {
+            cloneCommand.setDirectory(new File(path));
+            return cloneCommand.call();
+        } catch (GitAPIException e) {
+            LOGGER.debug("Failed to clone by ssh: path: {}, url: {}", path, url);
+            refreshDeployKey(devopsEnvironmentDTO);
+            return retryCloneBySsh(path, url, sshKeyRsa);
+        }
+    }
+
+    private Git retryCloneBySsh(String path, String url, String sshKeyRsa) {
         CloneCommand cloneCommand = Git.cloneRepository();
         cloneCommand.setURI(url);
         cloneCommand.setBranch(MASTER);
@@ -727,21 +741,7 @@ public class GitUtil {
                 RemoteRefUpdate remoteUpdate = pushResult.getRemoteUpdate("refs/tags/devops-sync");
                 if (!remoteUpdate.getStatus().name().equals("OK")) {
                     // 尝试刷新公钥，然后再重新推一次tag
-                    Integer gitlabAdminUserId = GitUserNameUtil.getAdminId();
-                    List<DeployKeyDTO> deployKeyDTOS = ApplicationContextHelper.getContext().getBean(GitlabServiceClientOperator.class).listDeployKey(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), gitlabAdminUserId);
-                    deployKeyDTOS.forEach(key -> {
-                        if (key.getTitle().equals(devopsEnvironmentDTO.getCode())) {
-                            ApplicationContextHelper.getContext().getBean(GitlabServiceClientOperator.class).deleteDeployKey(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), gitlabAdminUserId, key.getId());
-                        }
-                    });
-                    // 以管理员身份创建deploy key
-                    ApplicationContextHelper.getContext().getBean(GitlabServiceClientOperator.class).createDeployKey(
-                            devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(),
-                            devopsEnvironmentDTO.getCode(),
-                            devopsEnvironmentDTO.getEnvIdRsaPub(),
-                            true,
-                            GitUserNameUtil.getAdminId()
-                    );
+                    refreshDeployKey(devopsEnvironmentDTO);
                     // 尝试重新推送一次tag
                     retryCreateTagAndPush(devopsEnvironmentDTO, git, sshKey, tagName, sha);
                     break;
@@ -788,6 +788,27 @@ public class GitUtil {
         } catch (Exception e) {
             throw new CommonException("create tag fail", e);
         }
+    }
+
+    /**
+     * 刷新deploy-key
+     */
+    public static void refreshDeployKey(DevopsEnvironmentDTO devopsEnvironmentDTO) {
+        Integer gitlabAdminUserId = GitUserNameUtil.getAdminId();
+        List<DeployKeyDTO> deployKeyDTOS = ApplicationContextHelper.getContext().getBean(GitlabServiceClientOperator.class).listDeployKey(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), gitlabAdminUserId);
+        deployKeyDTOS.forEach(key -> {
+            if (key.getTitle().equals(devopsEnvironmentDTO.getCode())) {
+                ApplicationContextHelper.getContext().getBean(GitlabServiceClientOperator.class).deleteDeployKey(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), gitlabAdminUserId, key.getId());
+            }
+        });
+        // 以管理员身份创建deploy key
+        ApplicationContextHelper.getContext().getBean(GitlabServiceClientOperator.class).createDeployKey(
+                devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(),
+                devopsEnvironmentDTO.getCode(),
+                devopsEnvironmentDTO.getEnvIdRsaPub(),
+                true,
+                GitUserNameUtil.getAdminId()
+        );
     }
 
     /**

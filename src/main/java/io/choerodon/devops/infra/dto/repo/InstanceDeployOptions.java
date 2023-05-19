@@ -32,11 +32,13 @@ public class InstanceDeployOptions {
     private String appCode;
     @ApiModelProperty("应用版本")
     private String version;
+    @ApiModelProperty("工作目录")
+    private String workDir;
 
     public InstanceDeployOptions() {
     }
 
-    public InstanceDeployOptions(String instanceName, String instanceId, String downloadCommand, String preCommand, String runCommand, String postCommand, String killCommand, String healthProb, String operation, String appCode, String version) {
+    public InstanceDeployOptions(String instanceName, String instanceId, String downloadCommand, String preCommand, String runCommand, String postCommand, String killCommand, String healthProb, String operation, String appCode, String version, String workDir) {
         this.instanceName = instanceName;
         this.instanceId = instanceId;
         this.downloadCommand = downloadCommand;
@@ -48,6 +50,7 @@ public class InstanceDeployOptions {
         this.operation = operation;
         this.appCode = appCode;
         this.version = version;
+        this.workDir = workDir;
     }
 
     public String getAppCode() {
@@ -136,5 +139,14 @@ public class InstanceDeployOptions {
 
     public void setOperation(String operation) {
         this.operation = operation;
+    }
+
+    public String getWorkDir() {
+        return workDir;
+    }
+
+    public InstanceDeployOptions setWorkDir(String workDir) {
+        this.workDir = workDir;
+        return this;
     }
 }

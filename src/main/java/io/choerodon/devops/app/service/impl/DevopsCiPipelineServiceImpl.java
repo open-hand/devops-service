@@ -212,7 +212,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 说明项目下还没有CI文件
             // 创建文件
             try {
-                LOGGER.info("initGitlabCiFile: create .gitlab-ci.yaml for gitlab project with id {}", gitlabProjectId);
                 gitlabServiceClientOperator.createFile(
                         gitlabProjectId,
                         GitOpsConstants.GITLAB_CI_FILE_NAME,
@@ -1434,9 +1433,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             gitlabCi.setVariables(variables);
         }
 
-        // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
-//        gitlabCi.setImage(StringUtils.isEmpty(ciCdPipelineDTO.getImage()) ? defaultCiImage : ciCdPipelineDTO.getImage());
-
         List<String> stageNames = new ArrayList<>();
         devopsCiStageDTOS
                 .stream()
@@ -1470,15 +1466,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     ciJobServices.setAlias("kaniko");
                     ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
                 }
-//                    if (devopsCiStepDTOS.stream().filter(v -> DevopsCiStepTypeEnum.SONAR.value().equals(v.getType())).anyMatch(s -> {
-//                        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(s.getId());
-//                        return SonarScannerType.SONAR_MAVEN.value().equals(devopsCiSonarConfigDTO.getScannerType());
-//                    })) {
-//                        CiJobServices ciJobServices = new CiJobServices();
-//                        ciJobServices.setName(defaultCiImage);
-//                        ciJobServices.setAlias("kaniko");
-//                        ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
-//                    }
+
                 if (job.getType().equals(API_TEST.value())) {
                     ciJob.setImage(testRunnerImage);
                     if (job.getStartIn() != null) {
@@ -1500,9 +1488,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 下载配置文件
                 List<CiJobConfigFileRelDTO> ciJobConfigFileRelDTOS = ciJobConfigFileRelService.listByJobId(job.getId());
                 if (!CollectionUtils.isEmpty(ciJobConfigFileRelDTOS)) {
-                    ciJobConfigFileRelDTOS.forEach(ciJobConfigFileRelDTO -> {
-                        script.add(String.format("downloadConfigFileByUId %s %s", ciJobConfigFileRelDTO.getConfigFileId(), ciJobConfigFileRelDTO.getConfigFilePath()));
-                    });
+                    ciJobConfigFileRelDTOS.forEach(ciJobConfigFileRelDTO
+                            -> script
+                            .add(String.format("downloadConfigFileByUId %s %s",
+                                    ciJobConfigFileRelDTO.getConfigFileId(),
+                                    ciJobConfigFileRelDTO.getConfigFilePath())));
                 }
                 script.addAll(handler.buildScript(Objects.requireNonNull(organizationId), projectId, job));
 

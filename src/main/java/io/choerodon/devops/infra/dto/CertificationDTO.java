@@ -1,15 +1,14 @@
 package io.choerodon.devops.infra.dto;
 
-import java.util.Date;
-import java.util.List;
-import javax.persistence.*;
-
-import io.swagger.annotations.ApiModelProperty;
-
 import io.choerodon.devops.api.vo.CertificationNotifyObject;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
+
+import javax.persistence.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by n!Ck
@@ -104,7 +103,7 @@ public class CertificationDTO extends AuditDomain {
         this.notifyObjects = notifyObjects;
     }
 
-    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId, String type, Boolean expireNotice, Integer advanceDays, List<CertificationNotifyObject> notifyObjects, Long objectVersionNumber) {
+    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId, String type, Boolean expireNotice, Integer advanceDays, List<CertificationNotifyObject> notifyObjects, Long objectVersionNumber, String keyValue, String crtValue) {
         this.type = type;
         this.id = id;
         this.name = name;
@@ -116,6 +115,8 @@ public class CertificationDTO extends AuditDomain {
         this.advanceDays = advanceDays;
         this.notifyObjects = notifyObjects;
         this.setObjectVersionNumber(objectVersionNumber);
+        this.keyValue = keyValue;
+        this.certValue = crtValue;
     }
 
     /**

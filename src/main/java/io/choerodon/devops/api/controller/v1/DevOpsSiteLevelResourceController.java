@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping("/v1")
 @RestController
 public class DevOpsSiteLevelResourceController {
+    @Lazy
     @Autowired
     private DevopsClusterService devopsClusterService;
     @Autowired

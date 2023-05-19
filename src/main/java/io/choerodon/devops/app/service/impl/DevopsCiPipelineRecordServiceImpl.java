@@ -1,38 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_CI_PIPELINE;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_UPDATE_CI_JOB_RECORD;
-import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yqcloud.core.oauth.ZKnowDetailsHelper;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -78,6 +49,34 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_CI_PIPELINE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_UPDATE_CI_JOB_RECORD;
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 /**
  * 〈功能简述〉
@@ -1479,7 +1478,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         log.append("容器名称: ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
         // 1. 更新状态 记录镜像信息
         log.append("3. 开始部署...").append(System.lineSeparator());
-        DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, hostId, devopsCiHostDeployInfoDTO.getDeployType(), devopsCiHostDeployInfoDTO.getAppName(), devopsCiHostDeployInfoDTO.getAppCode());
+        DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, hostId, devopsCiHostDeployInfoDTO.getDeployType(), devopsCiHostDeployInfoDTO.getAppName(), devopsCiHostDeployInfoDTO.getAppCode(), devopsCiHostDeployInfoDTO.getWorkDir());
         // 2.保存记录
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, imageDeploy.getContainerName());
         log.append("部署模式：").append(devopsDockerInstanceDTO == null ? "新建应用" : "更新应用").append(System.lineSeparator());
@@ -1518,12 +1517,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
+        dockerDeployDTO.setInstanceId(devopsDockerInstanceDTO.getId().toString());
+
         dockerDeployDTO.setImage(image);
         dockerDeployDTO.setContainerName(imageDeploy.getContainerName());
         dockerDeployDTO.setCmd(HostDeployUtil.getDockerRunCmd(dockerDeployDTO, Base64Util.decodeBuffer(devopsCiHostDeployInfoDTO.getDockerCommand())));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
         dockerDeployDTO.setAppCode(devopsHostAppDTO.getCode());
         dockerDeployDTO.setVersion(devopsHostAppDTO.getVersion());
+        dockerDeployDTO.setWorkDir(devopsHostAppDTO.getWorkDir());
 
         // 3. 保存部署记录
         devopsDeployRecordService.saveRecord(
@@ -1728,7 +1730,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     jarDeployVO.getAppName(),
                     jarDeployVO.getAppCode(),
                     RdupmTypeEnum.JAR.value(),
-                    OperationTypeEnum.PIPELINE_DEPLOY.value());
+                    OperationTypeEnum.PIPELINE_DEPLOY.value(),
+                    devopsCiHostDeployInfoDTO.getWorkDir());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
             devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
                     hostId,
@@ -1776,7 +1779,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
+        String workDir = ObjectUtils.isEmpty(devopsHostAppDTO.getWorkDir()) ? HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion()) : devopsHostAppDTO.getWorkDir();
         String appFileName = artifactId + "." + artifactType;
         String appFile = workDir + SLASH + appFileName;
         params.put("{{ WORK_DIR }}", workDir);
@@ -1797,7 +1800,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getHealthProb())),
                 jarDeployVO.getOperation(),
                 devopsHostAppDTO.getCode(),
-                devopsHostAppDTO.getVersion());
+                devopsHostAppDTO.getVersion(),
+                devopsHostAppDTO.getWorkDir());
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -1870,7 +1874,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     devopsCiHostDeployInfoDTO.getAppName(),
                     devopsCiHostDeployInfoDTO.getAppCode(),
                     RdupmTypeEnum.OTHER.value(),
-                    OperationTypeEnum.PIPELINE_DEPLOY.value());
+                    OperationTypeEnum.PIPELINE_DEPLOY.value(),
+                    devopsCiHostDeployInfoDTO.getWorkDir());
             MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_SAVE_JAVA_INSTANCE_FAILED);
             devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO(projectId,
                     hostId,
@@ -1911,7 +1916,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
+        String workDir = ObjectUtils.isEmpty(devopsHostAppDTO.getWorkDir()) ? HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion()) : devopsHostAppDTO.getWorkDir();
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", "");
         params.put("{{ APP_FILE }}", "");
@@ -1927,7 +1932,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCiHostDeployInfoDTO.getHealthProb())),
                 devopsCiHostDeployInfoDTO.getDeployType(),
                 devopsHostAppDTO.getCode(),
-                devopsHostAppDTO.getVersion());
+                devopsHostAppDTO.getVersion(),
+                devopsHostAppDTO.getWorkDir());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -2018,7 +2024,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    private DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, Long hostId, String deployType, String appName, String appCode) {
+    private DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, Long hostId, String deployType, String appName, String appCode, String workDir) {
         if (org.apache.commons.lang3.StringUtils.equals(CREATE, deployType)) {
             DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
             devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
@@ -2026,6 +2032,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsHostAppDTO.setHostId(hostId);
             devopsHostAppDTO.setName(appName);
             devopsHostAppDTO.setCode(appCode);
+            devopsHostAppDTO.setWorkDir(workDir);
             devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
             devopsHostAppMapper.insertSelective(devopsHostAppDTO);
 

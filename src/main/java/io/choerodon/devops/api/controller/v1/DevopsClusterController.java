@@ -507,4 +507,17 @@ public class DevopsClusterController {
         devopsClusterService.restartAgent(projectId, clusterId);
         return ResponseEntity.noContent().build();
     }
+
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "刷新环境的deploy-key")
+    @PostMapping(value = "/{cluster_id}/refresh_deploy_key")
+    public ResponseEntity<Void> refreshDeployKey(@ApiParam(value = "项目id", required = true)
+                                                 @PathVariable(value = "project_id") Long projectId,
+                                                 @Encrypt
+                                                 @ApiParam(value = "集群id", required = true)
+                                                 @PathVariable(value = "cluster_id") Long clusterId) {
+        devopsClusterService.refreshDeployKey(projectId, clusterId);
+        return ResponseEntity.noContent().build();
+    }
 }

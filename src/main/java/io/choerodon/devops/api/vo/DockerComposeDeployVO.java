@@ -1,15 +1,14 @@
 package io.choerodon.devops.api.vo;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
 import io.choerodon.devops.api.validator.CreateGroup;
 import io.choerodon.devops.api.validator.UpdateGroup;
 import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * 〈功能简述〉
@@ -44,6 +43,18 @@ public class DockerComposeDeployVO {
 
     @ApiModelProperty("应用版本")
     private String version;
+
+    @ApiModelProperty("工作目录")
+    private String workDir;
+
+    public String getWorkDir() {
+        return workDir;
+    }
+
+    public DockerComposeDeployVO setWorkDir(String workDir) {
+        this.workDir = workDir;
+        return this;
+    }
 
     public String getVersion() {
         return version;

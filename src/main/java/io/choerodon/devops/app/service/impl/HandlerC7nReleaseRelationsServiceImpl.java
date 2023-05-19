@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
@@ -302,7 +303,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
      * @param filePath             文件路径
      * @param c7nHelmRelease       release信息
      */
-    private void validateVersion(AppServiceVersionDTO appServiceVersionDTO, String filePath, C7nHelmRelease c7nHelmRelease) {
+    public static void validateVersion(AppServiceVersionDTO appServiceVersionDTO, String filePath, C7nHelmRelease c7nHelmRelease) {
         if (appServiceVersionDTO == null) {
             throw new GitOpsExplainException("devops.appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion());
         }
@@ -462,7 +463,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
      * @return 找到的版本
      * @throws GitOpsExplainException 如果找不到版本或者配置文件中指定的应用服务id不正确
      */
-    private AppServiceVersionDTO findVersion(C7nHelmRelease c7nHelmRelease, Long projectId, Long tenantId, String filePath, String commandType, Long envId) {
+    public static AppServiceVersionDTO findVersion(C7nHelmRelease c7nHelmRelease, Long projectId, Long tenantId, String filePath, String commandType, Long envId) {
         AppServiceVersionDTO result;
         String chartName = c7nHelmRelease.getSpec().getChartName();
         String chartVersion = c7nHelmRelease.getSpec().getChartVersion();
@@ -477,10 +478,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
         // 如果本身是使用共享规则共享的版本部署的实例，后续共享规则删除后，也允许实例修改values更新实例时,继续使用这个版本
         if (result == null && CommandType.UPDATE.getType().equals(commandType)) {
-            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService
-                    .baseQueryByCodeAndEnv(c7nHelmRelease.getMetadata().getName(), envId);
+            AppServiceInstanceDTO appServiceInstanceDTO = ApplicationContextHelper.getContext().getBean(AppServiceInstanceService.class).baseQueryByCodeAndEnv(c7nHelmRelease.getMetadata().getName(), envId);
             // 查出上次部署的版本
-            AppServiceVersionDTO lastVersion = appServiceInstanceService.queryVersion(appServiceInstanceDTO.getId());
+            AppServiceVersionDTO lastVersion = ApplicationContextHelper.getContext().getBean(AppServiceInstanceService.class).queryVersion(appServiceInstanceDTO.getId());
             // 如果上次版本和这次版本一致, 允许这次部署, 用的是上次部署的版本
             if (Objects.equals(lastVersion.getVersion(), c7nHelmRelease.getSpec().getChartVersion())) {
                 result = lastVersion;
@@ -509,15 +509,15 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
      * @return 可能找到的版本
      */
     @Nullable
-    private AppServiceVersionDTO tryFindVersionWithAppServiceId(Long appServiceId, String version, Long projectId, Long tenantId, String filePath) {
+    private static AppServiceVersionDTO tryFindVersionWithAppServiceId(Long appServiceId, String version, Long projectId, Long tenantId, String filePath) {
         LOGGER.debug("Try to find version with app service id specified. appServiceId: {}, chartVersion: {}, projectId: {}, tenantId: {}", appServiceId, version, projectId, tenantId);
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        AppServiceDTO appServiceDTO = ApplicationContextHelper.getContext().getBean(AppServiceMapper.class).selectByPrimaryKey(appServiceId);
         // 应用服务不存在时报错
         if (appServiceDTO == null) {
             throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APP_SERVICE_ID_NOT_EXIST.getError(), filePath);
         }
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = ApplicationContextHelper.getContext().getBean(BaseServiceClientOperator.class).queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         // if 找到的应用服务所属的组织id equals 要使用版本的项目的组织id，才进一步寻找，否则返回null
         if (tenantId.equals(projectDTO.getOrganizationId())) {
             return tryFindVersionByAppService(appServiceDTO, version, projectId);
@@ -535,9 +535,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
      * @return 可能找到的版本
      */
     @Nullable
-    private AppServiceVersionDTO tryFindVersionByAppService(AppServiceDTO appServiceDTO, String version, Long projectId) {
+    private static AppServiceVersionDTO tryFindVersionByAppService(AppServiceDTO appServiceDTO, String version, Long projectId) {
         LOGGER.debug("try find version by app service... appServiceId {} version {}", appServiceDTO.getId(), version);
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), version);
+        AppServiceVersionDTO appServiceVersionDTO = ApplicationContextHelper.getContext().getBean(AppServiceVersionService.class).baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), version);
         if (appServiceVersionDTO != null) {
             LOGGER.debug("Found version by app service id {} and version version {}", appServiceDTO.getId(), version);
             // 如果不等于空，校验下是否有这个版本的权限
@@ -546,7 +546,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 return appServiceVersionDTO;
                 // 查询有没有共享规则，有权限的话，就返回这个版本
             } else {
-                if (appServiceShareRuleService.hasAccessByShareRule(appServiceVersionDTO, projectId)) {
+                if (ApplicationContextHelper.getContext().getBean(AppServiceShareRuleService.class).hasAccessByShareRule(appServiceVersionDTO, projectId)) {
                     LOGGER.debug("The version is shared by other project, so return");
                     return appServiceVersionDTO;
                 }
@@ -565,10 +565,10 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
      * @return 可能找到的版本
      */
     @Nullable
-    private AppServiceVersionDTO tryFindVersionWithoutAppServiceId(String chartName, String chartVersion, Long projectId, Long tenantId) {
+    private static AppServiceVersionDTO tryFindVersionWithoutAppServiceId(String chartName, String chartVersion, Long projectId, Long tenantId) {
         LOGGER.debug("Try to find version without app service id specified. chartName: {}, chartVersion: {}, projectId: {}, tenantId: {}", chartName, chartVersion, projectId, tenantId);
         // 尝试从项目下找
-        AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(chartName, projectId);
+        AppServiceDTO appServiceDTO = ApplicationContextHelper.getContext().getBean(AppServiceService.class).baseQueryByCode(chartName, projectId);
         AppServiceVersionDTO result = null;
         // 如果项目下有这个服务
         if (appServiceDTO != null) {
@@ -580,11 +580,11 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             // 如果项目下没有这个服务
             // 查询组织下的所有项目中有这个版本名的应用服务
             // 先查询所有的项目id
-            List<ProjectDTO> projects = baseServiceClientOperator.listIamProjectByOrgId(tenantId);
+            List<ProjectDTO> projects = ApplicationContextHelper.getContext().getBean(BaseServiceClientOperator.class).listIamProjectByOrgId(tenantId);
             if (!CollectionUtils.isEmpty(projects)) {
                 Set<Long> projectIds = projects.stream().map(ProjectDTO::getId).collect(Collectors.toSet());
                 // 查询出有这个版本的这个组织下的名为chartName的应用服务
-                List<AppServiceDTO> appServices = appServiceMapper.inProjectsAndHavingVersion(projectIds, chartName, chartVersion);
+                List<AppServiceDTO> appServices = ApplicationContextHelper.getContext().getBean(AppServiceMapper.class).inProjectsAndHavingVersion(projectIds, chartName, chartVersion);
                 if (!CollectionUtils.isEmpty(appServices)) {
                     // 尝试从中找出一个具有权限的版本
                     for (AppServiceDTO app : appServices) {

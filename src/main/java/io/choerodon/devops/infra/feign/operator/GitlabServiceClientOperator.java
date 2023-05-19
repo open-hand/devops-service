@@ -1480,6 +1480,26 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    /**
+     * 更新gitlab文件并创建提交
+     *
+     * @param gitlabProjectId gitlab项目id
+     * @param gitlabUserId    用户id
+     * @param branch          分支名
+     * @param pathContent     文件路径和内容的映射，不能为空
+     * @param commitMessage   提交信息
+     */
+    public void updateGitlabFiles(Integer gitlabProjectId, Integer gitlabUserId, String branch, Map<String, String> pathContent, String commitMessage, String commitId) {
+        try {
+            List<CommitActionDTO> actions = new ArrayList<>();
+            pathContent.forEach((filePath, fileContent) -> actions.add(new CommitActionDTO(CommitActionDTO.Action.UPDATE, filePath, fileContent, commitId)));
+            CommitPayloadDTO commitPayloadDTO = new CommitPayloadDTO(Objects.requireNonNull(branch), Objects.requireNonNull(commitMessage), actions);
+            gitlabServiceClient.createCommit(Objects.requireNonNull(gitlabProjectId), Objects.requireNonNull(gitlabUserId), commitPayloadDTO);
+        } catch (Exception ex) {
+            throw new CommonException("devops.manipulate.gitlab.files");
+        }
+    }
+
     public RepositoryFileDTO getWholeFile(Integer projectId, String branch, String filePath) {
         try {
             return gitlabServiceClient.getFile(projectId, branch, filePath).getBody();

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
@@ -118,5 +119,12 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
     @Override
     public ResourceType getType() {
         return ResourceType.C7NHELMRELEASE;
+    }
+
+    public static void checkPullSecrets(C7nHelmRelease c7nHelmRelease, Map<String, C7nHelmRelease> c7nHelmReleases, Map<String, String> objectPath) {
+        if (c7nHelmRelease.getSpec() != null && CollectionUtils.isEmpty(c7nHelmRelease.getSpec().getImagePullSecrets())) {
+            String filePath = objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode()));
+            c7nHelmReleases.put(filePath, c7nHelmRelease);
+        }
     }
 }

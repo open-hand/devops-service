@@ -848,23 +848,39 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     protected void addSpecifierList(String messageCode, Long projectId, List<Receiver> users) {
-        if (messageCode.equals(MessageCodeConstants.PIPELINE_FAILED)
-                || messageCode.equals(MessageCodeConstants.PIPELINE_SUCCESS)) {
-            MessageSettingVO messageSettingVO = messageClientOperator.getMessageSettingVO(ServiceNotifyType.DEVOPS_NOTIFY.getTypeName(), projectId, messageCode);
-            List<Long> specifierList = new ArrayList<>();
-            if (messageSettingVO != null) {
-                Optional<TargetUserDTO> pipelineTriggers = messageSettingVO.getTargetUserDTOS().stream().filter(t -> t.getType().equals(TargetUserType.PIPELINE_TRIGGERS.getTypeName())).findFirst();
-                if (!pipelineTriggers.isPresent()) {
-                    users.clear();
-                }
-                List<Long> userIds = users.stream().map(Receiver::getUserId).collect(Collectors.toList());
-                messageSettingVO.getTargetUserDTOS().forEach(t -> {
-                    if (t.getType().equals(TargetUserType.SPECIFIER.getTypeName()) && !userIds.contains(t.getUserId())) {
-                        specifierList.add(t.getUserId());
+        switch (messageCode) {
+            case MessageCodeConstants.PIPELINE_FAILED:
+            case MessageCodeConstants.PIPELINE_SUCCESS:
+                MessageSettingVO messageSettingVO = messageClientOperator.getMessageSettingVO(ServiceNotifyType.DEVOPS_NOTIFY.getTypeName(), projectId, messageCode);
+                List<Long> specifierList = new ArrayList<>();
+                if (messageSettingVO != null) {
+                    Optional<TargetUserDTO> pipelineTriggers = messageSettingVO.getTargetUserDTOS().stream().filter(t -> t.getType().equals(TargetUserType.PIPELINE_TRIGGERS.getTypeName())).findFirst();
+                    if (!pipelineTriggers.isPresent()) {
+                        users.clear();
                     }
-                });
-            }
-            baseServiceClientOperator.listUsersByIds(specifierList).forEach(t -> users.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
+                    List<Long> userIds = users.stream().map(Receiver::getUserId).collect(Collectors.toList());
+                    messageSettingVO.getTargetUserDTOS().forEach(t -> {
+                        if (t.getType().equals(TargetUserType.SPECIFIER.getTypeName()) && !userIds.contains(t.getUserId())) {
+                            specifierList.add(t.getUserId());
+                        }
+                    });
+                }
+                baseServiceClientOperator.listUsersByIds(specifierList).forEach(t -> users.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
+                break;
+            case MessageCodeConstants.ENV_DEPLOY_SUCCESS:
+            case MessageCodeConstants.ENV_DEPLOY_FAIL:
+                MessageSettingVO envMessageSettingVO = messageClientOperator.getMessageSettingVO(ServiceNotifyType.DEVOPS_NOTIFY.getTypeName(), projectId, messageCode);
+                List<Long> envDeploySpecifierList = new ArrayList<>();
+                if (envMessageSettingVO != null) {
+                    List<Long> userIds = users.stream().map(Receiver::getUserId).collect(Collectors.toList());
+                    envMessageSettingVO.getTargetUserDTOS().forEach(t -> {
+                        if (t.getType().equals(TargetUserType.SPECIFIER.getTypeName()) && !userIds.contains(t.getUserId())) {
+                            envDeploySpecifierList.add(t.getUserId());
+                        }
+                    });
+                }
+                baseServiceClientOperator.listUsersByIds(envDeploySpecifierList).forEach(t -> users.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
+                break;
         }
     }
 
@@ -1447,8 +1463,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> {
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
-                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listProjectOwnerByProjectId(devopsEnvironmentDTO.getProjectId());
-                    List<Receiver> receivers = constructReceivers(iamUserDTOS);
+
+                    List<Receiver> receivers = new ArrayList<>();
+                    addSpecifierList(MessageCodeConstants.ENV_DEPLOY_SUCCESS, projectDTO.getId(), receivers);
+                    if (CollectionUtils.isEmpty(receivers)) {
+                        return;
+                    }
 
                     Map<String, String> params = new HashMap<>();
                     String link = String.format(ENV_AND_CERTIFICATION_LINK, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsEnvironmentDTO.getName(), devopsEnvironmentDTO.getId());
@@ -1471,8 +1491,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> {
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
-                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listProjectOwnerByProjectId(devopsEnvironmentDTO.getProjectId());
-                    List<Receiver> receivers = constructReceivers(iamUserDTOS);
+
+                    List<Receiver> receivers = new ArrayList<>();
+                    addSpecifierList(MessageCodeConstants.ENV_DEPLOY_SUCCESS, projectDTO.getId(), receivers);
+                    if (CollectionUtils.isEmpty(receivers)) {
+                        return;
+                    }
 
                     Map<String, String> params = new HashMap<>();
                     String link = String.format(ENV_AND_CERTIFICATION_LINK, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsEnvironmentDTO.getName(), devopsEnvironmentDTO.getId());

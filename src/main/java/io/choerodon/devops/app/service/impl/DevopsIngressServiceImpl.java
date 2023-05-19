@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -15,6 +18,7 @@ import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.*;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -25,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -34,10 +39,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
-import io.choerodon.devops.api.vo.ClusterSummaryInfoVO;
-import io.choerodon.devops.api.vo.DevopsIngressPathVO;
-import io.choerodon.devops.api.vo.DevopsIngressVO;
-import io.choerodon.devops.api.vo.DevopsServiceVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.app.service.*;
@@ -80,7 +82,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     private static final Gson gson = new Gson();
     private static final JSON k8sJson = new JSON();
     private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
-
+    private static final String USER_GUIDE_MARKDOWN;
+    private static final String USER_GUIDE_MARKDOWN_LOCATION = "/doc/nginx_ingress_user_guide.md";
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
@@ -116,6 +119,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     PermissionHelper permissionHelper;
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private IngressNginxAnnotationService ingressNginxAnnotationService;
+
+    static {
+        try (InputStream inputStream = DevopsJenkinsServerServiceImpl.class.getResourceAsStream(USER_GUIDE_MARKDOWN_LOCATION)) {
+            USER_GUIDE_MARKDOWN = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("User guide markdown not found");
+        }
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -132,8 +145,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         // 校验port是否属于该网络
         Set<Long> appServiceIds = new HashSet<>();
-
-        DevopsIngressValidator.checkAnnotations(devopsIngressVO.getAnnotations());
+        Map<String, String> annotations = new HashMap<>();
+        if (!CollectionUtils.isEmpty(devopsIngressVO.getAnnotations())) {
+            annotations.putAll(devopsIngressVO.getAnnotations());
+        }
+        if (!CollectionUtils.isEmpty(devopsIngressVO.getNginxIngressAnnotations())) {
+            annotations.putAll(devopsIngressVO.getNginxIngressAnnotations()
+                    .stream()
+                    .collect(Collectors.toMap(IngressNginxAnnotationVO::getAnnotationKey, IngressNginxAnnotationVO::getAnnotationValue)));
+        }
+        DevopsIngressValidator.checkAnnotations(annotations);
         DevopsIngressValidator.checkHost(devopsIngressVO.getDomain());
         devopsIngressVO.getPathList().forEach(devopsIngressPathDTO -> {
             DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsIngressPathDTO.getServiceId());
@@ -156,7 +177,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         boolean operateForOldIngress = operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId());
         // 初始化Ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        KubernetesObject ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations(), operateForOldIngress);
+        KubernetesObject ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, annotations, operateForOldIngress);
 
         // 处理创建域名数据
         DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, ingress, operateForOldIngress);
@@ -276,7 +297,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         // 校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         DevopsIngressValidator.checkHost(devopsIngressVO.getDomain());
-        DevopsIngressValidator.checkAnnotations(devopsIngressVO.getAnnotations());
+        Map<String, String> annotations = new HashMap<>();
+        if (!CollectionUtils.isEmpty(devopsIngressVO.getAnnotations())) {
+            annotations.putAll(devopsIngressVO.getAnnotations());
+        }
+        if (!CollectionUtils.isEmpty(devopsIngressVO.getNginxIngressAnnotations())) {
+            annotations.putAll(devopsIngressVO.getNginxIngressAnnotations()
+                    .stream()
+                    .collect(Collectors.toMap(IngressNginxAnnotationVO::getAnnotationKey, IngressNginxAnnotationVO::getAnnotationValue)));
+        }
+        DevopsIngressValidator.checkAnnotations(annotations);
         DevopsIngressDTO oldDevopsIngressDTO = baseQuery(id);
         if (oldDevopsIngressDTO.getCertId() != null && devopsIngressVO.getCertId() == null) {
             deleteCert = true;
@@ -308,10 +338,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         }
 
         // 判断ingress有没有修改，没有修改直接返回
-        DevopsIngressVO ingressDTO = ConvertUtils.convertObject(baseQuery(id), DevopsIngressVO.class);
-        if (devopsIngressVO.equals(ingressDTO)) {
-            return;
-        }
+//        DevopsIngressVO ingressDTO = ConvertUtils.convertObject(baseQuery(id), DevopsIngressVO.class);
+//        if (devopsIngressVO.equals(ingressDTO)) {
+//            return;
+//        }
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(UPDATE);
 
@@ -319,7 +349,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         // 初始化ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        KubernetesObject v1beta1Ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations(), operateForOldIngress);
+        KubernetesObject v1beta1Ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, annotations, operateForOldIngress);
 
         // 处理域名数据
         devopsIngressVO.setId(id);
@@ -327,7 +357,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
@@ -390,6 +420,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(devopsIngressVO, e));
             devopsIngressDTO.setStatus(devopsIngressDTO.getStatus());
 
+            devopsIngressVO.setNginxIngressAnnotations(ingressNginxAnnotationService.listVOByIngressId(ingressId));
+
             if (devopsIngressDTO.getAnnotations() != null) {
                 devopsIngressVO.setAnnotations(gson.fromJson(devopsIngressDTO.getAnnotations(), new TypeToken<Map<String, String>>() {
                 }.getType()));
@@ -428,6 +460,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(vo.getId());
         devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(vo, e));
+        // 添加灰度注解信息
+        vo.setNginxIngressAnnotations(ingressNginxAnnotationService.listVOByIngressId(ingressId));
 
         if (devopsIngressDTO.getCreatedBy() != null && devopsIngressDTO.getCreatedBy() != 0) {
             vo.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsIngressDTO.getCreatedBy()));
@@ -484,7 +518,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         // 查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
@@ -741,13 +775,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             //更新域名时判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String filePath = null;
             if (!ingressSagaPayload.getCreated()) {
-                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
-                        ingressSagaPayload.getProjectId(),
-                        ingressSagaPayload.getDevopsEnvironmentDTO().getCode(),
-                        ingressSagaPayload.getDevopsEnvironmentDTO().getId(),
-                        ingressSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
-                        ingressSagaPayload.getDevopsEnvironmentDTO().getType(),
-                        ingressSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
+                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(ingressSagaPayload.getDevopsEnvironmentDTO(), ingressSagaPayload.getProjectId(), ingressSagaPayload.getDevopsEnvironmentDTO().getCode(), ingressSagaPayload.getDevopsEnvironmentDTO().getId(), ingressSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(), ingressSagaPayload.getDevopsEnvironmentDTO().getType(), ingressSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
             }
             //在gitops库处理instance文件
             if (ingressSagaPayload.getOperateForOldIngress()) {
@@ -810,14 +838,15 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         //初始化ingressDO对象
         DevopsIngressDTO devopsIngressDO = new DevopsIngressDTO(devopsIngressVO.getId(), projectId, envId, domain, ingressName, IngressStatus.OPERATING.getStatus());
 
-        if (ingress.getMetadata().getAnnotations() != null) {
-            String annotations = gson.toJson(ingress.getMetadata().getAnnotations());
+        if (devopsIngressVO.getAnnotations() != null) {
+            String annotations = gson.toJson(devopsIngressVO.getAnnotations());
             // 避免数据比数据库结构的size还大
             if (annotations.length() > 2000) {
                 throw new CommonException(DEVOPS_INGRESS_ANNOTATIONS_TOO_LARGE);
             }
             devopsIngressDO.setAnnotations(annotations);
         }
+        devopsIngressDO.setNginxIngressAnnotations(devopsIngressVO.getNginxIngressAnnotations());
 
         //处理pathlist,生成域名和service的关联对象列表
         List<DevopsIngressPathDTO> devopsIngressPathDTOS = handlerPathList(devopsIngressVO.getPathList(), devopsIngressVO, ingress, operateForOldIngress);
@@ -897,6 +926,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             t.setIngressId(devopsIngressDTO.getId());
             devopsIngressPathMapper.insert(t);
         });
+        ingressNginxAnnotationService.batchSave(devopsIngressDTO.getId(), devopsIngressDTO.getNginxIngressAnnotations());
         return devopsIngressDTO;
     }
 
@@ -922,6 +952,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
                 devopsIngressPathMapper.insert(t);
             });
         }
+        ingressNginxAnnotationService.deleteByIngressId(id);
+        ingressNginxAnnotationService.batchSave(id, devopsIngressDTO.getNginxIngressAnnotations());
     }
 
     public void baseUpdate(DevopsIngressDTO devopsIngressDTO) {
@@ -1231,6 +1263,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         } else {
             return false;
         }
+    }
+
+    @Override
+    public List<IngressNginxAnnotationVO> listNginxIngressAnnotation() {
+        return ingressNginxAnnotationService.listNginxIngressAnnotation();
+    }
+
+    @Override
+    public String queryNginxIngressUserGuide() {
+        return USER_GUIDE_MARKDOWN;
     }
 
 

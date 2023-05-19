@@ -14,6 +14,7 @@ import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -68,6 +69,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     @Autowired
     DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
+    @Lazy
     DevopsClusterService devopsClusterService;
     @Autowired
     UserAttrService userAttrService;
@@ -199,7 +201,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         baseupdatePv(devopsPvDTO);
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO, devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
 
         // 查询对象所在文件中是否含有其它对象
@@ -673,7 +675,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     public void operatePvBySaga(PersistentVolumePayload persistentVolumePayload) {
         try {
             // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String path = clusterConnectionHandler.handDevopsEnvGitRepository(persistentVolumePayload.getDevopsEnvironmentDTO().getProjectId(), persistentVolumePayload.getDevopsEnvironmentDTO().getCode(), persistentVolumePayload.getDevopsEnvironmentDTO().getId(), persistentVolumePayload.getDevopsEnvironmentDTO().getEnvIdRsa(), persistentVolumePayload.getDevopsEnvironmentDTO().getType(), persistentVolumePayload.getDevopsEnvironmentDTO().getClusterCode());
+            String path = clusterConnectionHandler.handDevopsEnvGitRepository(persistentVolumePayload.getDevopsEnvironmentDTO(), persistentVolumePayload.getDevopsEnvironmentDTO().getProjectId(), persistentVolumePayload.getDevopsEnvironmentDTO().getCode(), persistentVolumePayload.getDevopsEnvironmentDTO().getId(), persistentVolumePayload.getDevopsEnvironmentDTO().getEnvIdRsa(), persistentVolumePayload.getDevopsEnvironmentDTO().getType(), persistentVolumePayload.getDevopsEnvironmentDTO().getClusterCode());
 
 
             //创建文件

@@ -1,12 +1,11 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -68,4 +67,6 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
                             @Param("hostId") Long hostId,
                             @Param("appId") Long appId,
                             @Param("code") String code);
+
+    List<DevopsHostAppVO> listWorkDirsByHostId(@Param("hostId") Long hostId);
 }

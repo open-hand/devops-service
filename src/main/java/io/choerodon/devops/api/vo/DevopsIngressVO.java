@@ -1,12 +1,12 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Creator: Runge
@@ -55,6 +55,16 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
     private List<String> instances;
     @ApiModelProperty("如果ingress由helm实例产生，此字段为helm实例id")
     private Long instanceId;
+
+    private List<IngressNginxAnnotationVO> nginxIngressAnnotations;
+
+    public List<IngressNginxAnnotationVO> getNginxIngressAnnotations() {
+        return nginxIngressAnnotations;
+    }
+
+    public void setNginxIngressAnnotations(List<IngressNginxAnnotationVO> nginxIngressAnnotations) {
+        this.nginxIngressAnnotations = nginxIngressAnnotations;
+    }
 
     public DevopsIngressVO() {
         this.pathList = new ArrayList<>();
