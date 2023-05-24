@@ -550,7 +550,7 @@
         das.project_id,
         das.`name`,
         das.CODE,
-        das.type,
+        das.type
         FROM devops_app_service das
         LEFT JOIN devops_app_service_share_rule b ON das.id = b.app_service_id
         <where>
