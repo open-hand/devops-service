@@ -829,7 +829,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例id", required = true)
-            @Encrypt @RequestParam(value = "instance_id") Long instanceId,
+            @Encrypt @RequestParam(value = "instanceId") Long instanceId,
             @ApiParam(value = "环境id", required = true)
             @Encrypt
             @RequestParam Long envId,
