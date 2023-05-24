@@ -14,7 +14,7 @@ import springfox.documentation.spring.web.plugins.Docket;
  */
 @Configuration
 public class SwaggerApiConfig {
-    public static final String APP_EXTERNAL_CONFIG = "App external conifg";
+    public static final String APP_EXTERNAL_CONFIG = "App external config";
     public static final String APP_SERVICE = "App service";
     public static final String APP_SERVICE_INSTANCE = "App service instance";
     public static final String DEVOPS_CD_PIPELINE = "Devops cd pipeline";
