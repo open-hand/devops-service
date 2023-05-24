@@ -593,7 +593,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public void operationPodCount(Long projectId, String kind, String name, Long envId, Long count, boolean workload) {
+    public void operationPodCount(Long projectId, String kind, Long instanceId, String name, Long envId, Long count, boolean workload) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -609,8 +609,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             }
             // 保存操作记录
             AppServiceInstanceDTO appServiceInstanceDTOToSearch = new AppServiceInstanceDTO();
-            appServiceInstanceDTOToSearch.setEnvId(envId);
-            appServiceInstanceDTOToSearch.setCode(name);
+            appServiceInstanceDTOToSearch.setId(instanceId);
             AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTOToSearch);
             if (appServiceInstanceDTO != null) {
                 devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
