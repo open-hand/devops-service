@@ -110,11 +110,30 @@
     </delete>
 
     <select id="queryAppById" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
-        select dha.*,
-               dh.name as host_name
-        from devops_host_app dha
-                 left join devops_host dh ON dh.id = dha.host_id
-        where dha.id = #{id}
+        SELECT dha.id,
+        dha.project_id,
+        dha.host_id,
+        dha.name,
+        dha.code,
+        dha.operation_type,
+        dha.rdupm_type,
+        dha.object_version_number,
+        dha.created_by,
+        dha.creation_date,
+        dha.last_updated_by,
+        dha.last_update_date,
+        dha.effect_value_id,
+        dhai.pre_command,
+        dhai.run_command,
+        dhai.post_command,
+        dhai.kill_command,
+        dhai.health_prob,
+        dhai.ready,
+        dh.name AS host_name
+        FROM devops_host_app dha
+        JOIN devops_host dh ON dh.id = dha.host_id
+        LEFT JOIN devops_host_app_instance dhai ON dhai.app_id = dha.id
+        WHERE dha.id = #{id}
     </select>
     <select id="listOwnedByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
         SELECT
