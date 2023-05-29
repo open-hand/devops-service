@@ -71,6 +71,7 @@ function export_commit_tag() {
     else
       export C7N_VERSION={{ C7N_VERSION_RULE }}  # $C7N_COMMIT_TIME-$C7N_BRANCH
     fi
+    export CI_COMMIT_TAG=$C7N_VERSION
 }
 
 export_commit_tag
