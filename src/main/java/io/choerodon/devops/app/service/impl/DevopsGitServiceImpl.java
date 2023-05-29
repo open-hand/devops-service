@@ -724,7 +724,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             // 如果有release没有配置secret，那么为实例配置secret，终止此次操作。将新的c7nhelmrelease提交到gitops后重新同步
             if (!CollectionUtils.isEmpty(c7nHelmReleaseWithoutPullSecrets)) {
-                appServiceInstanceService.setImagePullSecrets(pushWebHookVO.getUserId(), devopsEnvironmentDTO, c7nHelmReleaseWithoutPullSecrets, devopsEnvCommitDTO.getCommitSha());
+                appServiceInstanceService.setImagePullSecrets(pushWebHookVO.getUserId(), devopsEnvironmentDTO, c7nHelmReleaseWithoutPullSecrets, path, devopsEnvCommitDTO.getCommitSha());
                 return;
             }
 

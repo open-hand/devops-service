@@ -1,9 +1,52 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import static io.choerodon.devops.app.service.impl.AgentMsgHandlerServiceImpl.CHOERODON_IO_REPLICAS_STRATEGY;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceInstanceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceVersionCode.DEVOPS_VERSION_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvCommandCode.DEVOPS_COMMAND_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
+import static io.choerodon.devops.infra.constant.MiscConstants.APP_INSTANCE_DELETE_REDIS_KEY;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.yqcloud.core.oauth.ZKnowDetailsHelper;
+import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Ingress;
+import io.kubernetes.client.openapi.models.V1Service;
+import org.apache.commons.lang.StringUtils;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -44,48 +87,6 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.kubernetes.client.models.V1beta1Ingress;
-import io.kubernetes.client.openapi.JSON;
-import io.kubernetes.client.openapi.models.V1Ingress;
-import io.kubernetes.client.openapi.models.V1Service;
-import org.apache.commons.lang.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.app.service.impl.AgentMsgHandlerServiceImpl.CHOERODON_IO_REPLICAS_STRATEGY;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceInstanceCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceVersionCode.DEVOPS_VERSION_ID_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvCommandCode.DEVOPS_COMMAND_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
-import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
-import static io.choerodon.devops.infra.constant.MiscConstants.APP_INSTANCE_DELETE_REDIS_KEY;
 
 
 /**
@@ -2814,7 +2815,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public void setImagePullSecrets(Integer userId, DevopsEnvironmentDTO devopsEnvironmentDTO, Map<String, C7nHelmRelease> c7nHelmReleases, String commitSha) {
+    public void setImagePullSecrets(Integer userId, DevopsEnvironmentDTO devopsEnvironmentDTO, Map<String, C7nHelmRelease> c7nHelmReleases, String gitopsRepoPath, String commitSha) {
         Map<String, String> pathContentMap = new HashMap<>();
         List<String> fileNames = new ArrayList<>();
 
@@ -2826,6 +2827,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceVersionDTO = HandlerC7nReleaseRelationsServiceImpl.findVersion(c7nHelmRelease, devopsEnvironmentDTO.getProjectId(), organization.getTenantId(), filePath, "create", devopsEnvironmentDTO.getId());
             AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceVersionDTO.getAppServiceId());
             String secretName = getSecret(appServiceDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
+
+            // 如果secretName为空，表示该实例没有secret，不需要修改
+            if (ObjectUtils.isEmpty(secretName)) {
+                return;
+            }
             c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
 
             //在gitops库处理instance文件
@@ -2837,7 +2843,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             pathContentMap.put(filePath, instanceContent);
         });
 
-        gitlabServiceClientOperator.updateGitlabFiles(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), userId, GitOpsConstants.MASTER, pathContentMap, "BATCH UPDATE IMAGE PULL SECRET:" + String.join(",", fileNames), commitSha);
+        gitlabServiceClientOperator.updateGitlabFiles(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), userId, GitOpsConstants.MASTER, pathContentMap, "BATCH UPDATE IMAGE PULL SECRET:" + String.join(",", fileNames), gitopsRepoPath, commitSha);
     }
 
     private String[] parseMarketRepo(String harborRepo) {
