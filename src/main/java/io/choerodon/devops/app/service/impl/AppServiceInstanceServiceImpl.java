@@ -2827,11 +2827,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceVersionDTO = HandlerC7nReleaseRelationsServiceImpl.findVersion(c7nHelmRelease, devopsEnvironmentDTO.getProjectId(), organization.getTenantId(), filePath, "create", devopsEnvironmentDTO.getId());
             AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceVersionDTO.getAppServiceId());
             String secretName = getSecret(appServiceDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
-
-            // 如果secretName为空，表示该实例没有secret，不需要修改
-            if (ObjectUtils.isEmpty(secretName)) {
-                return;
-            }
+            
             c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
 
             //在gitops库处理instance文件
