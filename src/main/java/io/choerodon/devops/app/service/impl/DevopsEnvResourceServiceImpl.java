@@ -106,7 +106,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
         if (devopsEnvResourceDetailDTO != null) {
             // 获取相关的pod
-            List<DevopsEnvPodVO> devopsEnvPodVOs = devopsEnvPodService.listWorkloadPod(ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getName());
+            List<DevopsEnvPodVO> devopsEnvPodVOs = devopsEnvPodService.listWorkloadPod(devopsDeploymentVO.getEnvId(), ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getName());
 
             V1Deployment v1beta2Deployment = json.deserialize(
                     devopsEnvResourceDetailDTO.getMessage(),
