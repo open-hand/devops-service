@@ -57,6 +57,8 @@ public class CiController {
     @Autowired
     private DevopsCiJobRecordService devopsCiJobRecordService;
     @Autowired
+    private CiPipelineVlunScanRecordRelService ciPipelineVlunScanRecordRelService;
+    @Autowired
     private CiService ciService;
 
     public CiController(AppServiceService applicationService,
@@ -321,6 +323,19 @@ public class CiController {
             @ApiParam(value = "测试结果（如果传了则使用用户上传的结果）")
             DevopsCiUnitTestResultVO devopsCiUnitTestResultVO) {
         devopsCiUnitTestReportService.uploadUnitTest(gitlabPipelineId, jobName, token, type, file, devopsCiUnitTestResultVO);
+        return ResponseEntity.ok().build();
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "上传漏洞扫描结果")
+    @PostMapping("/upload_vuln_result")
+    public ResponseEntity<Void> uploadVulnResult(
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @RequestParam(value = "job_name") String jobName,
+            @RequestParam String token,
+            @ApiParam(value = "扫描结果json", required = true)
+            @RequestParam MultipartFile file) {
+        ciPipelineVlunScanRecordRelService.uploadVulnResult(gitlabPipelineId, jobName, token, file);
         return ResponseEntity.ok().build();
     }
 
