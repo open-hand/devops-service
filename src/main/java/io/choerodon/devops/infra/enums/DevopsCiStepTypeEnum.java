@@ -57,6 +57,11 @@ public enum DevopsCiStepTypeEnum {
      * sonar检查
      */
     SONAR("sonar"),
+
+    /**
+     * 漏洞扫描
+     */
+    VULN_SCAN("vuln_scan"),
     /**
      * 上传chart 类型
      */
