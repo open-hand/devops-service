@@ -101,7 +101,7 @@ public class DevopsCiVulnScanStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public DevopsCiStepTypeEnum getType() {
-        return DevopsCiStepTypeEnum.NPM_BUILD;
+        return DevopsCiStepTypeEnum.VULN_SCAN;
     }
 
 
