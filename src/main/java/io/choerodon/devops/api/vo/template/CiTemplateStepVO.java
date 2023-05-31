@@ -64,6 +64,8 @@ public class CiTemplateStepVO {
 
     @ApiModelProperty("步骤为npm 构建时需要，保存npm构建相关信息")
     private CiNpmBuildConfigDTO npmBuildConfig;
+    @ApiModelProperty("步骤为漏洞扫描时需要，保存漏洞扫描相关信息")
+    private CiVulnScanConfigDTO vulnScanConfig;
     @ApiModelProperty("步骤为maven发布时需要，保存maven发布相关信息")
     private CiTemplateMavenPublishDTO mavenPublishConfig;
     @ApiModelProperty("步骤为maven构建时需要，保存maven构建相关信息")
@@ -74,6 +76,14 @@ public class CiTemplateStepVO {
     private Date creationDate;
     @ApiModelProperty("任务模板是否可见")
     private Boolean visibility;
+
+    public CiVulnScanConfigDTO getVulnScanConfig() {
+        return vulnScanConfig;
+    }
+
+    public void setVulnScanConfig(CiVulnScanConfigDTO vulnScanConfig) {
+        this.vulnScanConfig = vulnScanConfig;
+    }
 
     public CiNpmBuildConfigDTO getNpmBuildConfig() {
         return npmBuildConfig;
