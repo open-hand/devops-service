@@ -39,17 +39,27 @@ public class VulnTargetRelDTO extends AuditDomain {
     @NotNull
     private Long targetId;
 
+    private String pkgName;
+
     @ApiModelProperty(value = "漏洞id", required = true)
     @NotBlank
     private String vulnerabilityId;
 
+    public VulnTargetRelDTO(Long targetId, String pkgName, String vulnerabilityId) {
+        this.targetId = targetId;
+        this.pkgName = pkgName;
+        this.vulnerabilityId = vulnerabilityId;
+    }
+
+    public String getPkgName() {
+        return pkgName;
+    }
 
     public VulnTargetRelDTO() {
     }
 
-    public VulnTargetRelDTO(Long targetId, String vulnerabilityId) {
-        this.targetId = targetId;
-        this.vulnerabilityId = vulnerabilityId;
+    public void setPkgName(String pkgName) {
+        this.pkgName = pkgName;
     }
 
     public Long getId() {
