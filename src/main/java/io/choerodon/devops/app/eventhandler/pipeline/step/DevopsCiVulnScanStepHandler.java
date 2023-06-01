@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,5 +105,11 @@ public class DevopsCiVulnScanStepHandler extends AbstractDevopsCiStepHandler {
         return DevopsCiStepTypeEnum.VULN_SCAN;
     }
 
+    protected Boolean isConfigComplete(DevopsCiStepVO devopsCiStepVO) {
+        if (devopsCiStepVO.getVulnScanConfig() == null || StringUtils.isBlank(devopsCiStepVO.getVulnScanConfig().getPath())) {
+            return false;
+        }
+        return true;
+    }
 
 }
