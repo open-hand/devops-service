@@ -1,14 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.vuln.VulnTargetVO;
 import io.choerodon.devops.app.service.VulnScanRecordService;
+import io.choerodon.devops.app.service.VulnScanTargetService;
+import io.choerodon.devops.app.service.VulnTargetRelService;
 import io.choerodon.devops.infra.dto.VulnScanRecordDTO;
+import io.choerodon.devops.infra.dto.VulnScanTargetDTO;
 import io.choerodon.devops.infra.mapper.VulnScanRecordMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
 
@@ -26,6 +31,10 @@ public class VulnScanRecordServiceImpl implements VulnScanRecordService {
 
     @Autowired
     private VulnScanRecordMapper vulnScanRecordMapper;
+    @Autowired
+    private VulnScanTargetService vulnScanTargetService;
+    @Autowired
+    private VulnTargetRelService vulnTargetRelService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -50,7 +59,16 @@ public class VulnScanRecordServiceImpl implements VulnScanRecordService {
 
     @Override
     public List<VulnTargetVO> queryDetailsById(Long projectId, Long recordId) {
-        return vulnScanRecordMapper.queryDetailsById(recordId);
+        List<VulnTargetVO> vulnTargetVOS = new ArrayList<>();
+        List<VulnScanTargetDTO> vulnScanTargetDTOS = vulnScanTargetService.listByRecordId(recordId);
+        if (CollectionUtils.isEmpty(vulnScanTargetDTOS)) {
+            return vulnTargetVOS;
+        }
+        for (VulnScanTargetDTO vulnScanTargetDTO : vulnScanTargetDTOS) {
+            vulnTargetVOS.add(new VulnTargetVO(vulnScanTargetDTO.getTarget(), vulnTargetRelService.listByTargetId(vulnScanTargetDTO.getId())));
+        }
+
+        return vulnTargetVOS;
     }
 }
 

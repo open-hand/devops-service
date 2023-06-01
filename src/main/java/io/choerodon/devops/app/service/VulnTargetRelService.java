@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.vuln.VulnerabilityVO;
 import io.choerodon.devops.infra.dto.VulnTargetRelDTO;
 
 /**
@@ -13,5 +14,7 @@ import io.choerodon.devops.infra.dto.VulnTargetRelDTO;
 public interface VulnTargetRelService {
 
     void batchSave(List<VulnTargetRelDTO> vulnTargetRelDTOList);
+
+    List<VulnerabilityVO> listByTargetId(Long targetId);
 }
 
