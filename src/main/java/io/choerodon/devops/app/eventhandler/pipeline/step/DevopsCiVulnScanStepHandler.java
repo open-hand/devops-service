@@ -89,7 +89,7 @@ public class DevopsCiVulnScanStepHandler extends AbstractDevopsCiStepHandler {
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
         List<String> cmds = new ArrayList<>();
         CiVulnScanConfigDTO ciVulnScanConfigDTO = ciVulnScanConfigService.queryByStepId(devopsCiStepDTO.getId());
-        String scanCmd = "trivy fs --scanners vuln --skip-java-db-update -f json -o vulnerability.json %s";
+        String scanCmd = "trivy fs --scanners vuln --skip-db-update -f json -o vulnerability.json %s";
         cmds.add(String.format(scanCmd, ciVulnScanConfigDTO.getPath()));
         cmds.add("upload_vuln_result");
         return cmds;
