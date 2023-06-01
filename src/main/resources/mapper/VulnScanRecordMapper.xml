@@ -20,7 +20,7 @@
         from devops_vuln_scan_target dvlst
                  join devops_vuln_target_rel dvltr on dvlst.id = dvltr.target_id
                  join devops_vulnerability dv on dvltr.vulnerability_id = dv.vulnerability_id
-        where dvlst.scan_record_id = 1;
+        where dvlst.scan_record_id = #{recordId};
     </select>
 </mapper>
 
