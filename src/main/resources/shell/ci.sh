@@ -554,6 +554,26 @@ function uploadGeneralUnitTestReport() {
     uploadUnitTestReport general_unit_test $1 $2 $3 $4 $5
 }
 
+function upload_vuln_result() {
+  result_upload_to_devops=$(curl -X POST \
+  -H 'Expect:' \
+  -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+  -F "token=${Token}" \
+  -F "job_name=${CI_JOB_NAME}" \
+  -F "file=@vulnerability.json" \
+  "${CHOERODON_URL}/devops/ci/upload_vuln_result" \
+  -o "${CI_COMMIT_SHA}-ci.response" \
+  -w %{http_code})
+  # 判断本次上传到devops是否出错
+  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  rm "${CI_COMMIT_SHA}-ci.response"
+  if [ "$result_upload_to_devops" != "200" ]; then
+    echo "$response_upload_to_devops"
+    echo "upload to devops error"
+    exit 1
+  fi
+}
+
 
 # 上传测试报告
 # $1 测试报告类型
