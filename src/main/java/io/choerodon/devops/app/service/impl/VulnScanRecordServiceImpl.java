@@ -30,8 +30,8 @@ public class VulnScanRecordServiceImpl implements VulnScanRecordService {
         VulnScanRecordDTO vulnScanRecordDTO = new VulnScanRecordDTO();
         vulnScanRecordDTO.setAppServiceId(appServiceId);
         vulnScanRecordDTO.setBranchName(branchName);
-
-        return MapperUtil.resultJudgedInsertSelective(vulnScanRecordMapper, vulnScanRecordDTO, DEVOPS_SAVE_VULN_RECORD_FAILED);
+        VulnScanRecordDTO vulnScanRecordDTO1 = MapperUtil.resultJudgedInsertSelective(vulnScanRecordMapper, vulnScanRecordDTO, DEVOPS_SAVE_VULN_RECORD_FAILED);
+        return vulnScanRecordMapper.selectByPrimaryKey(vulnScanRecordDTO1.getId());
     }
 
     @Override
