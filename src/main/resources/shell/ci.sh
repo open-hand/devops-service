@@ -560,6 +560,7 @@ function upload_vuln_result() {
   -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
   -F "token=${Token}" \
   -F "job_name=${CI_JOB_NAME}" \
+  -F "branch_name=${CI_COMMIT_REF_NAME}" \
   -F "file=@vulnerability.json" \
   "${CHOERODON_URL}/devops/ci/upload_vuln_result" \
   -o "${CI_COMMIT_SHA}-ci.response" \
