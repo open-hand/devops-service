@@ -8,6 +8,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
+import io.choerodon.devops.infra.dto.VulnScanRecordDTO;
 
 /**
  * 〈功能简述〉
@@ -64,6 +65,8 @@ public class DevopsCiJobRecordVO {
     private Audit audit;
     @ApiModelProperty("chart部署任务信息")
     private DeployInfo deployInfo;
+    @ApiModelProperty("漏洞扫描信息")
+    private VulnScanRecordDTO vulnSacnRecordInfo;
 
     @ApiModelProperty("api测试记录id")
     @Encrypt
@@ -72,6 +75,14 @@ public class DevopsCiJobRecordVO {
     @Encrypt
     @ApiModelProperty("关联的配置id")
     private Long configId;
+
+    public VulnScanRecordDTO getVulnSacnRecordInfo() {
+        return vulnSacnRecordInfo;
+    }
+
+    public void setVulnSacnRecordInfo(VulnScanRecordDTO vulnSacnRecordInfo) {
+        this.vulnSacnRecordInfo = vulnSacnRecordInfo;
+    }
 
     private ApiTestTaskRecordVO apiTestTaskRecordVO;
 

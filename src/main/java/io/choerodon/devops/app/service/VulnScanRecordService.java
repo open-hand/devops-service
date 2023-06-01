@@ -14,5 +14,6 @@ public interface VulnScanRecordService {
 
     void baseUpdate(VulnScanRecordDTO vulnScanRecordDTO);
 
+    VulnScanRecordDTO baseQueryById(Long id);
 }
 

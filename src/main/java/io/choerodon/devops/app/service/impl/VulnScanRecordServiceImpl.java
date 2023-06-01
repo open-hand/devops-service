@@ -39,5 +39,10 @@ public class VulnScanRecordServiceImpl implements VulnScanRecordService {
     public void baseUpdate(VulnScanRecordDTO vulnScanRecordDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(vulnScanRecordMapper, vulnScanRecordDTO, DEVOPS_UPDATE_VULN_RECORD_FAILED);
     }
+
+    @Override
+    public VulnScanRecordDTO baseQueryById(Long id) {
+        return vulnScanRecordMapper.selectByPrimaryKey(id);
+    }
 }
 

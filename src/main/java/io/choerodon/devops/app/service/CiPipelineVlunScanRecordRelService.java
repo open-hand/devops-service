@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.devops.infra.dto.VulnScanRecordDTO;
+
 /**
  * ci流水线漏洞扫描记录关系表(CiPipelineVlunScanRecordRel)应用服务
  *
@@ -11,5 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface CiPipelineVlunScanRecordRelService {
 
     void uploadVulnResult(Long gitlabPipelineId, String jobName, String branchName, String token, MultipartFile file);
+
+    VulnScanRecordDTO queryScanRecordInfo(Long appServiceId, Long gitlabPipelineId, String name);
 }
 

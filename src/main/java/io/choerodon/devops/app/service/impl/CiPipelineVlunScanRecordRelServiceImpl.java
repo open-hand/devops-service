@@ -118,5 +118,18 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public VulnScanRecordDTO queryScanRecordInfo(Long appServiceId, Long gitlabPipelineId, String jobName) {
+        CiPipelineVlunScanRecordRelDTO ciPipelineVlunScanRecordRelDTO = new CiPipelineVlunScanRecordRelDTO(appServiceId,
+                gitlabPipelineId,
+                jobName);
+        CiPipelineVlunScanRecordRelDTO ciPipelineVlunScanRecordRelDTO1 = ciPipelineVlunScanRecordRelMapper.selectOne(ciPipelineVlunScanRecordRelDTO);
+        if (ciPipelineVlunScanRecordRelDTO1 == null) {
+            return null;
+        }
+
+        return vulnScanRecordService.baseQueryById(ciPipelineVlunScanRecordRelDTO1.getScanRecordId());
+    }
 }
 
