@@ -12,6 +12,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_vuln_target_rel.groovy') {
             column(name: 'pkg_name', type: 'VARCHAR(255)', remarks: '组件名称') {
                 constraints(nullable: false)
             }
+            column(name: "installed_version", type: 'VARCHAR(64)', remarks: '当前版本') {
+                constraints(nullable: false)
+            }
+            column(name: "fixed_version", type: 'VARCHAR(64)', remarks: '修复版本')
             column(name: 'vulnerability_id', type: 'VARCHAR(255)', remarks: '漏洞id') {
                 constraints(nullable: false)
             }
