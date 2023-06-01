@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.devops.api.vo.vuln.VulnTargetVO;
@@ -70,37 +71,42 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
             long mediumCount = 0;
             long highCount = 0;
             long criticalCount = 0;
-            Set<VulnerabilityDTO> vulnerabilityDTOList = new HashSet<>();
-            for (VulnTargetVO result : results) {
-                // 保存扫描对象
-                VulnScanTargetDTO vulnScanTargetDTO = vulnScanTargetService.baseCreate(vulnScanRecordDTO.getId(), result.getTarget());
+            if (!CollectionUtils.isEmpty(results)) {
+                Set<VulnerabilityDTO> vulnerabilityDTOList = new HashSet<>();
+                for (VulnTargetVO result : results) {
+                    // 保存扫描对象
+                    VulnScanTargetDTO vulnScanTargetDTO = vulnScanTargetService.baseCreate(vulnScanRecordDTO.getId(), result.getTarget());
 
-                List<VulnerabilityVO> vulnerabilities = result.getVulnerabilities();
-                List<VulnTargetRelDTO> vulnTargetRelDTOList = new ArrayList<>();
-                for (VulnerabilityVO vulnerability : vulnerabilities) {
-                    vulnerabilityDTOList.add(ConvertUtils.convertObject(vulnerability, VulnerabilityDTO.class));
-                    vulnTargetRelDTOList.add(new VulnTargetRelDTO(vulnScanTargetDTO.getId(), vulnerability.getVulnerabilityID()));
-                    if (ImageSecurityEnum.UNKNOWN.getValue().equals(vulnerability.getSeverity())) {
-                        unknownCount++;
+                    List<VulnerabilityVO> vulnerabilities = result.getVulnerabilities();
+                    List<VulnTargetRelDTO> vulnTargetRelDTOList = new ArrayList<>();
+                    if (!CollectionUtils.isEmpty(vulnerabilities)) {
+                        for (VulnerabilityVO vulnerability : vulnerabilities) {
+                            vulnerabilityDTOList.add(ConvertUtils.convertObject(vulnerability, VulnerabilityDTO.class));
+                            vulnTargetRelDTOList.add(new VulnTargetRelDTO(vulnScanTargetDTO.getId(), vulnerability.getVulnerabilityID()));
+                            if (ImageSecurityEnum.UNKNOWN.getValue().equals(vulnerability.getSeverity())) {
+                                unknownCount++;
+                            }
+                            if (ImageSecurityEnum.LOW.getValue().equals(vulnerability.getSeverity())) {
+                                lowCount++;
+                            }
+                            if (ImageSecurityEnum.MEDIUM.getValue().equals(vulnerability.getSeverity())) {
+                                mediumCount++;
+                            }
+                            if (ImageSecurityEnum.HIGH.getValue().equals(vulnerability.getSeverity())) {
+                                highCount++;
+                            }
+                            if (ImageSecurityEnum.CRITICAL.getValue().equals(vulnerability.getSeverity())) {
+                                criticalCount++;
+                            }
+                        }
                     }
-                    if (ImageSecurityEnum.LOW.getValue().equals(vulnerability.getSeverity())) {
-                        lowCount++;
-                    }
-                    if (ImageSecurityEnum.MEDIUM.getValue().equals(vulnerability.getSeverity())) {
-                        mediumCount++;
-                    }
-                    if (ImageSecurityEnum.HIGH.getValue().equals(vulnerability.getSeverity())) {
-                        highCount++;
-                    }
-                    if (ImageSecurityEnum.CRITICAL.getValue().equals(vulnerability.getSeverity())) {
-                        criticalCount++;
-                    }
+                    // 保存扫描对象漏洞关联关系
+                    vulnTargetRelService.batchSave(vulnTargetRelDTOList);
                 }
-                // 保存扫描对象漏洞关联关系
-                vulnTargetRelService.batchSave(vulnTargetRelDTOList);
+                // 更新漏洞
+                vulnerabilityService.btachSave(vulnerabilityDTOList);
             }
-            // 更新漏洞
-            vulnerabilityService.btachSave(vulnerabilityDTOList);
+
             // 更新扫描记录
             vulnScanRecordDTO.setUnknown(unknownCount);
             vulnScanRecordDTO.setLow(lowCount);
