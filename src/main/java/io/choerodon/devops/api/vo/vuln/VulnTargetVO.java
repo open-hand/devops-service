@@ -13,6 +13,14 @@ public class VulnTargetVO {
     private String target;
     private List<VulnerabilityVO> vulnerabilities;
 
+    public VulnTargetVO() {
+    }
+
+    public VulnTargetVO(String target, List<VulnerabilityVO> vulnerabilities) {
+        this.target = target;
+        this.vulnerabilities = vulnerabilities;
+    }
+
     public String getTarget() {
         return target;
     }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.devops.api.vo.vuln.VulnerabilityVO;
 import io.choerodon.devops.app.service.VulnTargetRelService;
 import io.choerodon.devops.infra.dto.VulnTargetRelDTO;
 import io.choerodon.devops.infra.mapper.VulnTargetRelMapper;
@@ -37,6 +38,11 @@ public class VulnTargetRelServiceImpl implements VulnTargetRelService {
                 vulnTargetRelMapper.insertListSelective(vulnTargetRelDTOList);
             }
         }
+    }
+
+    @Override
+    public List<VulnerabilityVO> listByTargetId(Long targetId) {
+        return vulnTargetRelMapper.listByTargetId(targetId);
     }
 }
 

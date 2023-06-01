@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.VulnScanTargetDTO;
 
 /**
@@ -11,5 +13,7 @@ import io.choerodon.devops.infra.dto.VulnScanTargetDTO;
 public interface VulnScanTargetService {
 
     VulnScanTargetDTO baseCreate(Long scanRecordId, String target);
+
+    List<VulnScanTargetDTO> listByRecordId(Long recordId);
 }
 

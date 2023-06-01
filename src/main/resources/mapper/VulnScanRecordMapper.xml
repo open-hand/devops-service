@@ -2,25 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.choerodon.devops.infra.mapper.VulnScanRecordMapper">
 
-    <resultMap id="VulnTargetMap" type="io.choerodon.devops.api.vo.vuln.VulnTargetVO" autoMapping="true">
 
-        <collection property="vulnerabilities" ofType="io.choerodon.devops.api.vo.vuln.VulnerabilityVO"
-                    autoMapping="true">
-        </collection>
-    </resultMap>
-
-    <select id="queryDetailsById" resultMap="VulnTargetMap">
-        select dvlst.target,
-               dvltr.pkg_name,
-               dvltr.installed_version,
-               dvltr.fixed_version,
-               dv.description,
-               dv.severity,
-               dv.title
-        from devops_vuln_scan_target dvlst
-                 join devops_vuln_target_rel dvltr on dvlst.id = dvltr.target_id
-                 join devops_vulnerability dv on dvltr.vulnerability_id = dv.vulnerability_id
-        where dvlst.scan_record_id = #{recordId};
-    </select>
 </mapper>
 

@@ -1,5 +1,10 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.vuln.VulnerabilityVO;
 import io.choerodon.devops.infra.dto.VulnTargetRelDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -10,5 +15,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @since 2023-05-31 15:27:39
  */
 public interface VulnTargetRelMapper extends BaseMapper<VulnTargetRelDTO> {
+    List<VulnerabilityVO> listByTargetId(@Param("targetId") Long targetId);
 }
 
