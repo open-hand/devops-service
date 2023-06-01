@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
+import io.choerodon.devops.infra.dto.VulnTargetRelDTO;
+
 /**
  * 漏洞扫描对象关系表(VulnTargetRel)应用服务
  *
@@ -8,5 +12,6 @@ package io.choerodon.devops.app.service;
  */
 public interface VulnTargetRelService {
 
+    void batchSave(List<VulnTargetRelDTO> vulnTargetRelDTOList);
 }
 

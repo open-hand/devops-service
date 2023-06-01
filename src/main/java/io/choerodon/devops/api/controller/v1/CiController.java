@@ -333,9 +333,10 @@ public class CiController {
             @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
             @RequestParam(value = "job_name") String jobName,
             @RequestParam String token,
+            @RequestParam(value = "branch_name") String branchName,
             @ApiParam(value = "扫描结果json", required = true)
             @RequestParam MultipartFile file) {
-        ciPipelineVlunScanRecordRelService.uploadVulnResult(gitlabPipelineId, jobName, token, file);
+        ciPipelineVlunScanRecordRelService.uploadVulnResult(gitlabPipelineId, jobName, branchName, token, file);
         return ResponseEntity.ok().build();
     }
 

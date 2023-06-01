@@ -44,6 +44,14 @@ public class VulnTargetRelDTO extends AuditDomain {
     private String vulnerabilityId;
 
 
+    public VulnTargetRelDTO() {
+    }
+
+    public VulnTargetRelDTO(Long targetId, String vulnerabilityId) {
+        this.targetId = targetId;
+        this.vulnerabilityId = vulnerabilityId;
+    }
+
     public Long getId() {
         return id;
     }

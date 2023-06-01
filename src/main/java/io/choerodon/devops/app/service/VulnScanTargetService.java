@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.VulnScanTargetDTO;
+
 /**
  * 漏洞扫描对象记录表(VulnScanTarget)应用服务
  *
@@ -8,5 +10,6 @@ package io.choerodon.devops.app.service;
  */
 public interface VulnScanTargetService {
 
+    VulnScanTargetDTO baseCreate(Long scanRecordId, String target);
 }
 

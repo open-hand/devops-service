@@ -53,6 +53,15 @@ public class CiPipelineVlunScanRecordRelDTO extends AuditDomain {
     @NotNull
     private Long scanRecordId;
 
+    public CiPipelineVlunScanRecordRelDTO() {
+    }
+
+    public CiPipelineVlunScanRecordRelDTO(Long appServiceId, Long gitlabPipelineId, String jobName, Long scanRecordId) {
+        this.appServiceId = appServiceId;
+        this.gitlabPipelineId = gitlabPipelineId;
+        this.jobName = jobName;
+        this.scanRecordId = scanRecordId;
+    }
 
     public Long getId() {
         return id;

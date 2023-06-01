@@ -10,6 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public interface CiPipelineVlunScanRecordRelService {
 
-    void uploadVulnResult(Long gitlabPipelineId, String jobName, String token, MultipartFile file);
+    void uploadVulnResult(Long gitlabPipelineId, String jobName, String branchName, String token, MultipartFile file);
 }
 

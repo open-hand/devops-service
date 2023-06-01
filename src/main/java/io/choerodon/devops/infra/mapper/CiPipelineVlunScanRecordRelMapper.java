@@ -10,5 +10,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @since 2023-05-31 15:27:24
  */
 public interface CiPipelineVlunScanRecordRelMapper extends BaseMapper<CiPipelineVlunScanRecordRelDTO> {
+    void baseCreate(CiPipelineVlunScanRecordRelDTO ciPipelineVlunScanRecordRelDTO);
 }
 
