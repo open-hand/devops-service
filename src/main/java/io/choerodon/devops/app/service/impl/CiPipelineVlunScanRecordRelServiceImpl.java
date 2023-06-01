@@ -102,6 +102,8 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
                             vulnerabilityDTOList.add(ConvertUtils.convertObject(vulnerability, VulnerabilityDTO.class));
                             vulnTargetRelDTOList.add(new VulnTargetRelDTO(vulnScanTargetDTO.getId(),
                                     vulnerability.getPkgName(),
+                                    vulnerability.getInstalledVersion(),
+                                    vulnerability.getFixedVersion(),
                                     vulnerability.getVulnerabilityId()));
                             if (ImageSecurityEnum.UNKNOWN.getValue().equals(vulnerability.getSeverity())) {
                                 unknownCount++;

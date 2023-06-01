@@ -41,13 +41,22 @@ public class VulnTargetRelDTO extends AuditDomain {
 
     private String pkgName;
 
+    @ApiModelProperty(value = "当前版本", required = true)
+    @NotBlank
+    private String installedVersion;
+
+    @ApiModelProperty(value = "修复版本")
+    private String fixedVersion;
+
     @ApiModelProperty(value = "漏洞id", required = true)
     @NotBlank
     private String vulnerabilityId;
 
-    public VulnTargetRelDTO(Long targetId, String pkgName, String vulnerabilityId) {
+    public VulnTargetRelDTO(Long targetId, String pkgName, String installedVersion, String fixedVersion, String vulnerabilityId) {
         this.targetId = targetId;
         this.pkgName = pkgName;
+        this.installedVersion = installedVersion;
+        this.fixedVersion = fixedVersion;
         this.vulnerabilityId = vulnerabilityId;
     }
 
