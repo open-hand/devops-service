@@ -20,10 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.devops.api.vo.vuln.VulnTargetVO;
-import io.choerodon.devops.api.vo.vuln.VulnerabilityVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.vuln.VulnTargetDTO;
+import io.choerodon.devops.infra.dto.vuln.VulnerabilityDTO;
 import io.choerodon.devops.infra.enums.ImageSecurityEnum;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.CiPipelineVlunScanRecordRelMapper;
@@ -82,7 +82,7 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
                             vulnScanRecordDTO.getId()),
                     DEVOPS_SAVE_PIPELINE_SCAN_RECORD_FAILED);
             JsonNode jsonNode = OBJECT_MAPPER.readTree(file.getBytes());
-            List<VulnTargetVO> results = OBJECT_MAPPER.readValue(jsonNode.get("Results").toString(), new TypeReference<List<VulnTargetVO>>() {
+            List<VulnTargetDTO> results = OBJECT_MAPPER.readValue(jsonNode.get("Results").toString(), new TypeReference<List<VulnTargetDTO>>() {
             });
             long unknownCount = 0;
             long lowCount = 0;
@@ -90,16 +90,16 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
             long highCount = 0;
             long criticalCount = 0;
             if (!CollectionUtils.isEmpty(results)) {
-                Set<VulnerabilityDTO> vulnerabilityDTOList = new HashSet<>();
-                for (VulnTargetVO result : results) {
+                Set<io.choerodon.devops.infra.dto.VulnerabilityDTO> vulnerabilityDTOList = new HashSet<>();
+                for (VulnTargetDTO result : results) {
                     // 保存扫描对象
                     VulnScanTargetDTO vulnScanTargetDTO = vulnScanTargetService.baseCreate(vulnScanRecordDTO.getId(), result.getTarget());
 
-                    List<VulnerabilityVO> vulnerabilities = result.getVulnerabilities();
+                    List<VulnerabilityDTO> vulnerabilities = result.getVulnerabilities();
                     List<VulnTargetRelDTO> vulnTargetRelDTOList = new ArrayList<>();
                     if (!CollectionUtils.isEmpty(vulnerabilities)) {
-                        for (VulnerabilityVO vulnerability : vulnerabilities) {
-                            vulnerabilityDTOList.add(ConvertUtils.convertObject(vulnerability, VulnerabilityDTO.class));
+                        for (VulnerabilityDTO vulnerability : vulnerabilities) {
+                            vulnerabilityDTOList.add(ConvertUtils.convertObject(vulnerability, io.choerodon.devops.infra.dto.VulnerabilityDTO.class));
                             vulnTargetRelDTOList.add(new VulnTargetRelDTO(vulnScanTargetDTO.getId(),
                                     vulnerability.getPkgName(),
                                     vulnerability.getInstalledVersion(),

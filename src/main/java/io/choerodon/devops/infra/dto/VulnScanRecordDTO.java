@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -38,6 +39,7 @@ public class VulnScanRecordDTO extends AuditDomain {
     public static final String FIELD_SCORE = "score";
     private static final long serialVersionUID = -17914131753062244L;
     @Id
+    @Encrypt
     @GeneratedValue
     private Long id;
 

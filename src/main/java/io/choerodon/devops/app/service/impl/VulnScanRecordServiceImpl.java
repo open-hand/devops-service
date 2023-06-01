@@ -1,9 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.devops.api.vo.vuln.VulnTargetVO;
 import io.choerodon.devops.app.service.VulnScanRecordService;
 import io.choerodon.devops.infra.dto.VulnScanRecordDTO;
 import io.choerodon.devops.infra.mapper.VulnScanRecordMapper;
@@ -43,6 +46,11 @@ public class VulnScanRecordServiceImpl implements VulnScanRecordService {
     @Override
     public VulnScanRecordDTO baseQueryById(Long id) {
         return vulnScanRecordMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public List<VulnTargetVO> queryDetailsById(Long projectId, Long recordId) {
+        return vulnScanRecordMapper.queryDetailsById(recordId);
     }
 }
 
