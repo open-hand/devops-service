@@ -26,8 +26,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_vuln_target_rel.groovy') {
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'devops_vuln_target_rel',
-                constraintName: 'devops_vuln_target_rel_u1', columnNames: 'target_id,pkg_name,vulnerability_id')
-
+        createIndex(tableName: 'devops_vuln_target_rel', indexName: 'devops_vuln_target_rel_n1') {
+            column(name: 'target_id')
+        }
     }
 }
