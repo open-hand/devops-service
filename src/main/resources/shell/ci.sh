@@ -555,6 +555,7 @@ function uploadGeneralUnitTestReport() {
 }
 
 function upload_vuln_result() {
+  cat vulnerability.json
   result_upload_to_devops=$(curl -X POST \
   -H 'Expect:' \
   -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
