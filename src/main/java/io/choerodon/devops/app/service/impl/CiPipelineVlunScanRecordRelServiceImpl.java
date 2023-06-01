@@ -1,13 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +25,9 @@ import io.choerodon.devops.api.vo.vuln.VulnerabilityVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ImageSecurityEnum;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.CiPipelineVlunScanRecordRelMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
@@ -48,6 +54,18 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
     @Autowired
     private VulnerabilityService vulnerabilityService;
 
+    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    static {
+        OBJECT_MAPPER.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+        OBJECT_MAPPER.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        OBJECT_MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        // 不区分属性的大小写 比如Target 转换为target
+        OBJECT_MAPPER.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void uploadVulnResult(Long gitlabPipelineId, String jobName, String branchName, String token, MultipartFile file) {
@@ -63,8 +81,8 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
                             jobName,
                             vulnScanRecordDTO.getId()),
                     DEVOPS_SAVE_PIPELINE_SCAN_RECORD_FAILED);
-            JsonNode jsonNode = JsonHelper.OBJECT_MAPPER.readTree(file.getBytes());
-            List<VulnTargetVO> results = JsonHelper.unmarshalByJackson(jsonNode.get("Results").toString(), new TypeReference<List<VulnTargetVO>>() {
+            JsonNode jsonNode = OBJECT_MAPPER.readTree(file.getBytes());
+            List<VulnTargetVO> results = OBJECT_MAPPER.readValue(jsonNode.get("Results").toString(), new TypeReference<List<VulnTargetVO>>() {
             });
             long unknownCount = 0;
             long lowCount = 0;
@@ -82,7 +100,7 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
                     if (!CollectionUtils.isEmpty(vulnerabilities)) {
                         for (VulnerabilityVO vulnerability : vulnerabilities) {
                             vulnerabilityDTOList.add(ConvertUtils.convertObject(vulnerability, VulnerabilityDTO.class));
-                            vulnTargetRelDTOList.add(new VulnTargetRelDTO(vulnScanTargetDTO.getId(), vulnerability.getVulnerabilityID()));
+                            vulnTargetRelDTOList.add(new VulnTargetRelDTO(vulnScanTargetDTO.getId(), vulnerability.getVulnerabilityId()));
                             if (ImageSecurityEnum.UNKNOWN.getValue().equals(vulnerability.getSeverity())) {
                                 unknownCount++;
                             }
@@ -115,7 +133,7 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
             vulnScanRecordDTO.setCritical(criticalCount);
             vulnScanRecordService.baseUpdate(vulnScanRecordDTO);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new DevopsCiInvalidException(e);
         }
     }
 

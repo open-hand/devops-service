@@ -12,24 +12,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_vuln_scan_record.groovy') {
             column(name: 'branch_name', type: 'VARCHAR(255)', remarks: '分支名') {
                 constraints(nullable: false)
             }
-            column(name: 'unknown', type: 'BIGINT UNSIGNED', remarks: '未知漏洞数') {
-                constraints(nullable: false)
-            }
-            column(name: 'low', type: 'BIGINT UNSIGNED', remarks: '较低漏洞数') {
-                constraints(nullable: false)
-            }
-            column(name: 'medium', type: 'BIGINT UNSIGNED', remarks: '中等漏洞数') {
-                constraints(nullable: false)
-            }
-            column(name: 'high', type: 'BIGINT UNSIGNED', remarks: '严重漏洞数') {
-                constraints(nullable: false)
-            }
-            column(name: 'critical', type: 'BIGINT UNSIGNED', remarks: '危急漏洞数') {
-                constraints(nullable: false)
-            }
-            column(name: 'score', type: 'BIGINT UNSIGNED', remarks: '评分') {
-                constraints(nullable: false)
-            }
+            column(name: 'unknown', type: 'BIGINT UNSIGNED', remarks: '未知漏洞数')
+            column(name: 'low', type: 'BIGINT UNSIGNED', remarks: '较低漏洞数')
+            column(name: 'medium', type: 'BIGINT UNSIGNED', remarks: '中等漏洞数')
+            column(name: 'high', type: 'BIGINT UNSIGNED', remarks: '严重漏洞数')
+            column(name: 'critical', type: 'BIGINT UNSIGNED', remarks: '危急漏洞数')
+            column(name: 'score', type: 'BIGINT UNSIGNED', remarks: '评分')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
