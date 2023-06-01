@@ -100,7 +100,9 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
                     if (!CollectionUtils.isEmpty(vulnerabilities)) {
                         for (VulnerabilityVO vulnerability : vulnerabilities) {
                             vulnerabilityDTOList.add(ConvertUtils.convertObject(vulnerability, VulnerabilityDTO.class));
-                            vulnTargetRelDTOList.add(new VulnTargetRelDTO(vulnScanTargetDTO.getId(), vulnerability.getVulnerabilityId()));
+                            vulnTargetRelDTOList.add(new VulnTargetRelDTO(vulnScanTargetDTO.getId(),
+                                    vulnerability.getPkgName(),
+                                    vulnerability.getVulnerabilityId()));
                             if (ImageSecurityEnum.UNKNOWN.getValue().equals(vulnerability.getSeverity())) {
                                 unknownCount++;
                             }

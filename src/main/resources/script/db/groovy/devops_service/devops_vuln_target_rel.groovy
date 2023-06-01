@@ -9,6 +9,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_vuln_target_rel.groovy') {
             column(name: 'target_id', type: 'BIGINT UNSIGNED', remarks: 'devops_vuln_scan_target.id') {
                 constraints(nullable: false)
             }
+            column(name: 'pkg_name', type: 'VARCHAR(255)', remarks: '组件名称') {
+                constraints(nullable: false)
+            }
             column(name: 'vulnerability_id', type: 'VARCHAR(255)', remarks: '漏洞id') {
                 constraints(nullable: false)
             }
@@ -20,7 +23,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_vuln_target_rel.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
         addUniqueConstraint(tableName: 'devops_vuln_target_rel',
-                constraintName: 'devops_vuln_target_rel_u1', columnNames: 'target_id,vulnerability_id')
+                constraintName: 'devops_vuln_target_rel_u1', columnNames: 'target_id,pkg_name,vulnerability_id')
 
     }
 }
