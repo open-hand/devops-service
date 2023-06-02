@@ -41,8 +41,8 @@ public class VulnTargetRelServiceImpl implements VulnTargetRelService {
     }
 
     @Override
-    public List<VulnerabilityVO> listByTargetId(Long targetId) {
-        return vulnTargetRelMapper.listByTargetId(targetId);
+    public List<VulnerabilityVO> listByTargetId(Long targetId, String pkgName, String severity, String param) {
+        return vulnTargetRelMapper.listByTargetId(targetId, pkgName, severity, param);
     }
 }
 

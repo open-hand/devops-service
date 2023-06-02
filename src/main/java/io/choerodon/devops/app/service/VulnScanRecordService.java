@@ -19,6 +19,6 @@ public interface VulnScanRecordService {
 
     VulnScanRecordDTO baseQueryById(Long id);
 
-    List<VulnTargetVO> queryDetailsById(Long projectId, Long recordId);
+    List<VulnTargetVO> queryDetailsById(Long projectId, Long recordId, String pkgName, String severity, String param);
 }
 

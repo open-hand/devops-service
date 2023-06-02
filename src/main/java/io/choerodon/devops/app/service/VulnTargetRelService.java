@@ -15,6 +15,6 @@ public interface VulnTargetRelService {
 
     void batchSave(List<VulnTargetRelDTO> vulnTargetRelDTOList);
 
-    List<VulnerabilityVO> listByTargetId(Long targetId);
+    List<VulnerabilityVO> listByTargetId(Long targetId, String pkgName, String severity, String param);
 }
 

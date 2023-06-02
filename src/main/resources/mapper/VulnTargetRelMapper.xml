@@ -4,14 +4,27 @@
 
     <select id="listByTargetId" resultType="io.choerodon.devops.api.vo.vuln.VulnerabilityVO">
         select dvltr.pkg_name,
-               dvltr.installed_version,
-               dvltr.fixed_version,
-               dv.description,
-               dv.severity,
-               dv.title
+        dvltr.installed_version,
+        dvltr.fixed_version,
+        dv.description,
+        dv.severity,
+        dv.title
         from devops_vuln_target_rel dvltr
-                 join devops_vulnerability dv on dvltr.vulnerability_id = dv.vulnerability_id
-        where dvltr.target_id = #{targetId};
+        join devops_vulnerability dv on dvltr.vulnerability_id = dv.vulnerability_id
+        <where>
+            dvltr.target_id = #{targetId}
+            <if test="pkgName != null">
+                and dvltr.pkg_name like CONCAT(CONCAT('%', #{pkgName, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='severity != null'>
+                AND dv.severity = #{severity}
+            </if>
+            <if test='param != null'>
+                and dvltr.pkg_name like CONCAT(CONCAT('%', #{param}),'%') or
+                dv.severity = #{param}
+            </if>
+        </where>
+        where
     </select>
 </mapper>
 

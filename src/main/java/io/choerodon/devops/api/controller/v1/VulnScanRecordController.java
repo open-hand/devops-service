@@ -6,10 +6,7 @@ import io.swagger.annotations.ApiOperation;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.vuln.VulnTargetVO;
@@ -36,7 +33,10 @@ public class VulnScanRecordController {
     public ResponseEntity<List<VulnTargetVO>> queryDetailsById(
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
-            @PathVariable(value = "record_id") Long recordId) {
-        return ResponseEntity.ok(vulnScanRecordService.queryDetailsById(projectId, recordId));
+            @PathVariable(value = "record_id") Long recordId,
+            @RequestParam(value = "pkg_name", required = false) String pkgName,
+            @RequestParam(value = "severity", required = false) String severity,
+            @RequestParam(value = "param", required = false) String param) {
+        return ResponseEntity.ok(vulnScanRecordService.queryDetailsById(projectId, recordId, pkgName, severity, param));
     }
 }
