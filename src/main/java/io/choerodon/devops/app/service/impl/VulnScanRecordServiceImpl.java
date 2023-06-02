@@ -58,14 +58,14 @@ public class VulnScanRecordServiceImpl implements VulnScanRecordService {
     }
 
     @Override
-    public List<VulnTargetVO> queryDetailsById(Long projectId, Long recordId) {
+    public List<VulnTargetVO> queryDetailsById(Long projectId, Long recordId, String pkgName, String severity, String param) {
         List<VulnTargetVO> vulnTargetVOS = new ArrayList<>();
         List<VulnScanTargetDTO> vulnScanTargetDTOS = vulnScanTargetService.listByRecordId(recordId);
         if (CollectionUtils.isEmpty(vulnScanTargetDTOS)) {
             return vulnTargetVOS;
         }
         for (VulnScanTargetDTO vulnScanTargetDTO : vulnScanTargetDTOS) {
-            vulnTargetVOS.add(new VulnTargetVO(vulnScanTargetDTO.getTarget(), vulnTargetRelService.listByTargetId(vulnScanTargetDTO.getId())));
+            vulnTargetVOS.add(new VulnTargetVO(vulnScanTargetDTO.getTarget(), vulnTargetRelService.listByTargetId(vulnScanTargetDTO.getId(), pkgName, severity, param)));
         }
 
         return vulnTargetVOS;

@@ -15,6 +15,9 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @since 2023-05-31 15:27:39
  */
 public interface VulnTargetRelMapper extends BaseMapper<VulnTargetRelDTO> {
-    List<VulnerabilityVO> listByTargetId(@Param("targetId") Long targetId);
+    List<VulnerabilityVO> listByTargetId(@Param("targetId") Long targetId,
+                                         @Param("pkgName") String pkgName,
+                                         @Param("severity") String severity,
+                                         @Param("param") String param);
 }
 
