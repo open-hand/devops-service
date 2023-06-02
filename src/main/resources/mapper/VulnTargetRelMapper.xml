@@ -6,6 +6,7 @@
         select dvltr.pkg_name,
         dvltr.installed_version,
         dvltr.fixed_version,
+        dv.vulnerability_id,
         dv.description,
         dv.severity,
         dv.title
