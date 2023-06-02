@@ -491,9 +491,9 @@ function trivyScanImage() {
   which ssh > /dev/null || echo "cibase不包含ssh指令，请升级"
   export TRIVY_INSECURE='true'
   startDate=$(date +"%Y-%m-%d %H:%M:%S")
-  trivy image  --skip-update -f json -o results-${C7N_VERSION}.json  --input ${PWD}/${PROJECT_NAME}.tar
+  trivy image  --skip-db-update --skip-java-db-update -f json -o vulnerability.json  --input ${PWD}/${PROJECT_NAME}.tar
   endDate=$(date +"%Y-%m-%d %H:%M:%S")
-  upload_trivy_sacn_result
+  upload_vuln_result
 }
 
 function trivyScanImageForDocker() {
@@ -502,9 +502,9 @@ function trivyScanImageForDocker() {
   which ssh > /dev/null || echo "cibase不包含ssh指令，请升级"
   export TRIVY_INSECURE='true'
   startDate=$(date +"%Y-%m-%d %H:%M:%S")
-  trivy image --skip-update -f json -o results-${C7N_VERSION}.json ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}
+  trivy image --skip-db-update --skip-java-db-update -f json -o vulnerability.json ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}
   endDate=$(date +"%Y-%m-%d %H:%M:%S")
-  upload_trivy_sacn_result
+  upload_vuln_result
 }
 function upload_trivy_sacn_result() {
   export_commit_tag
@@ -562,6 +562,7 @@ function upload_vuln_result() {
   -F "token=${Token}" \
   -F "job_name=${CI_JOB_NAME}" \
   -F "branch_name=${CI_COMMIT_REF_NAME}" \
+  -F "config_id=$1" \
   -F "file=@vulnerability.json" \
   "${CHOERODON_URL}/devops/ci/upload_vuln_result" \
   -o "${CI_COMMIT_SHA}-ci.response" \

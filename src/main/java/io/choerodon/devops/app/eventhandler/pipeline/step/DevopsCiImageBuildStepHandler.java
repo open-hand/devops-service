@@ -108,13 +108,13 @@ public abstract class DevopsCiImageBuildStepHandler extends AbstractDevopsCiStep
             String cmd = "rewrite_image_info %s %s %s";
             commands.add(String.format(cmd, projectId, devopsCiDockerBuildConfigDTO.getRepoType(), devopsCiDockerBuildConfigDTO.getRepoId()));
         }
-        generateBuildAndScanImageCmd(skipTlsVerify, imageScan, jobId, dockerBuildContextDir, dockerFilePath, commands);
+        generateBuildAndScanImageCmd(skipTlsVerify, imageScan, devopsCiDockerBuildConfigDTO.getId(), dockerBuildContextDir, dockerFilePath, commands);
 
         commands.add("saveImageMetadata");
         return commands;
     }
 
-    protected abstract void generateBuildAndScanImageCmd(boolean skipTlsVerify, boolean imageScan, Long jobId, String dockerBuildContextDir, String dockerFilePath, List<String> commands);
+    protected abstract void generateBuildAndScanImageCmd(boolean skipTlsVerify, boolean imageScan, Long configId, String dockerBuildContextDir, String dockerFilePath, List<String> commands);
 
     @Override
     @Transactional

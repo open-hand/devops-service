@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +54,8 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
     private VulnTargetRelService vulnTargetRelService;
     @Autowired
     private VulnerabilityService vulnerabilityService;
+    @Autowired
+    private DevopsCiDockerBuildConfigService devopsCiDockerBuildConfigService;
 
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -66,9 +69,18 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
         OBJECT_MAPPER.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
     }
 
+    private static void securityMonitor(Long integer, DevopsCiDockerBuildConfigDTO securityConditionConfigVO) {
+        if (StringUtils.equalsIgnoreCase("<=", securityConditionConfigVO.getSecurityControlConditions())) {
+            if (integer > securityConditionConfigVO.getVulnerabilityCount()) {
+                throw new DevopsCiInvalidException("Does not meet the security control conditions," + securityConditionConfigVO.getSeverity()
+                        + " loophole count:" + integer);
+            }
+        }
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void uploadVulnResult(Long gitlabPipelineId, String jobName, String branchName, String token, MultipartFile file) {
+    public void uploadVulnResult(Long gitlabPipelineId, String jobName, String branchName, String token, Long configId, MultipartFile file) {
         AppServiceDTO appServiceDTO = appServiceService.queryByTokenOrThrowE(token);
         Long appServiceId = appServiceDTO.getId();
         try {
@@ -136,6 +148,28 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
             vulnScanRecordDTO.setHigh(highCount);
             vulnScanRecordDTO.setCritical(criticalCount);
             vulnScanRecordService.baseUpdate(vulnScanRecordDTO);
+            // 质量门禁
+            if (configId != null) {
+                DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiDockerBuildConfigService.baseQuery(configId);
+                if (Boolean.TRUE.equals(devopsCiDockerBuildConfigDTO.getSecurityControl())) {
+                    switch (ImageSecurityEnum.valueOf(devopsCiDockerBuildConfigDTO.getSeverity())) {
+                        case HIGH:
+                            securityMonitor(vulnScanRecordDTO.getHigh(), devopsCiDockerBuildConfigDTO);
+                            break;
+                        case CRITICAL:
+                            securityMonitor(vulnScanRecordDTO.getCritical(), devopsCiDockerBuildConfigDTO);
+                            break;
+                        case MEDIUM:
+                            securityMonitor(vulnScanRecordDTO.getMedium(), devopsCiDockerBuildConfigDTO);
+                            break;
+                        case LOW:
+                            securityMonitor(vulnScanRecordDTO.getLow(), devopsCiDockerBuildConfigDTO);
+                            break;
+                        default:
+                            throw new DevopsCiInvalidException("security level not exist: {}", devopsCiDockerBuildConfigDTO.getSeverity());
+                    }
+                }
+            }
         } catch (IOException e) {
             throw new DevopsCiInvalidException(e);
         }
