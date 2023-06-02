@@ -25,7 +25,6 @@
                 dv.severity = #{param}
             </if>
         </where>
-        where
     </select>
 </mapper>
 
