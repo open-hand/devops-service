@@ -12,7 +12,7 @@ import io.choerodon.devops.infra.dto.VulnScanRecordDTO;
  */
 public interface CiPipelineVlunScanRecordRelService {
 
-    void uploadVulnResult(Long gitlabPipelineId, String jobName, String branchName, String token, MultipartFile file);
+    void uploadVulnResult(Long gitlabPipelineId, String jobName, String branchName, String token, Long configId, MultipartFile file);
 
     VulnScanRecordDTO queryScanRecordInfo(Long appServiceId, Long gitlabPipelineId, String name);
 }
