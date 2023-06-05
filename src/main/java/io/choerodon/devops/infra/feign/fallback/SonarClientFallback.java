@@ -165,4 +165,19 @@ public class SonarClientFallback implements SonarClient {
     public Call<ResponseBody> addUserPermission(Map<String, Object> data) {
         return null;
     }
+
+    @Override
+    public Call<ResponseBody> listWebhooks() {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> updateWebhook(Map<String, Object> data) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> createWebhook(Map<String, Object> data) {
+        return null;
+    }
 }
