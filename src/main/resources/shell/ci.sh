@@ -493,7 +493,7 @@ function trivyScanImage() {
   startDate=$(date +"%Y-%m-%d %H:%M:%S")
   trivy image  --skip-db-update --skip-java-db-update -f json -o vulnerability.json  --input ${PWD}/${PROJECT_NAME}.tar
   endDate=$(date +"%Y-%m-%d %H:%M:%S")
-  upload_vuln_result
+  upload_vuln_result "$1"
 }
 
 function trivyScanImageForDocker() {
@@ -504,7 +504,7 @@ function trivyScanImageForDocker() {
   startDate=$(date +"%Y-%m-%d %H:%M:%S")
   trivy image --skip-db-update --skip-java-db-update -f json -o vulnerability.json ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${C7N_VERSION}
   endDate=$(date +"%Y-%m-%d %H:%M:%S")
-  upload_vuln_result
+  upload_vuln_result "$1"
 }
 function upload_trivy_sacn_result() {
   export_commit_tag
