@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.util;
 import java.io.IOException;
 import java.util.*;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import okhttp3.ResponseBody;
@@ -39,6 +41,10 @@ public class RetrofitCallExceptionParse {
      * @return T
      */
     public static <T> T executeCall(Call<ResponseBody> call, String exceptionMessage, Class<T> clazz) {
+        return executeCallWithTarget(call, exceptionMessage, clazz, null);
+    }
+
+    public static <T> T executeCallWithTarget(Call<ResponseBody> call, String exceptionMessage, Class<T> clazz, String target) {
         String bodyStr = parseException(call, exceptionMessage);
         try {
             if (ObjectUtils.isEmpty(bodyStr)) {
@@ -47,7 +53,31 @@ public class RetrofitCallExceptionParse {
             if (clazz.getName().equals(Void.class.getName())) {
                 return null;
             }
+            if (target != null) {
+                JsonNode jsonNode = JsonHelper.OBJECT_MAPPER.readTree(bodyStr);
+                bodyStr = jsonNode.get(target).toString();
+            }
+
             return gson.fromJson(bodyStr, clazz);
+        } catch (Exception e) {
+            parseCommonException(bodyStr, exceptionMessage);
+            throw new CommonException(exceptionMessage);
+        }
+    }
+
+    public static <T> T executeCallWithTarget(Call<ResponseBody> call, String exceptionMessage, TypeReference<T> typeReference, String target) {
+        String bodyStr = parseException(call, exceptionMessage);
+        try {
+            if (ObjectUtils.isEmpty(bodyStr)) {
+                return null;
+            }
+
+            if (target != null) {
+                JsonNode jsonNode = JsonHelper.OBJECT_MAPPER.readTree(bodyStr);
+                bodyStr = jsonNode.get(target).toString();
+            }
+
+            return JsonHelper.unmarshalByJackson(bodyStr, typeReference);
         } catch (Exception e) {
             parseCommonException(bodyStr, exceptionMessage);
             throw new CommonException(exceptionMessage);
