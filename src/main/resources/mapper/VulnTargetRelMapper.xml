@@ -8,6 +8,7 @@
         dvltr.fixed_version,
         dv.vulnerability_id,
         dv.description,
+        dv.primary_url,
         dv.severity,
         dv.title
         from devops_vuln_target_rel dvltr
