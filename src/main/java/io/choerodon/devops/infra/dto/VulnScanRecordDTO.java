@@ -43,6 +43,8 @@ public class VulnScanRecordDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
+    private Long projectId;
+
     @ApiModelProperty(value = "应用服务id", required = true)
     @NotNull
     private Long appServiceId;
@@ -75,6 +77,13 @@ public class VulnScanRecordDTO extends AuditDomain {
     @NotNull
     private Long score;
 
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
 
     public Long getId() {
         return id;
