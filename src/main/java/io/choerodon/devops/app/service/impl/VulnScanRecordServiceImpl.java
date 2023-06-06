@@ -38,8 +38,9 @@ public class VulnScanRecordServiceImpl implements VulnScanRecordService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public VulnScanRecordDTO baseCreate(Long appServiceId, String branchName) {
+    public VulnScanRecordDTO baseCreate(Long projectId, Long appServiceId, String branchName) {
         VulnScanRecordDTO vulnScanRecordDTO = new VulnScanRecordDTO();
+        vulnScanRecordDTO.setProjectId(projectId);
         vulnScanRecordDTO.setAppServiceId(appServiceId);
         vulnScanRecordDTO.setBranchName(branchName);
         VulnScanRecordDTO vulnScanRecordDTO1 = MapperUtil.resultJudgedInsertSelective(vulnScanRecordMapper, vulnScanRecordDTO, DEVOPS_SAVE_VULN_RECORD_FAILED);

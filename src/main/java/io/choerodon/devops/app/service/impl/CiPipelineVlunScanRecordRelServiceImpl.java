@@ -83,9 +83,10 @@ public class CiPipelineVlunScanRecordRelServiceImpl implements CiPipelineVlunSca
     public void uploadVulnResult(Long gitlabPipelineId, String jobName, String branchName, String token, Long configId, MultipartFile file) {
         AppServiceDTO appServiceDTO = appServiceService.queryByTokenOrThrowE(token);
         Long appServiceId = appServiceDTO.getId();
+        Long projectId = appServiceDTO.getProjectId();
         try {
             // 初始化扫描记录
-            VulnScanRecordDTO vulnScanRecordDTO = vulnScanRecordService.baseCreate(appServiceId, branchName);
+            VulnScanRecordDTO vulnScanRecordDTO = vulnScanRecordService.baseCreate(projectId, appServiceId, branchName);
 
             // 保存流水线漏洞扫描记录
             MapperUtil.resultJudgedInsertSelective(ciPipelineVlunScanRecordRelMapper, new CiPipelineVlunScanRecordRelDTO(appServiceId,

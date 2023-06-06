@@ -13,7 +13,7 @@ import io.choerodon.devops.infra.dto.VulnScanRecordDTO;
  */
 public interface VulnScanRecordService {
 
-    VulnScanRecordDTO baseCreate(Long appServiceId, String branchName);
+    VulnScanRecordDTO baseCreate(Long projectId, Long appServiceId, String branchName);
 
     void baseUpdate(VulnScanRecordDTO vulnScanRecordDTO);
 
