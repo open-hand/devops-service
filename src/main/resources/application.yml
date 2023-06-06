@@ -266,6 +266,8 @@ devops:
   jenkins:
     plugin:
       version: ${DEVOPS_JENKINS_PLUGIN_VERSION:1.0.0}
+  sonar:
+    token: ${DEVOPS_SONAR_TOKEN:7HHT5EVODFGHASD34DA}
 # websocket的最大缓冲区大小，单位字节byte
 websocket:
   buffer:

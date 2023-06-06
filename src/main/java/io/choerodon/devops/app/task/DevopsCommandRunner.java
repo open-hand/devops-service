@@ -60,6 +60,11 @@ public class DevopsCommandRunner implements CommandLineRunner {
     @Value("${services.sonarqube.password:}")
     private String password;
 
+    @Value("${services.gateway.url:}")
+    private String gatewayUrl;
+    @Value("${devops.sonar.token:}")
+    private String sonarToken;
+
     @Override
     public void run(String... strings) {
         try {
@@ -139,26 +144,47 @@ public class DevopsCommandRunner implements CommandLineRunner {
             devopsConfigService.baseUpdate(oldConfigDTO);
         }
         // 创建webhook
+        initSonarWebhokkConfig(sonarClient);
+    }
+
+    private void initSonarWebhokkConfig(SonarClient sonarClient) {
         Call<ResponseBody> responseBodyCall = sonarClient.listWebhooks();
         List<Webhook> webhooks = RetrofitCallExceptionParse.executeCallWithTarget(responseBodyCall,
                 "devops.webhook.list",
                 new TypeReference<List<Webhook>>() {
                 },
                 "webhooks");
+
+        String webhookUrl = gatewayUrl + "/devops/webhook/sonar";
         if (!CollectionUtils.isEmpty(webhooks)) {
             Optional<Webhook> first = webhooks.stream().filter(w -> w.getKey().equals(C7N_WEBHOOK)).findFirst();
             if (first.isPresent()) {
                 // 更新webhook
                 Webhook webhook = first.get();
-
+                Map<String, Object> data = new HashMap<>();
+                data.put("webhook", webhook.getKey());
+                data.put("url", webhookUrl);
+                data.put("name", C7N_WEBHOOK);
+                data.put("secret", sonarToken);
+                Call<ResponseBody> responseBodyCall1 = sonarClient.updateWebhook(data);
+                RetrofitCallExceptionParse.executeCall(responseBodyCall1, "devops.webhook.update", Void.class);
             } else {
                 // 新建webhook
+                createSonarWebhook(sonarClient, webhookUrl);
             }
         } else {
             // 新建webhook
+            createSonarWebhook(sonarClient, webhookUrl);
         }
+    }
 
-
+    private void createSonarWebhook(SonarClient sonarClient, String webhookUrl) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("url", webhookUrl);
+        data.put("name", C7N_WEBHOOK);
+        data.put("secret", sonarToken);
+        Call<ResponseBody> responseBodyCall1 = sonarClient.createWebhook(data);
+        RetrofitCallExceptionParse.executeCall(responseBodyCall1, "devops.webhook.create", Void.class);
     }
 
     private void queryOrCreateUser(SonarClient sonarClient) {
