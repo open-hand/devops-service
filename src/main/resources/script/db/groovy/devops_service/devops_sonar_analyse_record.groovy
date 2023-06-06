@@ -18,6 +18,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_sonar_analyse_record.groovy') {
             column(name: 'bug', type: 'BIGINT UNSIGNED', remarks: 'bug数')
             column(name: 'code_smell', type: 'BIGINT UNSIGNED', remarks: '代码异味数')
             column(name: 'vulnerability', type: 'BIGINT UNSIGNED', remarks: '漏洞数')
+            column(name: 'sqale_index', type: 'BIGINT UNSIGNED', remarks: '技术债务')
+            column(name: 'quality_gate_details', type: 'VARCHAR(4000)', remarks: '质量门详情')
             column(name: 'score', type: 'BIGINT UNSIGNED', remarks: '评分')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")

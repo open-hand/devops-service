@@ -137,7 +137,7 @@ public class SonarClientFallback implements SonarClient {
     }
 
     @Override
-    public Call<ResponseBody> getSonarQualityGateResultDetail(Map<String, String> maps) {
+    public Call<ResponseBody> listMeasures(Map<String, String> maps) {
         return null;
     }
 
