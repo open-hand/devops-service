@@ -153,7 +153,7 @@ public class HostDeployUtil {
         StringBuilder values = new StringBuilder();
         for (String s : strings) {
             s = trim(s);
-            if (!s.startsWith("#")) {
+            if (!s.startsWith("#") && !ObjectUtils.isEmpty(s)) {
                 values.append(s).append("\n");
             }
         }
