@@ -127,9 +127,9 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         List<Measure> measures = sonarComponent.getComponent().getMeasures();
         webhookPayload.setMeasures(measures);
 
-        Facet bugFacets = getFacet(key, SonarQubeType.BUGS.getType(), sonarClient);
-        Facet vulnFacets = getFacet(key, SonarQubeType.VULNERABILITIES.getType(), sonarClient);
-        Facet codeSmellFacets = getFacet(key, SonarQubeType.CODE_SMELLS.getType(), sonarClient);
+        Facet bugFacets = getFacet(key, "BUG", sonarClient);
+        Facet vulnFacets = getFacet(key, "VULNERABILITY", sonarClient);
+        Facet codeSmellFacets = getFacet(key, "CODE_SMELL", sonarClient);
         Map<String, SonarAnalyseUserRecordDTO> userMap = new HashMap<>();
 
         List<Value> bugValues = bugFacets.getValues();
