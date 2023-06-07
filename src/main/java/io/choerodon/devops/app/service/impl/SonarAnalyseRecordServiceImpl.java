@@ -8,6 +8,7 @@ import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -76,8 +77,9 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         map.put("types", type);
         return RetrofitCallExceptionParse.executeCallWithTarget(sonarClient.listIssue(map),
                 ExceptionConstants.SonarCode.DEVOPS_SONAR_ISSUES_GET,
-                Facet.class,
-                "facets");
+                new TypeReference<List<Facet>>() {
+                },
+                "facets").get(0);
     }
 
     @Override
