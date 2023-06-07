@@ -103,6 +103,7 @@ public class ExceptionConstants {
         public static final String DEVOPS_SONAR_PROJECTS_CREATE = "error.devops.sonar.projects.create";
         public static final String Devops_SONAR_QUALITY_GATE_DETAILS_GET = "error.devops.sonar.quality.gate.details.get";
         public static final String DEVOPS_SONAR_MEASURE_GET = "devops.sonar.measure.get";
+        public static final String DEVOPS_SONAR_ISSUES_GET = "devops.sonar.issues.get";
         public static final String DEVOPS_SONAR_QUALITY_GATE_SHOW_GET = "error.devops.sonar.quality.gate.show.get";
         public static final String DEVOPS_SONAR_QUALITY_GATE_BIND = "error.devops.sonar.quality.gate.bind";
 

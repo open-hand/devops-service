@@ -25,7 +25,7 @@ public class SonarWebHookController {
     @PostMapping
     public ResponseEntity<Void> saveAnalyseRecord(HttpServletRequest httpServletRequest, @RequestBody String payload) {
 
-        sonarAnalyseRecordService.saveAnalyseRecord(payload, httpServletRequest);
+        sonarAnalyseRecordService.forwardWebhook(payload, httpServletRequest);
         return ResponseEntity.noContent().build();
     }
 
