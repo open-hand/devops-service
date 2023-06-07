@@ -1,14 +1,17 @@
 package io.choerodon.devops.infra.util;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
-import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
-import org.springframework.util.ObjectUtils;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.DevopsHostDeployCode.DEVOPS_HOST_DEPLOY_COMMAND_NULL;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
+import org.springframework.util.ObjectUtils;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
+import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 
 /**
  * 〈功能简述〉
@@ -145,4 +148,17 @@ public class HostDeployUtil {
         return s;
     }
 
+    public static void checkCommandNotEmpty(String commandType, String command) {
+        String[] strings = command.split("\n");
+        StringBuilder values = new StringBuilder();
+        for (String s : strings) {
+            s = trim(s);
+            if (!s.startsWith("#")) {
+                values.append(s).append("\n");
+            }
+        }
+        if (ObjectUtils.isEmpty(values.toString())) {
+            throw new CommonException(DEVOPS_HOST_DEPLOY_COMMAND_NULL, commandType);
+        }
+    }
 }
