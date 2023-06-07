@@ -158,7 +158,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
 
         String webhookUrl = gatewayUrl + "/devops/webhook/sonar";
         if (!CollectionUtils.isEmpty(webhooks)) {
-            Optional<Webhook> first = webhooks.stream().filter(w -> w.getKey().equals(C7N_WEBHOOK)).findFirst();
+            Optional<Webhook> first = webhooks.stream().filter(w -> w.getName().equals(C7N_WEBHOOK)).findFirst();
             if (first.isPresent()) {
                 // 更新webhook
                 Webhook webhook = first.get();

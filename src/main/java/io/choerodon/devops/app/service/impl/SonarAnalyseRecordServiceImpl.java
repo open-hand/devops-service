@@ -56,7 +56,6 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
     private AppServiceService appServiceService;
     @Autowired
     private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
-
     @Autowired
     private SonarConfigProperties sonarConfigProperties;
     @Autowired
@@ -86,13 +85,10 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
             return;
         }
         WebhookPayload webhookPayload = JsonHelper.unmarshalByJackson(payload, WebhookPayload.class);
-        //
         Map<String, String> properties = webhookPayload.getProperties();
 
         String key = webhookPayload.getProject().getKey();
 
-        long gitlabPipelineId = Long.parseLong(properties.get("sonar.analysis.gitlabPipelineId"));
-        String gitlabJobName = properties.get("sonar.analysis.gitlabJobName");
         String c7nAppServiceToken = properties.get("sonar.analysis.c7nAppServiceToken");
 
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(c7nAppServiceToken);
@@ -175,39 +171,6 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                         .withJson(JsonHelper.marshalByJackson(webhookPayload)),
                 builder -> {
                 });
-
-        SonarAnalyseRecordDTO sonarAnalyseRecordDTO = new SonarAnalyseRecordDTO();
-        sonarAnalyseRecordDTO.setAppServiceId(appServiceId);
-        sonarAnalyseRecordDTO.setProjectId(projectId);
-        sonarAnalyseRecordDTO.setAnalysedAt(webhookPayload.getAnalysedAt());
-        for (Measure measure : measures) {
-            if (SonarQubeType.BUGS.getType().equals(measure.getMetric())) {
-                sonarAnalyseRecordDTO.setBug(Long.parseLong(measure.getValue()));
-            }
-            if (SonarQubeType.CODE_SMELLS.getType().equals(measure.getMetric())) {
-                sonarAnalyseRecordDTO.setCodeSmell(Long.parseLong(measure.getValue()));
-            }
-            if (SonarQubeType.VULNERABILITIES.getType().equals(measure.getMetric())) {
-                sonarAnalyseRecordDTO.setVulnerability(Long.parseLong(measure.getValue()));
-            }
-            if (SonarQubeType.SQALE_INDEX.getType().equals(measure.getMetric())) {
-                sonarAnalyseRecordDTO.setSqaleIndex(Long.parseLong(measure.getValue()));
-            }
-            if (SonarQubeType.QUALITY_GATE_DETAILS.getType().equals(measure.getMetric())) {
-                sonarAnalyseRecordDTO.setQualityGateDetails(measure.getValue());
-            }
-        }
-        MapperUtil.resultJudgedInsertSelective(sonarAnalyseRecordMapper, sonarAnalyseRecordDTO, DEVOPS_SAVE_SONAR_ANALYSE_RECORD_FAILED);
-
-        // 保存用户统计数据
-
-        // 保存流水线关联关系
-        DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(appServiceId, gitlabPipelineId, gitlabJobName);
-        if (devopsCiPipelineSonarDTO != null) {
-            devopsCiPipelineSonarDTO.setRecordId(sonarAnalyseRecordDTO.getId());
-            devopsCiPipelineSonarService.baseUpdate(devopsCiPipelineSonarDTO);
-        }
-
     }
 
     @Override
