@@ -1,11 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
@@ -84,7 +89,18 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         if (Boolean.FALSE.equals(validSignature(payload, httpServletRequest))) {
             return;
         }
-        WebhookPayload webhookPayload = JsonHelper.unmarshalByJackson(payload, WebhookPayload.class);
+        ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+        OBJECT_MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ"));
+        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        OBJECT_MAPPER.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
+        WebhookPayload webhookPayload = null;
+        try {
+            webhookPayload = OBJECT_MAPPER.readValue(payload, WebhookPayload.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+
         Map<String, String> properties = webhookPayload.getProperties();
 
         String key = webhookPayload.getProject().getKey();
