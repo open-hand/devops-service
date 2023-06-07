@@ -16,6 +16,8 @@ public interface DevopsCiPipelineSonarService {
 
     void baseCreate(DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO);
 
+    void baseUpdate(DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO);
+
     Boolean getSonarQualityGateScanResult(Long gitlabPipelineId, String token);
 }
 

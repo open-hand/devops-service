@@ -37,6 +37,7 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
 
     private static final String SONAR = "sonar";
     private static final String DEVOPS_SAVE_SONAR_INFO = "devops.save.sonar.info";
+    private static final String DEVOPS_UPDATE_SONAR_INFO = "devops.update.sonar.info";
 
     @Autowired
     private AppServiceService appServiceService;
@@ -79,6 +80,12 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
     @Transactional
     public void baseCreate(DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsCiPipelineSonarMapper, devopsCiPipelineSonarDTO, DEVOPS_SAVE_SONAR_INFO);
+    }
+
+    @Override
+    @Transactional
+    public void baseUpdate(DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiPipelineSonarMapper, devopsCiPipelineSonarDTO, DEVOPS_UPDATE_SONAR_INFO);
     }
 
     @Override

@@ -339,6 +339,8 @@ public class SagaTaskCodeConstants {
 
     public static final String DEVOPS_PIPELINE_JOB_FINISH = "devops-pipeline-job-finish";
 
+    public static final String DEVOPS_SAVE_SONAR_ANALYSE_DATA = "devops-save-sonar-analyse-data";
+
     private SagaTaskCodeConstants() {
     }
 }

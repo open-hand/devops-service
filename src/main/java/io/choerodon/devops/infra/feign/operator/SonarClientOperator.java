@@ -118,7 +118,7 @@ public class SonarClientOperator {
         queryContentMap.put("metricKeys", "quality_gate_details");
 
         //根据project-key查询sonarqube项目内容
-        return RetrofitCallExceptionParse.executeCall(sonarClient.getSonarQualityGateResultDetail(queryContentMap), ExceptionConstants.SonarCode.Devops_SONAR_QUALITY_GATE_DETAILS_GET, SonarComponent.class);
+        return RetrofitCallExceptionParse.executeCall(sonarClient.listMeasures(queryContentMap), ExceptionConstants.SonarCode.Devops_SONAR_QUALITY_GATE_DETAILS_GET, SonarComponent.class);
     }
 
     public void bindQualityGate(String gateId, String sonarProjectKey) {

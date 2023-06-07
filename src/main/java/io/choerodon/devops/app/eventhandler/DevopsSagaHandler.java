@@ -30,6 +30,7 @@ import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.api.vo.cd.AppVersionTriggerVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobFinishVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
+import io.choerodon.devops.api.vo.sonar.WebhookPayload;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
@@ -109,6 +110,8 @@ public class DevopsSagaHandler {
 
     @Autowired
     private PipelineStageRecordService pipelineStageRecordService;
+    @Autowired
+    private SonarAnalyseRecordService sonarAnalyseRecordService;
 
     /**
      * devops创建环境
@@ -753,5 +756,15 @@ public class DevopsSagaHandler {
     public void pipelineJobFinish(String data) {
         PipelineJobFinishVO pipelineJobFinishVO = JsonHelper.unmarshalByJackson(data, PipelineJobFinishVO.class);
         pipelineStageRecordService.updateStatus(pipelineJobFinishVO.getStageRecordId());
+    }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_SAVE_SONAR_ANALYSE_DATA,
+            description = "保存代码扫描数据",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_SAVE_SONAR_ANALYSE_DATA,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void saveSonarAnalyseData(String data) {
+        sonarAnalyseRecordService.saveAnalyseData(JsonHelper.unmarshalByJackson(data, WebhookPayload.class));
     }
 }

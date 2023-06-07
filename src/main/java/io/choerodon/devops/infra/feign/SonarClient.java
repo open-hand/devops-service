@@ -91,7 +91,8 @@ public interface SonarClient {
     Call<ResponseBody> createProject(@FieldMap Map<String, String> data);
 
     @GET("api/measures/component")
-    Call<ResponseBody> getSonarQualityGateResultDetail(@QueryMap Map<String, String> maps);
+    Call<ResponseBody> listMeasures(@QueryMap Map<String, String> maps);
+
 
     @GET("api/qualitygates/show")
     Call<ResponseBody> gateShow(@QueryMap Map<String, String> data);
@@ -108,6 +109,9 @@ public interface SonarClient {
 
     @POST("api/permissions/add_user")
     Call<ResponseBody> addUserPermission(@QueryMap Map<String, Object> data);
+
+    @GET("api/issues/search")
+    Call<ResponseBody> listIssue(@QueryMap Map<String, String> maps);
 
     @GET("api/webhooks/list")
     Call<ResponseBody> listWebhooks();

@@ -28,4 +28,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_sonar.groovy') {
         addUniqueConstraint(tableName: 'devops_ci_pipeline_sonar',
                 constraintName: 'uk_devops_gitlab_pipeline_id', columnNames: 'app_service_id,gitlab_pipeline_id,job_name')
     }
+    changeSet(author: 'wanghao', id: '2023-6-6-add-column') {
+        addColumn(tableName: 'devops_ci_pipeline_sonar') {
+            column(name: "record_id", type: "BIGINT UNSIGNED", afterColumn: "job_name", remarks: "devops_sonar_analyse_record.id")
+        }
+    }
 }

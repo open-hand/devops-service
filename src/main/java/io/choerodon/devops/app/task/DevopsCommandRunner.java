@@ -22,6 +22,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.app.service.DevopsHelmConfigService;
+import io.choerodon.devops.infra.config.SonarConfigProperties;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsHelmConfigDTO;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
@@ -62,8 +63,8 @@ public class DevopsCommandRunner implements CommandLineRunner {
 
     @Value("${services.gateway.url:}")
     private String gatewayUrl;
-    @Value("${devops.sonar.token:}")
-    private String sonarToken;
+    @Autowired
+    private SonarConfigProperties sonarConfigProperties;
 
     @Override
     public void run(String... strings) {
@@ -165,7 +166,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
                 data.put("webhook", webhook.getKey());
                 data.put("url", webhookUrl);
                 data.put("name", C7N_WEBHOOK);
-                data.put("secret", sonarToken);
+                data.put("secret", sonarConfigProperties.getWebhookToken());
                 Call<ResponseBody> responseBodyCall1 = sonarClient.updateWebhook(data);
                 RetrofitCallExceptionParse.executeCall(responseBodyCall1, "devops.webhook.update", Void.class);
             } else {
@@ -182,7 +183,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
         Map<String, Object> data = new HashMap<>();
         data.put("url", webhookUrl);
         data.put("name", C7N_WEBHOOK);
-        data.put("secret", sonarToken);
+        data.put("secret", sonarConfigProperties.getWebhookToken());
         Call<ResponseBody> responseBodyCall1 = sonarClient.createWebhook(data);
         RetrofitCallExceptionParse.executeCall(responseBodyCall1, "devops.webhook.create", Void.class);
     }

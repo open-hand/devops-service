@@ -137,7 +137,7 @@ public class SonarClientFallback implements SonarClient {
     }
 
     @Override
-    public Call<ResponseBody> getSonarQualityGateResultDetail(Map<String, String> maps) {
+    public Call<ResponseBody> listMeasures(Map<String, String> maps) {
         return null;
     }
 
@@ -163,6 +163,11 @@ public class SonarClientFallback implements SonarClient {
 
     @Override
     public Call<ResponseBody> addUserPermission(Map<String, Object> data) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> listIssue(Map<String, String> maps) {
         return null;
     }
 
