@@ -111,6 +111,13 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         MapperUtil.resultJudgedInsertSelective(sonarAnalyseRecordMapper, sonarAnalyseRecordDTO, DEVOPS_SAVE_SONAR_ANALYSE_RECORD_FAILED);
 
         // 保存用户统计数据
+        Map<String, String> map = new HashMap<>();
+        map.put("componentKeys", key);
+        map.put("facets", "author");
+        map.put("types", "bugs");
+        RetrofitCallExceptionParse.executeCall(sonarClient.listIssue(map),
+                ExceptionConstants.SonarCode.DEVOPS_SONAR_MEASURE_GET,
+                SonarComponent.class);
 
 
         // 保存流水线关联关系

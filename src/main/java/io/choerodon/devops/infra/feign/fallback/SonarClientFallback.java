@@ -167,6 +167,11 @@ public class SonarClientFallback implements SonarClient {
     }
 
     @Override
+    public Call<ResponseBody> listIssue(Map<String, String> maps) {
+        return null;
+    }
+
+    @Override
     public Call<ResponseBody> listWebhooks() {
         return null;
     }

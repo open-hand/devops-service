@@ -110,6 +110,9 @@ public interface SonarClient {
     @POST("api/permissions/add_user")
     Call<ResponseBody> addUserPermission(@QueryMap Map<String, Object> data);
 
+    @GET("api/issues/search")
+    Call<ResponseBody> listIssue(@QueryMap Map<String, String> maps);
+
     @GET("api/webhooks/list")
     Call<ResponseBody> listWebhooks();
 
