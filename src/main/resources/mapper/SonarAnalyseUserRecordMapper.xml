@@ -3,7 +3,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.SonarAnalyseUserRecordMapper">
 
     <insert id="batchSave">
-        INSERT INTO devops_sonar_analyse_user_record (record_id, user_email, bug, vulnerability, code_smell)
+        INSERT INTO devops_sonar_analyse_author_count (record_id, user_email, bug, vulnerability, code_smell)
         VALUES
         <foreach collection="sonarAnalyseUserRecordDTOList" item="item" separator=",">
             (#{recordId},

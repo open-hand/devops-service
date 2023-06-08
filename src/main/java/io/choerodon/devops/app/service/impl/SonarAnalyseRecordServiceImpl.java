@@ -74,7 +74,7 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
     private static Facet getFacet(String key, String type, SonarClient sonarClient) {
         Map<String, String> map = new HashMap<>();
         map.put("componentKeys", key);
-        map.put("facets", "author");
+        map.put("facets", "author,severities");
         map.put("types", type);
         return RetrofitCallExceptionParse.executeCallWithTarget(sonarClient.listIssue(map),
                 ExceptionConstants.SonarCode.DEVOPS_SONAR_ISSUES_GET,
