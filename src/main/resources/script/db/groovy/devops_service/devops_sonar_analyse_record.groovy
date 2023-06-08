@@ -36,6 +36,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_sonar_analyse_record.groovy') {
         createIndex(tableName: 'devops_sonar_analyse_record', indexName: 'devops_sonar_analyse_record_n2') {
             column(name: 'app_service_id')
         }
+        createIndex(tableName: 'devops_sonar_analyse_record', indexName: 'devops_sonar_analyse_record_n3') {
+            column(name: 'commit_sha')
+        }
 
     }
 }
