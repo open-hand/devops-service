@@ -935,6 +935,18 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         return String.format(SONAR_KEY, organiztionCode, projectDevopsComponentCode, appServiceCode);
     }
 
+    private static String caculateSqaleIndex(Long sqaleIndex) {
+        double day = sqaleIndex == null ? 0 : TypeUtil.objTodouble(sqaleIndex) / 480;
+        double hour = sqaleIndex == null ? 0 : TypeUtil.objTodouble(sqaleIndex) / 60;
+        if (day >= 1) {
+            return String.format("%sd", Math.round(day));
+        } else if (hour >= 1) {
+            return String.format("%sh", Math.round(hour));
+        } else {
+            return String.format("%s%s", Math.round(TypeUtil.objTodouble(sqaleIndex == null ? 0 : sqaleIndex)), sqaleIndex == null ? "" : "min");
+        }
+    }
+
     private void fillSonarInfo(Long projectId, Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
         DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(appServiceId, gitlabPipelineId, devopsCiJobRecordVO.getName());
         if (devopsCiPipelineSonarDTO != null && devopsCiPipelineSonarDTO.getRecordId() != null) {
@@ -944,7 +956,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             sonarContents.add(new SonarContentVO(SonarQubeType.BUGS.getType(), sonarAnalyseRecordDTO.getBug().toString()));
             sonarContents.add(new SonarContentVO(SonarQubeType.VULNERABILITIES.getType(), sonarAnalyseRecordDTO.getVulnerability().toString()));
             sonarContents.add(new SonarContentVO(SonarQubeType.CODE_SMELLS.getType(), sonarAnalyseRecordDTO.getCodeSmell().toString()));
-            sonarContents.add(new SonarContentVO(SonarQubeType.SQALE_INDEX.getType(), sonarAnalyseRecordDTO.getSqaleIndex().toString()));
+
+            sonarContents.add(new SonarContentVO(SonarQubeType.SQALE_INDEX.getType(), caculateSqaleIndex(sonarAnalyseRecordDTO.getSqaleIndex())));
             DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = null;
             if (StringUtils.isNotBlank(sonarAnalyseRecordDTO.getQualityGateDetails())) {
                 QualityGateResult qualityGateResult = JsonHelper.unmarshalByJackson(sonarAnalyseRecordDTO.getQualityGateDetails(), QualityGateResult.class);
