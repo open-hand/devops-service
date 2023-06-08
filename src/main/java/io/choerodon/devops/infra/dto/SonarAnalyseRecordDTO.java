@@ -50,6 +50,8 @@ public class SonarAnalyseRecordDTO extends AuditDomain {
     @NotNull
     private Long appServiceId;
 
+    private String commitSha;
+
     @ApiModelProperty(value = "扫描时间", required = true)
     @NotNull
     private Date analysedAt;
@@ -72,6 +74,13 @@ public class SonarAnalyseRecordDTO extends AuditDomain {
     @ApiModelProperty(value = "评分")
     private Long score;
 
+    public String getCommitSha() {
+        return commitSha;
+    }
+
+    public void setCommitSha(String commitSha) {
+        this.commitSha = commitSha;
+    }
 
     public Long getId() {
         return id;

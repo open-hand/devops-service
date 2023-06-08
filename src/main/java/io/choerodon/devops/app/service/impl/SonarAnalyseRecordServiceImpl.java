@@ -218,6 +218,7 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         sonarAnalyseRecordDTO.setAppServiceId(appServiceId);
         sonarAnalyseRecordDTO.setProjectId(projectId);
         sonarAnalyseRecordDTO.setAnalysedAt(webhookPayload.getAnalysedAt());
+        sonarAnalyseRecordDTO.setCommitSha(webhookPayload.getRevision());
         for (Measure measure : measures) {
             if (SonarQubeType.BUGS.getType().equals(measure.getMetric())) {
                 sonarAnalyseRecordDTO.setBug(Long.parseLong(measure.getValue()));

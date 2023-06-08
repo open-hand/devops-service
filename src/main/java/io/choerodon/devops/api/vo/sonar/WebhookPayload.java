@@ -17,11 +17,21 @@ public class WebhookPayload {
     private Date analysedAt;
     private Project project;
 
+    private String revision;
+
     private Map<String, String> properties;
 
     private Map<String, SonarAnalyseUserRecordDTO> userMap;
 
     private List<Measure> measures;
+
+    public String getRevision() {
+        return revision;
+    }
+
+    public void setRevision(String revision) {
+        this.revision = revision;
+    }
 
     public Map<String, SonarAnalyseUserRecordDTO> getUserMap() {
         return userMap;
