@@ -46,6 +46,7 @@ import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
+import io.choerodon.devops.api.vo.sonar.QualityGateResult;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
 import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
@@ -101,6 +102,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     protected static final String HOST = "host";
 
+    protected static final String SONAR_KEY = "%s-%s:%s";
+
     private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private final DevopsCiJobRecordService devopsCiJobRecordService;
     private final DevopsCiStageService devopsCiStageService;
@@ -135,6 +138,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private CiPipelineMavenService ciPipelineMavenService;
     @Autowired
     private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
+    @Autowired
+    private SonarAnalyseRecordService sonarAnalyseRecordService;
+    @Autowired
+    private DevopsCiSonarQualityGateService devopsCiSonarQualityGateService;
     @Autowired
     private DevopsCiUnitTestReportService devopsCiUnitTestReportService;
     @Autowired
@@ -924,29 +931,44 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
+    public static String getSonarKey(String appServiceCode, String projectDevopsComponentCode, String organiztionCode) {
+        return String.format(SONAR_KEY, organiztionCode, projectDevopsComponentCode, appServiceCode);
+    }
+
     private void fillSonarInfo(Long projectId, Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
         DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(appServiceId, gitlabPipelineId, devopsCiJobRecordVO.getName());
-        if (devopsCiPipelineSonarDTO != null) {
-            SonarContentsVO sonarContentsVO = null;
-            try {
-                sonarContentsVO = applicationService.getSonarContentFromCache(projectId, appServiceId);
-                if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
-                    List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
-                    List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
-                            || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
-                            || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())
-                            || SonarQubeType.SQALE_INDEX.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
+        if (devopsCiPipelineSonarDTO != null && devopsCiPipelineSonarDTO.getRecordId() != null) {
 
-                    sonarContents.forEach(v -> {
-                        if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
-                            devopsCiJobRecordVO.setCodeCoverage(v.getValue());
-                        }
-                    });
-                    devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContentVOS, sonarContentsVO.getDevopsCiSonarQualityGateVO()));
-                }
-            } catch (Exception e) {
-                LOGGER.error("Fill sonar info failed", e);
-            }
+            SonarAnalyseRecordDTO sonarAnalyseRecordDTO = sonarAnalyseRecordService.queryById(devopsCiPipelineSonarDTO.getRecordId());
+            List<SonarContentVO> sonarContents = new ArrayList<>();
+            sonarContents.add(new SonarContentVO(SonarQubeType.BUGS.getType(), sonarAnalyseRecordDTO.getBug().toString()));
+            sonarContents.add(new SonarContentVO(SonarQubeType.VULNERABILITIES.getType(), sonarAnalyseRecordDTO.getVulnerability().toString()));
+            sonarContents.add(new SonarContentVO(SonarQubeType.CODE_SMELLS.getType(), sonarAnalyseRecordDTO.getCodeSmell().toString()));
+            sonarContents.add(new SonarContentVO(SonarQubeType.SQALE_INDEX.getType(), sonarAnalyseRecordDTO.getSqaleIndex().toString()));
+
+            QualityGateResult qualityGateResult = JsonHelper.unmarshalByJackson(sonarAnalyseRecordDTO.getQualityGateDetails(), QualityGateResult.class);
+
+            devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContents, devopsCiSonarQualityGateService.buildFromSonarResult(qualityGateResult)));
+//            SonarContentsVO sonarContentsVO = null;
+//            try {
+//                sonarContentsVO = applicationService.getSonarContentFromCache(projectId, appServiceId);
+//                if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
+//                    List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
+//                    List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
+//                            || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
+//                            || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())
+//                            || SonarQubeType.SQALE_INDEX.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
+//
+//                    sonarContents.forEach(v -> {
+//                        if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
+//                            devopsCiJobRecordVO.setCodeCoverage(v.getValue());
+//                        }
+//                    });
+//                    devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContentVOS, sonarContentsVO.getDevopsCiSonarQualityGateVO()));
+//                }
+//            } catch (Exception e) {
+//                LOGGER.error("Fill sonar info failed", e);
+//            }
 
         }
     }

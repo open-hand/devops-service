@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import javax.servlet.http.HttpServletRequest;
 
 import io.choerodon.devops.api.vo.sonar.WebhookPayload;
+import io.choerodon.devops.infra.dto.SonarAnalyseRecordDTO;
 
 /**
  * 代码扫描记录表(SonarAnalyseRecord)应用服务
@@ -15,5 +16,7 @@ public interface SonarAnalyseRecordService {
     void forwardWebhook(String payload, HttpServletRequest httpServletRequest);
 
     void saveAnalyseData(WebhookPayload webhookPayload);
+
+    SonarAnalyseRecordDTO queryById(Long recordId);
 }
 
