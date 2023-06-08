@@ -15,10 +15,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_sonar_analyse_record.groovy') {
             column(name: "analysed_at", type: "DATETIME", remarks: '扫描时间') {
                 constraints(nullable: false)
             }
-            column(name: 'bug', type: 'BIGINT UNSIGNED', remarks: 'bug数')
-            column(name: 'code_smell', type: 'BIGINT UNSIGNED', remarks: '代码异味数')
-            column(name: 'vulnerability', type: 'BIGINT UNSIGNED', remarks: '漏洞数')
-            column(name: 'sqale_index', type: 'BIGINT UNSIGNED', remarks: '技术债务')
+            column(name: 'bug', type: 'BIGINT UNSIGNED', remarks: 'bug数', defaultValue: "0")
+            column(name: 'code_smell', type: 'BIGINT UNSIGNED', remarks: '代码异味数', defaultValue: "0")
+            column(name: 'vulnerability', type: 'BIGINT UNSIGNED', remarks: '漏洞数', defaultValue: "0")
+            column(name: 'sqale_index', type: 'BIGINT UNSIGNED', remarks: '技术债务', defaultValue: "0")
             column(name: 'quality_gate_details', type: 'VARCHAR(4000)', remarks: '质量门详情')
             column(name: 'score', type: 'BIGINT UNSIGNED', remarks: '评分')
 

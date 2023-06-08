@@ -12,9 +12,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_sonar_analyse_user_record.groovy'
             column(name: 'user_email', type: 'VARCHAR(64)', remarks: '应用服务id') {
                 constraints(nullable: false)
             }
-            column(name: 'bug', type: 'BIGINT UNSIGNED', remarks: 'bug数')
-            column(name: 'code_smell', type: 'BIGINT UNSIGNED', remarks: '代码异味数')
-            column(name: 'vulnerability', type: 'BIGINT UNSIGNED', remarks: '漏洞数')
+            column(name: 'bug', type: 'BIGINT UNSIGNED', remarks: 'bug数', defaultValue: "0")
+            column(name: 'code_smell', type: 'BIGINT UNSIGNED', remarks: '代码异味数', defaultValue: "0")
+            column(name: 'vulnerability', type: 'BIGINT UNSIGNED', remarks: '漏洞数', defaultValue: "0")
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
