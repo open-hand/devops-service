@@ -241,6 +241,11 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         }
     }
 
+    @Override
+    public SonarAnalyseRecordDTO queryById(Long recordId) {
+        return sonarAnalyseRecordMapper.selectByPrimaryKey(recordId);
+    }
+
 
     private boolean validSignature(String payload, HttpServletRequest request) {
         String receivedSignature = request.getHeader("X-Sonar-Webhook-HMAC-SHA256");

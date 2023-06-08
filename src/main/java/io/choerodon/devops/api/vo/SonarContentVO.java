@@ -11,7 +11,13 @@ public class SonarContentVO {
     private String url;
 
 
+    public SonarContentVO() {
+    }
 
+    public SonarContentVO(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
 
     public String getKey() {
         return key;
