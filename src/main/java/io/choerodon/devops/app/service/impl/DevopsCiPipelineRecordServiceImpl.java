@@ -945,10 +945,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             sonarContents.add(new SonarContentVO(SonarQubeType.VULNERABILITIES.getType(), sonarAnalyseRecordDTO.getVulnerability().toString()));
             sonarContents.add(new SonarContentVO(SonarQubeType.CODE_SMELLS.getType(), sonarAnalyseRecordDTO.getCodeSmell().toString()));
             sonarContents.add(new SonarContentVO(SonarQubeType.SQALE_INDEX.getType(), sonarAnalyseRecordDTO.getSqaleIndex().toString()));
+            DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = null;
+            if (StringUtils.isNotBlank(sonarAnalyseRecordDTO.getQualityGateDetails())) {
+                QualityGateResult qualityGateResult = JsonHelper.unmarshalByJackson(sonarAnalyseRecordDTO.getQualityGateDetails(), QualityGateResult.class);
+                devopsCiSonarQualityGateVO = devopsCiSonarQualityGateService.buildFromSonarResult(qualityGateResult);
+            }
 
-            QualityGateResult qualityGateResult = JsonHelper.unmarshalByJackson(sonarAnalyseRecordDTO.getQualityGateDetails(), QualityGateResult.class);
-
-            devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContents, devopsCiSonarQualityGateService.buildFromSonarResult(qualityGateResult)));
+            devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContents, devopsCiSonarQualityGateVO));
 //            SonarContentsVO sonarContentsVO = null;
 //            try {
 //                sonarContentsVO = applicationService.getSonarContentFromCache(projectId, appServiceId);

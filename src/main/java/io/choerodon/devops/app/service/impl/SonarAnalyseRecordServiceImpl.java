@@ -23,12 +23,10 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsCiPipelineSonarService;
-import io.choerodon.devops.app.service.SonarAnalyseRecordService;
-import io.choerodon.devops.app.service.SonarAnalyseUserRecordService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.task.DevopsCommandRunner;
 import io.choerodon.devops.infra.config.SonarConfigProperties;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
@@ -66,6 +64,9 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
     private SonarConfigProperties sonarConfigProperties;
     @Autowired
     private SonarAnalyseUserRecordService sonarAnalyseUserRecordService;
+
+    @Autowired
+    private DevopsCiSonarQualityGateService devopsCiSonarQualityGateService;
 
     @Autowired
     private TransactionalProducer transactionalProducer;
@@ -118,9 +119,16 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                 sonarConfigProperties.getUsername(),
                 sonarConfigProperties.getPassword());
 
+        DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = devopsCiSonarQualityGateService.queryByName(key);
+
+
         Map<String, String> queryContentMap = new HashMap<>();
         queryContentMap.put("component", key);
-        queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,sqale_index,code_smells");
+        if (devopsCiSonarQualityGateVO != null) {
+            queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,sqale_index,code_smells");
+        } else {
+            queryContentMap.put("metricKeys", "bugs,vulnerabilities,sqale_index,code_smells");
+        }
 
         //根据project-key查询sonarqube项目内容
         SonarComponent sonarComponent = RetrofitCallExceptionParse.executeCall(sonarClient.listMeasures(queryContentMap),
