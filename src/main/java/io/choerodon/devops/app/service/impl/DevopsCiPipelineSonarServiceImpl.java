@@ -60,9 +60,6 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
             if (devopsCiPipelineSonarDTO == null) {
                 baseCreate(new DevopsCiPipelineSonarDTO(appServiceId, gitlabPipelineId, jobName, scannerType));
             }
-            // 删除缓存
-            stringRedisTemplate.delete(SONAR + ":" + appServiceDTO.getProjectId() + ":" + appServiceId);
-
         });
     }
 

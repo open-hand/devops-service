@@ -10,7 +10,7 @@
             #{item.userEmail},
             #{item.bug},
             #{item.vulnerability},
-            #{item.codeSmell}
+            #{item.codeSmell})
         </foreach>
     </insert>
 </mapper>
