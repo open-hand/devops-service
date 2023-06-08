@@ -179,7 +179,8 @@
     <select id="listWorkloadPod" resultType="io.choerodon.devops.api.vo.DevopsEnvPodVO">
         SELECT *
         FROM devops_env_pod
-        WHERE owner_ref_kind = #{ownerKind}
-          AND owner_ref_name = #{ownerName}
+        WHERE env_id = #{envId}
+        AND owner_ref_kind = #{ownerKind}
+        AND owner_ref_name = #{ownerName}
     </select>
 </mapper>

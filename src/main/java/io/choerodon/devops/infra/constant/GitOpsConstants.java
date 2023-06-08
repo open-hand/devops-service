@@ -19,6 +19,7 @@ public class GitOpsConstants {
     public static final String GITLAB_GROUP_NAME_FORMAT = "%s-%s%s";
     public static final String APP_SERVICE_SUFFIX = "";
     public static final String ENV_GROUP_SUFFIX = "-gitops";
+    public static final String GIT_SUFFIX = "/.git";
     /**
      * 集群环境库的组 ${orgCode}_${projectCode}-cluster_gitops
      * 这是集群环境库组的后缀

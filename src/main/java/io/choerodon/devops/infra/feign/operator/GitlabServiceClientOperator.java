@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.feign.operator;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_CREATE;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_UPDATE;
+import static io.choerodon.devops.infra.constant.GitOpsConstants.GIT_SUFFIX;
 import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
 import static io.choerodon.devops.infra.util.GitUserNameUtil.getAdminId;
 
@@ -1489,10 +1490,10 @@ public class GitlabServiceClientOperator {
      * @param pathContent     文件路径和内容的映射，不能为空
      * @param commitMessage   提交信息
      */
-    public void updateGitlabFiles(Integer gitlabProjectId, Integer gitlabUserId, String branch, Map<String, String> pathContent, String commitMessage, String commitId) {
+    public void updateGitlabFiles(Integer gitlabProjectId, Integer gitlabUserId, String branch, Map<String, String> pathContent, String commitMessage, String gitopsRepoPath, String commitId) {
         try {
             List<CommitActionDTO> actions = new ArrayList<>();
-            pathContent.forEach((filePath, fileContent) -> actions.add(new CommitActionDTO(CommitActionDTO.Action.UPDATE, filePath, fileContent, commitId)));
+            pathContent.forEach((filePath, fileContent) -> actions.add(new CommitActionDTO(CommitActionDTO.Action.UPDATE, filePath, fileContent, GitUtil.getFileLatestCommit(gitopsRepoPath + GIT_SUFFIX, filePath))));
             CommitPayloadDTO commitPayloadDTO = new CommitPayloadDTO(Objects.requireNonNull(branch), Objects.requireNonNull(commitMessage), actions);
             gitlabServiceClient.createCommit(Objects.requireNonNull(gitlabProjectId), Objects.requireNonNull(gitlabUserId), commitPayloadDTO);
         } catch (Exception ex) {

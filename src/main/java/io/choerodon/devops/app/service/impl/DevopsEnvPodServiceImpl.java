@@ -20,7 +20,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ContainerVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.app.service.*;
@@ -222,9 +221,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         devopsEnvPodDTO.setEnvId(envId);
         devopsEnvPodDTO.setName(name);
         if (devopsEnvPodMapper.delete(devopsEnvPodDTO) != 1) {
-            throw new CommonException(ERROR_DELETE_POD_FAILED);
+            LOGGER.info("failed to delete pod. name: {} envId: {}", name, envId);
         }
-
     }
 
     @Override
@@ -389,8 +387,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     }
 
     @Override
-    public List<DevopsEnvPodVO> listWorkloadPod(String ownerKind, String ownerName) {
-        return devopsEnvPodMapper.listWorkloadPod(ownerKind, ownerName);
+    public List<DevopsEnvPodVO> listWorkloadPod(Long envId, String ownerKind, String ownerName) {
+        return devopsEnvPodMapper.listWorkloadPod(envId, ownerKind, ownerName);
     }
 
     private void fillContainers(Long envId, DevopsEnvPodVO devopsEnvPodVO) {
