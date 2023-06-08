@@ -44,5 +44,5 @@ public interface DevopsEnvPodMapper extends BaseMapper<DevopsEnvPodDTO> {
                                         @Param("searchParam") Map<String, Object> searchParam,
                                         @Param("params") List<String> params);
 
-    List<DevopsEnvPodVO> listWorkloadPod(@Param("ownerKind") String ownerKind, @Param("ownerName") String ownerName);
+    List<DevopsEnvPodVO> listWorkloadPod(@Param("envId") Long envId, @Param("ownerKind") String ownerKind, @Param("ownerName") String ownerName);
 }

@@ -19,7 +19,7 @@ public class IamAdminIdHolder {
     /**
      * admin用户的登录名
      */
-    private static final String IAM_ADMIN_LOGIN_NAME = "admin";
+    public static final String IAM_ADMIN_LOGIN_NAME = "admin";
 
     private IamAdminIdHolder() {
 

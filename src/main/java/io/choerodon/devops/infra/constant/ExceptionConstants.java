@@ -119,6 +119,7 @@ public class ExceptionConstants {
         public static final String DEVOPS_HOST_DEPLOY_INFO_APP_NAME_OR_CODE_IS_NULL = "error.devops.ci.host.deploy.info.app.name.or.code.is.null";
         public static final String DEVOPS_HOST_DEPLOY_INFO_HOST_NULL = "error.devops.ci.host.deploy.info.host.is.null";
         public static final String DEVOPS_HOST_DEPLOY_INFO_PIPELINE_TASK_NULL = "error.devops.ci.host.deploy.info.pipeline.task.null";
+        public static final String DEVOPS_HOST_DEPLOY_UNSUPPORTED_DEPLOY_TYPE = "error.devops.ci.host.deploy.type.unsupported";
         public static final String DEVOPS_UPDATE_PIPELINE_DOCKER_DEPLOY_INFO = "devops.update.pipeline.docker.deploy.info";
         public static final String DEVOPS_UPDATE_PIPELINE_JAR_DEPLOY_INFO = "devops.update.pipeline.jar.deploy.info";
         public static final String DEVOPS_UPDATE_PIPELINE_CUSTOM_DEPLOY_INFO = "devops.update.pipeline.custom.deploy.info";
@@ -233,6 +234,10 @@ public class ExceptionConstants {
 
     public static class IngressExceptionCode {
         public static final String ERROR_DEVOPS_INGRESS_DOMAIN_INVALID = "error.ingress.domain.invalid";
+    }
+
+    public static class DevopsHostDeployCode {
+        public static final String DEVOPS_HOST_DEPLOY_COMMAND_NULL = "error.devops.host.app.command.null";
     }
 
 }

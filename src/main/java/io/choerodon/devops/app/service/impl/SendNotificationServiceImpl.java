@@ -343,6 +343,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             .put(PROJECT_ID, projectDTO.getId())
                             .put(APP_SERVICE_ID, appServiceDTO.getId())
                             .put("status", "failed")
+                            .put("link", String.format("%s/%s-%s/%s/pipelines/%s", gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), appServiceDTO.getCode(), gitlabPipelineId))
                             .build();
 
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(pipelineOperatorUserName);

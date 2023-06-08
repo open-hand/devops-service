@@ -1,21 +1,21 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CiHostDeployCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CiJobCode.DEVOPS_JOB_CONFIG_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CiHostDeployCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CiJobCode.DEVOPS_JOB_CONFIG_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.ResourceCheckConstant.*;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -30,10 +30,7 @@ import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.mapper.DevopsCiHostDeployInfoMapper;
-import io.choerodon.devops.infra.util.Base64Util;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.*;
 
 @Service
 public class HostDeployJobHandlerImpl extends AbstractJobHandler {
@@ -77,6 +74,26 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
         if (hostId == null) {
             throw new CommonException(DEVOPS_HOST_ID_IS_NULL);
         }
+
+        // jar部署和其它制品部署，启动命令和删除命令不能为空
+        // docker 部署命令不能为空
+        // dockercompose 部署命令不能为空
+        switch (RdupmTypeEnum.valueOf(devopsCiHostDeployInfoVO.getHostDeployType().toUpperCase())) {
+            case JAR:
+            case OTHER:
+                HostDeployUtil.checkCommandNotEmpty("启动命令", devopsCiHostDeployInfoVO.getRunCommand());
+                HostDeployUtil.checkCommandNotEmpty("删除命令", devopsCiHostDeployInfoVO.getKillCommand());
+                break;
+            case DOCKER:
+                HostDeployUtil.checkCommandNotEmpty("docker运行命令", devopsCiHostDeployInfoVO.getDockerCommand());
+                break;
+            case DOCKER_COMPOSE:
+                HostDeployUtil.checkCommandNotEmpty("docker compose运行命令", devopsCiHostDeployInfoVO.getDockerComposeRunCommand());
+                break;
+            default:
+                throw new CommonException(DEVOPS_HOST_DEPLOY_UNSUPPORTED_DEPLOY_TYPE);
+        }
+
 
         if (DeployTypeEnum.CREATE.value().equals(devopsCiHostDeployInfoVO.getDeployType())) {
             // 校验应用编码和应用名称

@@ -828,6 +828,8 @@ public class AppServiceInstanceController {
     public void operatePodCount(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "实例id", required = true)
+            @Encrypt @RequestParam(value = "instanceId",required = false) Long instanceId,
             @ApiParam(value = "环境id", required = true)
             @Encrypt
             @RequestParam Long envId,
@@ -839,7 +841,7 @@ public class AppServiceInstanceController {
             @RequestParam Long count,
             @ApiParam(value = "是否为操作工作负载pod", required = false)
             @RequestParam(value = "workload", defaultValue = "false", required = false) boolean workload) {
-        appServiceInstanceService.operationPodCount(projectId, kind, name, envId, count, workload);
+        appServiceInstanceService.operationPodCount(projectId, kind, instanceId, name, envId, count, workload);
     }
 
 
@@ -926,15 +928,15 @@ public class AppServiceInstanceController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @DeleteMapping("/{instance_id}/delete_job")
     public ResponseEntity<Void> deleteHelmHookJob(@ApiParam(value = "项目ID", required = true)
-                                                      @PathVariable(value = "project_id") Long projectId,
+                                                  @PathVariable(value = "project_id") Long projectId,
                                                   @ApiParam(value = "应用实例id", required = true)
-                                                      @Encrypt @PathVariable(value = "instance_id") Long instanceId,
+                                                  @Encrypt @PathVariable(value = "instance_id") Long instanceId,
                                                   @ApiParam(value = "操作id", required = true)
-                                                      @Encrypt @RequestParam(value = "command_id") Long commandId,
+                                                  @Encrypt @RequestParam(value = "command_id") Long commandId,
                                                   @ApiParam(value = "环境id", required = true)
-                                                      @Encrypt @RequestParam(value = "env_id") Long envId,
+                                                  @Encrypt @RequestParam(value = "env_id") Long envId,
                                                   @ApiParam(value = "job名称", required = true)
-                                                      @RequestParam(value = "job_name") String jobName) {
+                                                  @RequestParam(value = "job_name") String jobName) {
         appServiceInstanceService.deleteHelmHookJob(projectId, instanceId, envId, commandId, jobName);
         return ResponseEntity.noContent().build();
     }

@@ -1,6 +1,23 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
+
+import java.util.Map;
+import javax.annotation.Nullable;
+
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DockerComposeDeployVO;
@@ -29,22 +46,6 @@ import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-
-import javax.annotation.Nullable;
-import java.util.Map;
-
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
 
 /**
  * 〈功能简述〉
@@ -84,6 +85,9 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         String appName = dockerComposeDeployVO.getAppName();
         String appCode = dockerComposeDeployVO.getAppCode();
         String runCommand = dockerComposeDeployVO.getRunCommand();
+
+        // 检查dockercompose运行命令不为空
+        HostDeployUtil.checkCommandNotEmpty("docker compose运行命令", dockerComposeDeployVO.getRunCommand());
 
         DevopsHostDTO devopsHostDTO = devopsHostService.checkHostAvailable(hostId);
 

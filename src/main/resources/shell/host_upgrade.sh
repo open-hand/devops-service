@@ -22,7 +22,20 @@ if [ ! -d "${LOG_DIR}" ]; then
   echo "Working directory ${LOG_DIR} created successfully"
 fi
 
-# 3. 保存环境变量
+# 3. 下载执行程序
+echo "Downloading c7n-agent"
+http_status_code=`curl -o ${TAR_FILE} -s -m 60 --connect-timeout 60 -w %{http_code} "{{ BINARY }}"`
+if [ "$http_status_code" != "200" ]; then
+  cat ${TAR_FILE}
+  exit 1
+fi
+
+rm -rf /var/choerodon/c7n-agent
+
+tar -zxvf ${TAR_FILE}
+echo "c7n-agent downloaded successfully"
+
+# 4. 保存环境变量
 cat <<EOF | tee ${WORK_DIR}/c7n-agent.env
 VAR=/var
 WORK_DIR=${VAR}/choerodon
@@ -58,14 +71,3 @@ esac
 EOF
 
 chmod 0777 ${WORK_DIR}/c7n-agent.sh
-
-cd "$WORK_DIR" || exit
-
-# 4. 下载执行程序
-echo "Downloading c7n-agent"
-curl -o ${TAR_FILE} "{{ BINARY }}"
-
-rm -rf /var/choerodon/c7n-agent
-
-tar -zxvf ${TAR_FILE}
-echo "c7n-agent downloaded successfully"

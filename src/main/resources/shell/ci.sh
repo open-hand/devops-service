@@ -47,7 +47,7 @@ function export_commit_tag() {
    fi
 
     # 获取commit时间
-    C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd") || $(date +%Y%m%d%H%M%S)
+    C7N_COMMIT_TIMESTAMP=`git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd" || date +%Y%m%d%H%M%S`
     C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
     C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
     C7N_COMMIT_DAY=$(echo ${C7N_COMMIT_TIMESTAMP:6:2} | sed s'/^0//')
@@ -71,6 +71,7 @@ function export_commit_tag() {
     else
       export C7N_VERSION={{ C7N_VERSION_RULE }}  # $C7N_COMMIT_TIME-$C7N_BRANCH
     fi
+    export CI_COMMIT_TAG=$C7N_VERSION
 }
 
 export_commit_tag

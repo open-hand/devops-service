@@ -28,6 +28,7 @@ import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Ingress;
 import io.kubernetes.client.openapi.models.V1Service;
+import io.netty.util.internal.IntegerHolder;
 import org.apache.commons.lang.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Pair;
@@ -593,7 +594,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public void operationPodCount(Long projectId, String kind, String name, Long envId, Long count, boolean workload) {
+    public void operationPodCount(Long projectId, String kind, Long instanceId, String name, Long envId, Long count, boolean workload) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -608,11 +609,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 return;
             }
             // 保存操作记录
-            AppServiceInstanceDTO appServiceInstanceDTOToSearch = new AppServiceInstanceDTO();
-            appServiceInstanceDTOToSearch.setEnvId(envId);
-            appServiceInstanceDTOToSearch.setCode(name);
-            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTOToSearch);
-            if (appServiceInstanceDTO != null) {
+            if (instanceId != null) {
+                AppServiceInstanceDTO appServiceInstanceDTOToSearch = new AppServiceInstanceDTO();
+                appServiceInstanceDTOToSearch.setId(instanceId);
+                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTOToSearch);
                 devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
             } else {
                 DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO();
@@ -2816,7 +2816,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public void setImagePullSecrets(Integer userId, DevopsEnvironmentDTO devopsEnvironmentDTO, Map<String, C7nHelmRelease> c7nHelmReleases, String commitSha) {
+    public boolean setImagePullSecrets(Integer userId, DevopsEnvironmentDTO devopsEnvironmentDTO, Map<String, C7nHelmRelease> c7nHelmReleases, String gitopsRepoPath, String commitSha) {
+        IntegerHolder releaseToSetPullSecretsCount = new IntegerHolder();
+        releaseToSetPullSecretsCount.value = 0;
+
+
         Map<String, String> pathContentMap = new HashMap<>();
         List<String> fileNames = new ArrayList<>();
 
@@ -2828,6 +2832,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceVersionDTO = HandlerC7nReleaseRelationsServiceImpl.findVersion(c7nHelmRelease, devopsEnvironmentDTO.getProjectId(), organization.getTenantId(), filePath, "create", devopsEnvironmentDTO.getId());
             AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceVersionDTO.getAppServiceId());
             String secretName = getSecret(appServiceDTO, appServiceVersionDTO.getId(), devopsEnvironmentDTO);
+            if (ObjectUtils.isEmpty(secretName)) {
+                return;
+            }
             c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
 
             //在gitops库处理instance文件
@@ -2835,11 +2842,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             resourceConvertToYamlHandler.setType(c7nHelmRelease);
 
             String instanceContent = resourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+            releaseToSetPullSecretsCount.value++;
             fileNames.add(filePath);
             pathContentMap.put(filePath, instanceContent);
         });
 
-        gitlabServiceClientOperator.updateGitlabFiles(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), userId, GitOpsConstants.MASTER, pathContentMap, "BATCH UPDATE IMAGE PULL SECRET:" + String.join(",", fileNames), commitSha);
+        // 如果有实例需要添加secrets
+        if (releaseToSetPullSecretsCount.value != 0) {
+            gitlabServiceClientOperator.updateGitlabFiles(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), userId, GitOpsConstants.MASTER, pathContentMap, "BATCH UPDATE IMAGE PULL SECRET:" + String.join(",", fileNames), gitopsRepoPath, commitSha);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private String[] parseMarketRepo(String harborRepo) {

@@ -42,6 +42,7 @@ import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.UserSyncType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 
@@ -284,7 +285,8 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                 }
 
                 // 如果用户是停用的，block gitlab 用户
-                if (!user.getEnabled()) {
+                // gitlab中的admin账户不允许停用
+                if (!user.getEnabled() && !IamAdminIdHolder.IAM_ADMIN_LOGIN_NAME.equals(user.getLoginName())) {
                     disEnabledGitlabUser(userAttrDTO);
                 }
 
