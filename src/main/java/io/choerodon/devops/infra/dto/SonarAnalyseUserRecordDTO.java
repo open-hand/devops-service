@@ -42,9 +42,8 @@ public class SonarAnalyseUserRecordDTO extends AuditDomain {
     @NotNull
     private Long recordId;
 
-    @ApiModelProperty(value = "应用服务id", required = true)
     @NotBlank
-    private String userEmail;
+    private String author;
 
     @ApiModelProperty(value = "bug数")
     private Long bug;
@@ -72,12 +71,12 @@ public class SonarAnalyseUserRecordDTO extends AuditDomain {
         this.recordId = recordId;
     }
 
-    public String getUserEmail() {
-        return userEmail;
+    public String getAuthor() {
+        return author;
     }
 
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     public Long getBug() {

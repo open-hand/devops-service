@@ -9,7 +9,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_sonar_analyse_author_count.groovy
             column(name: "record_id", type: "BIGINT UNSIGNED", remarks: "devops_sonar_analyse_record.id") {
                 constraints(nullable: false)
             }
-            column(name: 'user_email', type: 'VARCHAR(64)', remarks: '应用服务id') {
+            column(name: 'author', type: 'VARCHAR(64)', remarks: '应用服务id') {
                 constraints(nullable: false)
             }
             column(name: 'bug', type: 'BIGINT UNSIGNED', remarks: 'bug数', defaultValue: "0")

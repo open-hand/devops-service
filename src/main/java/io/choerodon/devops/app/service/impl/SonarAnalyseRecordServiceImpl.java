@@ -148,7 +148,7 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                 SonarAnalyseUserRecordDTO sonarAnalyseUserRecordDTO = userMap.get(bugValue.getVal());
                 if (sonarAnalyseUserRecordDTO == null) {
                     sonarAnalyseUserRecordDTO = new SonarAnalyseUserRecordDTO();
-                    sonarAnalyseUserRecordDTO.setUserEmail(bugValue.getVal());
+                    sonarAnalyseUserRecordDTO.setAuthor(bugValue.getVal());
                     sonarAnalyseUserRecordDTO.setBug(bugValue.getCount().longValue());
                     userMap.put(bugValue.getVal(), sonarAnalyseUserRecordDTO);
                 } else {
@@ -162,7 +162,7 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                 SonarAnalyseUserRecordDTO sonarAnalyseUserRecordDTO = userMap.get(vulnValue.getVal());
                 if (sonarAnalyseUserRecordDTO == null) {
                     sonarAnalyseUserRecordDTO = new SonarAnalyseUserRecordDTO();
-                    sonarAnalyseUserRecordDTO.setUserEmail(vulnValue.getVal());
+                    sonarAnalyseUserRecordDTO.setAuthor(vulnValue.getVal());
                     sonarAnalyseUserRecordDTO.setVulnerability(vulnValue.getCount().longValue());
                     userMap.put(vulnValue.getVal(), sonarAnalyseUserRecordDTO);
                 } else {
@@ -177,7 +177,7 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                 SonarAnalyseUserRecordDTO sonarAnalyseUserRecordDTO = userMap.get(codeSmellValue.getVal());
                 if (sonarAnalyseUserRecordDTO == null) {
                     sonarAnalyseUserRecordDTO = new SonarAnalyseUserRecordDTO();
-                    sonarAnalyseUserRecordDTO.setUserEmail(codeSmellValue.getVal());
+                    sonarAnalyseUserRecordDTO.setAuthor(codeSmellValue.getVal());
                     sonarAnalyseUserRecordDTO.setCodeSmell(codeSmellValue.getCount().longValue());
                     userMap.put(codeSmellValue.getVal(), sonarAnalyseUserRecordDTO);
                 } else {
