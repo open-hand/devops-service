@@ -12,6 +12,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_sonar_analyse_record.groovy') {
             column(name: 'app_service_id', type: 'BIGINT UNSIGNED', remarks: '应用服务id') {
                 constraints(nullable: false)
             }
+            column(name: 'commit_sha', type: 'VARCHAR(128)', remarks: 'commit sha')
             column(name: "analysed_at", type: "DATETIME", remarks: '扫描时间') {
                 constraints(nullable: false)
             }
