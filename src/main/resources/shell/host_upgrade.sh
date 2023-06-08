@@ -28,6 +28,9 @@ curl -o ${TAR_FILE} "{{ BINARY }}"
 
 rm -rf /var/choerodon/c7n-agent
 
+tar -zxvf ${TAR_FILE}
+echo "c7n-agent downloaded successfully"
+
 # 4. 保存环境变量
 cat <<EOF | tee ${WORK_DIR}/c7n-agent.env
 VAR=/var
@@ -64,8 +67,3 @@ esac
 EOF
 
 chmod 0777 ${WORK_DIR}/c7n-agent.sh
-
-cd "$WORK_DIR" || exit
-
-tar -zxvf ${TAR_FILE}
-echo "c7n-agent downloaded successfully"
