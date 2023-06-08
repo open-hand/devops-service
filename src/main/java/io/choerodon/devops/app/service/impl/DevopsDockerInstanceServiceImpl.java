@@ -1,5 +1,23 @@
 package io.choerodon.devops.app.service.impl;
 
+import static org.springframework.util.Assert.notNull;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
@@ -36,23 +54,6 @@ import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostAppMapper;
 import io.choerodon.devops.infra.util.*;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.springframework.util.Assert.notNull;
 
 /**
  * 〈功能简述〉
@@ -109,6 +110,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, hostDTO, DetailsHelper.getUserDetails().getUserId());
         // 校验主机已连接
         hostConnectionHandler.checkHostConnection(dockerDeployVO.getHostId());
+        // 校验docker命令不为空
+        HostDeployUtil.checkCommandNotEmpty("docker运行命令", Base64Util.decodeBuffer(dockerDeployVO.getValue()));
         //获取主机应用
         DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, dockerDeployVO, hostDTO.getId());
         if (devopsHostAppDTO == null) {
