@@ -24,7 +24,11 @@ fi
 
 # 3. 下载执行程序
 echo "Downloading c7n-agent"
-curl -o ${TAR_FILE} "{{ BINARY }}"
+http_status_code=`curl -o ${TAR_FILE} -s -m 60 --connect-timeout 60 -w %{http_code} "{{ BINARY }}"`
+if [ "$http_status_code" != "200" ]; then
+  cat ${TAR_FILE}
+  exit 1
+fi
 
 rm -rf /var/choerodon/c7n-agent
 
