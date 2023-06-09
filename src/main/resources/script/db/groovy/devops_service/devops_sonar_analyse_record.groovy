@@ -16,7 +16,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_sonar_analyse_record.groovy') {
             column(name: "analysed_at", type: "DATETIME", remarks: '扫描时间') {
                 constraints(nullable: false)
             }
-            column(name: 'quality_gate_details', type: 'VARCHAR(4000)', remarks: '质量门详情')
             column(name: 'score', type: 'BIGINT UNSIGNED', remarks: '评分')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
