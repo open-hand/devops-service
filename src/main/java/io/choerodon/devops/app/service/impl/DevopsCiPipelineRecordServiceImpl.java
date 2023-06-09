@@ -956,13 +956,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             List<SonarContentVO> sonarContents = new ArrayList<>();
             DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = null;
             for (SonarAnalyseMeasureDTO sonarAnalyseMeasureDTO : sonarAnalyseMeasureDTOS) {
-                if (SonarQubeType.BUGS.getType().equals(sonarAnalyseMeasureDTO.getMetric())) {
-                    sonarContents.add(new SonarContentVO(sonarAnalyseMeasureDTO.getMetric(), sonarAnalyseMeasureDTO.getMetricValue()));
-                }
-                if (SonarQubeType.VULNERABILITIES.getType().equals(sonarAnalyseMeasureDTO.getMetric())) {
-                    sonarContents.add(new SonarContentVO(sonarAnalyseMeasureDTO.getMetric(), sonarAnalyseMeasureDTO.getMetricValue()));
-                }
-                if (SonarQubeType.CODE_SMELLS.getType().equals(sonarAnalyseMeasureDTO.getMetric())) {
+                if (SonarQubeType.BUGS.getType().equals(sonarAnalyseMeasureDTO.getMetric())
+                        || SonarQubeType.VULNERABILITIES.getType().equals(sonarAnalyseMeasureDTO.getMetric())
+                        || SonarQubeType.CODE_SMELLS.getType().equals(sonarAnalyseMeasureDTO.getMetric())) {
                     sonarContents.add(new SonarContentVO(sonarAnalyseMeasureDTO.getMetric(), sonarAnalyseMeasureDTO.getMetricValue()));
                 }
                 if (SonarQubeType.SQALE_INDEX.getType().equals(sonarAnalyseMeasureDTO.getMetric())) {
