@@ -6,7 +6,7 @@
         INSERT INTO devops_sonar_analyse_measure (record_id, metric, metric_value)
         VALUES
         <foreach collection="sonarAnalyseMeasureDTOS" item="item" separator=",">
-            (#{recordId},#{item.metric},#{item,metricValue})
+            (#{recordId},#{item.metric},#{item.metricValue})
         </foreach>
     </insert>
 </mapper>
