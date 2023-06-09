@@ -113,7 +113,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
             WHERE id in (SELECT devops_ci_job_id FROM devops_ci_step dcs WHERE type = 'sonar')
         """)
     }
-    changeSet(author: 'zmf', id: '2020-06-18-job-add-trigger') {
+    changeSet(author: 'wanghao', id: '2023-06-09-update-data') {
         sql("""
         UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-base" WHERE image = 'registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-base'
         UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-nodejs-v14.19.0" WHERE image = 'registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.1-nodejs-v14.19.0'
