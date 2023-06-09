@@ -139,7 +139,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Autowired
     private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
     @Autowired
-    private SonarAnalyseRecordService sonarAnalyseRecordService;
+    private SonarAnalyseMeasureService sonarAnalyseMeasureService;
     @Autowired
     private DevopsCiSonarQualityGateService devopsCiSonarQualityGateService;
     @Autowired
@@ -951,17 +951,16 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(appServiceId, gitlabPipelineId, devopsCiJobRecordVO.getName());
         if (devopsCiPipelineSonarDTO != null && devopsCiPipelineSonarDTO.getRecordId() != null) {
 
-            SonarAnalyseRecordDTO sonarAnalyseRecordDTO = sonarAnalyseRecordService.queryById(devopsCiPipelineSonarDTO.getRecordId());
-            List<SonarContentVO> sonarContents = new ArrayList<>();
-            sonarContents.add(new SonarContentVO(SonarQubeType.BUGS.getType(), sonarAnalyseRecordDTO.getBug().toString()));
-            sonarContents.add(new SonarContentVO(SonarQubeType.VULNERABILITIES.getType(), sonarAnalyseRecordDTO.getVulnerability().toString()));
-            sonarContents.add(new SonarContentVO(SonarQubeType.CODE_SMELLS.getType(), sonarAnalyseRecordDTO.getCodeSmell().toString()));
+            List<SonarAnalyseMeasureDTO> sonarAnalyseMeasureDTOS = sonarAnalyseMeasureService.listByRecordId(devopsCiPipelineSonarDTO.getRecordId());
 
-            sonarContents.add(new SonarContentVO(SonarQubeType.SQALE_INDEX.getType(), caculateSqaleIndex(sonarAnalyseRecordDTO.getSqaleIndex())));
+            List<SonarContentVO> sonarContents = new ArrayList<>();
             DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = null;
-            if (StringUtils.isNotBlank(sonarAnalyseRecordDTO.getQualityGateDetails())) {
-                QualityGateResult qualityGateResult = JsonHelper.unmarshalByJackson(sonarAnalyseRecordDTO.getQualityGateDetails(), QualityGateResult.class);
-                devopsCiSonarQualityGateVO = devopsCiSonarQualityGateService.buildFromSonarResult(qualityGateResult);
+            for (SonarAnalyseMeasureDTO sonarAnalyseMeasureDTO : sonarAnalyseMeasureDTOS) {
+                sonarContents.add(new SonarContentVO(sonarAnalyseMeasureDTO.getMetric(), sonarAnalyseMeasureDTO.getMetricValue()));
+                if (SonarQubeType.QUALITY_GATE_DETAILS.getType().equals(sonarAnalyseMeasureDTO.getMetric())) {
+                    QualityGateResult qualityGateResult = JsonHelper.unmarshalByJackson(sonarAnalyseMeasureDTO.getMetricValue(), QualityGateResult.class);
+                    devopsCiSonarQualityGateVO = devopsCiSonarQualityGateService.buildFromSonarResult(qualityGateResult);
+                }
             }
 
             devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContents, devopsCiSonarQualityGateVO));

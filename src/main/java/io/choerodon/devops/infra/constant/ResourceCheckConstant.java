@@ -27,6 +27,8 @@ public class ResourceCheckConstant {
     // sonar
     public static final String DEVOPS_SONAR_SCANNER_TYPE_INVALID = "devops.sonar.scanner.type.invalid";
 
+    public static final String DEVOPS_RECORD_ID_IS_NULL = "devops.record.id.is.null";
+
     // project
     public static final String DEVOPS_PROJECT_ID_IS_NULL = "devops.project.id.is.null";
     public static final String DEVOPS_ORGANIZATION_ID_IS_NULL = "devops.organization.id.is.null";
