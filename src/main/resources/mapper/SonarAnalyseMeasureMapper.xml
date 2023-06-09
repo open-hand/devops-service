@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.devops.infra.mapper.SonarAnalyseMeasureMapper">
+
+    <insert id="batchSave">
+        INSERT INTO devops_sonar_analyse_measure (record_id, metric, metric_value)
+        VALUES
+        <foreach collection="sonarAnalyseMeasureDTOS" item="item" separator=",">
+            (#{recordId},#{item.metric},#{item,metricValue})
+        </foreach>
+    </insert>
+</mapper>
+

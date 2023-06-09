@@ -1,10 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,11 +28,11 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.task.DevopsCommandRunner;
 import io.choerodon.devops.infra.config.SonarConfigProperties;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsCiPipelineSonarDTO;
-import io.choerodon.devops.infra.dto.SonarAnalyseRecordDTO;
-import io.choerodon.devops.infra.dto.SonarAnalyseUserRecordDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.SonarQubeType;
+import io.choerodon.devops.infra.enums.sonar.IssueFacetEnum;
+import io.choerodon.devops.infra.enums.sonar.IssueTypeEnum;
+import io.choerodon.devops.infra.enums.sonar.SeverityEnum;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.SonarAnalyseRecordMapper;
@@ -63,24 +61,54 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
     @Autowired
     private SonarConfigProperties sonarConfigProperties;
     @Autowired
-    private SonarAnalyseUserRecordService sonarAnalyseUserRecordService;
-
+    private SonarAnalyseUserIssueAuthorService sonarAnalyseUserIssueAuthorService;
+    @Autowired
+    private SonarAnalyseMeasureService sonarAnalyseMeasureService;
+    @Autowired
+    private SonarAnalyseIssueSeverityService sonarAnalyseIssueSeverityService;
     @Autowired
     private DevopsCiSonarQualityGateService devopsCiSonarQualityGateService;
 
     @Autowired
     private TransactionalProducer transactionalProducer;
 
-    private static Facet getFacet(String key, String type, SonarClient sonarClient) {
+    private static List<Facet> getFacet(String key, String type, SonarClient sonarClient) {
         Map<String, String> map = new HashMap<>();
         map.put("componentKeys", key);
-        map.put("facets", "author");
+        map.put("facets", "author,severities");
         map.put("types", type);
         return RetrofitCallExceptionParse.executeCallWithTarget(sonarClient.listIssue(map),
                 ExceptionConstants.SonarCode.DEVOPS_SONAR_ISSUES_GET,
                 new TypeReference<List<Facet>>() {
                 },
-                "facets").get(0);
+                "facets");
+    }
+
+    private static SonarAnalyseIssueSeverityDTO convertIssueSeverityDTO(IssueTypeEnum type, Facet bugFacet) {
+        List<Value> bugValues = bugFacet.getValues();
+        if (!CollectionUtils.isEmpty(bugValues)) {
+            SonarAnalyseIssueSeverityDTO sonarAnalyseIssueSeverityDTO = new SonarAnalyseIssueSeverityDTO();
+            sonarAnalyseIssueSeverityDTO.setType(type.value());
+            for (Value bugValue : bugValues) {
+                if (SeverityEnum.INFO.value().equals(bugValue.getVal())) {
+                    sonarAnalyseIssueSeverityDTO.setInfo(bugValue.getCount().longValue());
+                }
+                if (SeverityEnum.MINOR.value().equals(bugValue.getVal())) {
+                    sonarAnalyseIssueSeverityDTO.setMinor(bugValue.getCount().longValue());
+                }
+                if (SeverityEnum.MAJOR.value().equals(bugValue.getVal())) {
+                    sonarAnalyseIssueSeverityDTO.setMajor(bugValue.getCount().longValue());
+                }
+                if (SeverityEnum.BLOCKER.value().equals(bugValue.getVal())) {
+                    sonarAnalyseIssueSeverityDTO.setBlocker(bugValue.getCount().longValue());
+                }
+                if (SeverityEnum.CRITICAL.value().equals(bugValue.getVal())) {
+                    sonarAnalyseIssueSeverityDTO.setCritical(bugValue.getCount().longValue());
+                }
+            }
+            return sonarAnalyseIssueSeverityDTO;
+        }
+        return null;
     }
 
     @Override
@@ -92,13 +120,13 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         if (Boolean.FALSE.equals(validSignature(payload, httpServletRequest))) {
             return;
         }
-        ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-        OBJECT_MAPPER.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ"));
-        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        OBJECT_MAPPER.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ"));
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
         WebhookPayload webhookPayload = null;
         try {
-            webhookPayload = OBJECT_MAPPER.readValue(payload, WebhookPayload.class);
+            webhookPayload = objectMapper.readValue(payload, WebhookPayload.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -125,9 +153,9 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         Map<String, String> queryContentMap = new HashMap<>();
         queryContentMap.put("component", key);
         if (devopsCiSonarQualityGateVO != null) {
-            queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,sqale_index,code_smells");
+            queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,code_smells,sqale_index,sqale_debt_ratio");
         } else {
-            queryContentMap.put("metricKeys", "bugs,vulnerabilities,sqale_index,code_smells");
+            queryContentMap.put("metricKeys", "bugs,vulnerabilities,code_smells,sqale_index,sqale_debt_ratio");
         }
 
         //根据project-key查询sonarqube项目内容
@@ -137,55 +165,80 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         List<Measure> measures = sonarComponent.getComponent().getMeasures();
         webhookPayload.setMeasures(measures);
 
-        Facet bugFacets = getFacet(key, "BUG", sonarClient);
-        Facet vulnFacets = getFacet(key, "VULNERABILITY", sonarClient);
-        Facet codeSmellFacets = getFacet(key, "CODE_SMELL", sonarClient);
-        Map<String, SonarAnalyseUserRecordDTO> userMap = new HashMap<>();
+        List<Facet> bugFacets = getFacet(key, IssueTypeEnum.BUG.value(), sonarClient);
+        List<Facet> vulnFacets = getFacet(key, IssueTypeEnum.VULNERABILITY.value(), sonarClient);
+        List<Facet> codeSmellFacets = getFacet(key, IssueTypeEnum.CODE_SMELL.value(), sonarClient);
+        Map<String, SonarAnalyseUserIssueAuthorDTO> userMap = new HashMap<>();
+        List<SonarAnalyseIssueSeverityDTO> sonarAnalyseIssueSeverityDTOList = new ArrayList<>();
 
-        List<Value> bugValues = bugFacets.getValues();
-        if (!CollectionUtils.isEmpty(bugValues)) {
-            for (Value bugValue : bugValues) {
-                SonarAnalyseUserRecordDTO sonarAnalyseUserRecordDTO = userMap.get(bugValue.getVal());
-                if (sonarAnalyseUserRecordDTO == null) {
-                    sonarAnalyseUserRecordDTO = new SonarAnalyseUserRecordDTO();
-                    sonarAnalyseUserRecordDTO.setUserEmail(bugValue.getVal());
-                    sonarAnalyseUserRecordDTO.setBug(bugValue.getCount().longValue());
-                    userMap.put(bugValue.getVal(), sonarAnalyseUserRecordDTO);
-                } else {
-                    sonarAnalyseUserRecordDTO.setBug(bugValue.getCount().longValue());
+        for (Facet bugFacet : bugFacets) {
+            if (IssueFacetEnum.AUTHOR.value().equals(bugFacet.getProperty())) {
+                List<Value> bugValues = bugFacet.getValues();
+                if (!CollectionUtils.isEmpty(bugValues)) {
+                    for (Value bugValue : bugValues) {
+                        SonarAnalyseUserIssueAuthorDTO sonarAnalyseUserIssueAuthorDTO = userMap.get(bugValue.getVal());
+                        if (sonarAnalyseUserIssueAuthorDTO == null) {
+                            sonarAnalyseUserIssueAuthorDTO = new SonarAnalyseUserIssueAuthorDTO();
+                            sonarAnalyseUserIssueAuthorDTO.setAuthor(bugValue.getVal());
+                            sonarAnalyseUserIssueAuthorDTO.setBug(bugValue.getCount().longValue());
+                            userMap.put(bugValue.getVal(), sonarAnalyseUserIssueAuthorDTO);
+                        } else {
+                            sonarAnalyseUserIssueAuthorDTO.setBug(bugValue.getCount().longValue());
+                        }
+                    }
                 }
             }
-        }
-        List<Value> vulnValues = vulnFacets.getValues();
-        if (!CollectionUtils.isEmpty(vulnValues)) {
-            for (Value vulnValue : vulnValues) {
-                SonarAnalyseUserRecordDTO sonarAnalyseUserRecordDTO = userMap.get(vulnValue.getVal());
-                if (sonarAnalyseUserRecordDTO == null) {
-                    sonarAnalyseUserRecordDTO = new SonarAnalyseUserRecordDTO();
-                    sonarAnalyseUserRecordDTO.setUserEmail(vulnValue.getVal());
-                    sonarAnalyseUserRecordDTO.setVulnerability(vulnValue.getCount().longValue());
-                    userMap.put(vulnValue.getVal(), sonarAnalyseUserRecordDTO);
-                } else {
-                    sonarAnalyseUserRecordDTO.setVulnerability(vulnValue.getCount().longValue());
-                }
+            if (IssueFacetEnum.SEVERITIES.value().equals(bugFacet.getProperty())) {
+                sonarAnalyseIssueSeverityDTOList.add(convertIssueSeverityDTO(IssueTypeEnum.BUG, bugFacet));
             }
         }
 
-        List<Value> codeSmellValues = codeSmellFacets.getValues();
-        if (!CollectionUtils.isEmpty(codeSmellValues)) {
-            for (Value codeSmellValue : codeSmellValues) {
-                SonarAnalyseUserRecordDTO sonarAnalyseUserRecordDTO = userMap.get(codeSmellValue.getVal());
-                if (sonarAnalyseUserRecordDTO == null) {
-                    sonarAnalyseUserRecordDTO = new SonarAnalyseUserRecordDTO();
-                    sonarAnalyseUserRecordDTO.setUserEmail(codeSmellValue.getVal());
-                    sonarAnalyseUserRecordDTO.setCodeSmell(codeSmellValue.getCount().longValue());
-                    userMap.put(codeSmellValue.getVal(), sonarAnalyseUserRecordDTO);
-                } else {
-                    sonarAnalyseUserRecordDTO.setCodeSmell(codeSmellValue.getCount().longValue());
+        for (Facet vulnFacet : vulnFacets) {
+            if (IssueFacetEnum.AUTHOR.value().equals(vulnFacet.getProperty())) {
+                List<Value> vulnValues = vulnFacet.getValues();
+                if (!CollectionUtils.isEmpty(vulnValues)) {
+                    for (Value vulnValue : vulnValues) {
+                        SonarAnalyseUserIssueAuthorDTO sonarAnalyseUserIssueAuthorDTO = userMap.get(vulnValue.getVal());
+                        if (sonarAnalyseUserIssueAuthorDTO == null) {
+                            sonarAnalyseUserIssueAuthorDTO = new SonarAnalyseUserIssueAuthorDTO();
+                            sonarAnalyseUserIssueAuthorDTO.setAuthor(vulnValue.getVal());
+                            sonarAnalyseUserIssueAuthorDTO.setVulnerability(vulnValue.getCount().longValue());
+                            userMap.put(vulnValue.getVal(), sonarAnalyseUserIssueAuthorDTO);
+                        } else {
+                            sonarAnalyseUserIssueAuthorDTO.setVulnerability(vulnValue.getCount().longValue());
+                        }
+                    }
                 }
             }
+            if (IssueFacetEnum.SEVERITIES.value().equals(vulnFacet.getProperty())) {
+                sonarAnalyseIssueSeverityDTOList.add(convertIssueSeverityDTO(IssueTypeEnum.VULNERABILITY, vulnFacet));
+            }
         }
+
+        for (Facet codeSmellFacet : codeSmellFacets) {
+            if (IssueFacetEnum.AUTHOR.value().equals(codeSmellFacet.getProperty())) {
+                List<Value> codeSmellValues = codeSmellFacet.getValues();
+                if (!CollectionUtils.isEmpty(codeSmellValues)) {
+                    for (Value codeSmellValue : codeSmellValues) {
+                        SonarAnalyseUserIssueAuthorDTO sonarAnalyseUserIssueAuthorDTO = userMap.get(codeSmellValue.getVal());
+                        if (sonarAnalyseUserIssueAuthorDTO == null) {
+                            sonarAnalyseUserIssueAuthorDTO = new SonarAnalyseUserIssueAuthorDTO();
+                            sonarAnalyseUserIssueAuthorDTO.setAuthor(codeSmellValue.getVal());
+                            sonarAnalyseUserIssueAuthorDTO.setCodeSmell(codeSmellValue.getCount().longValue());
+                            userMap.put(codeSmellValue.getVal(), sonarAnalyseUserIssueAuthorDTO);
+                        } else {
+                            sonarAnalyseUserIssueAuthorDTO.setCodeSmell(codeSmellValue.getCount().longValue());
+                        }
+                    }
+                }
+            }
+            if (IssueFacetEnum.SEVERITIES.value().equals(codeSmellFacet.getProperty())) {
+                sonarAnalyseIssueSeverityDTOList.add(convertIssueSeverityDTO(IssueTypeEnum.CODE_SMELL, codeSmellFacet));
+            }
+        }
+
         webhookPayload.setUserMap(userMap);
+        webhookPayload.setSonarAnalyseIssueSeverityList(sonarAnalyseIssueSeverityDTOList);
 
         transactionalProducer.apply(
                 StartSagaBuilder.newBuilder()
@@ -204,7 +257,7 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         //
         Map<String, String> properties = webhookPayload.getProperties();
         List<Measure> measures = webhookPayload.getMeasures();
-        Map<String, SonarAnalyseUserRecordDTO> userMap = webhookPayload.getUserMap();
+        Map<String, SonarAnalyseUserIssueAuthorDTO> userMap = webhookPayload.getUserMap();
 
         long gitlabPipelineId = Long.parseLong(properties.get("sonar.analysis.gitlabPipelineId"));
         String gitlabJobName = properties.get("sonar.analysis.gitlabJobName");
@@ -238,9 +291,22 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         }
         MapperUtil.resultJudgedInsertSelective(sonarAnalyseRecordMapper, sonarAnalyseRecordDTO, DEVOPS_SAVE_SONAR_ANALYSE_RECORD_FAILED);
 
+        List<SonarAnalyseMeasureDTO> sonarAnalyseMeasureDTOS = measures
+                .stream()
+                .map(m -> new SonarAnalyseMeasureDTO(m.getMetric(), m.getValue()))
+                .collect(Collectors.toList());
+        sonarAnalyseMeasureService.batchSave(sonarAnalyseRecordDTO.getId(), sonarAnalyseMeasureDTOS);
+
+        List<SonarAnalyseIssueSeverityDTO> sonarAnalyseIssueSeverityList = webhookPayload.getSonarAnalyseIssueSeverityList();
+        for (SonarAnalyseIssueSeverityDTO sonarAnalyseIssueSeverityDTO : sonarAnalyseIssueSeverityList) {
+            sonarAnalyseIssueSeverityDTO.setRecordId(sonarAnalyseRecordDTO.getId());
+            sonarAnalyseIssueSeverityService.baseCreate(sonarAnalyseIssueSeverityDTO);
+        }
+
+
         // 保存用户统计数据
         if (!CollectionUtils.isEmpty(userMap)) {
-            sonarAnalyseUserRecordService.batchSave(sonarAnalyseRecordDTO.getId(), userMap.values());
+            sonarAnalyseUserIssueAuthorService.batchSave(sonarAnalyseRecordDTO.getId(), userMap.values());
         }
         // 保存流水线关联关系
         DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(appServiceId, gitlabPipelineId, gitlabJobName);
