@@ -15,6 +15,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface SonarAnalyseUserRecordMapper extends BaseMapper<SonarAnalyseUserIssueAuthorDTO> {
     void batchSave(@Param("recordId") Long recordId,
-                   @Param("sonarAnalyseUserRecordDTOList") Collection<SonarAnalyseUserIssueAuthorDTO> sonarAnalyseUserIssueAuthorDTOList);
+                   @Param("sonarAnalyseUserIssueAuthorDTOList") Collection<SonarAnalyseUserIssueAuthorDTO> sonarAnalyseUserIssueAuthorDTOList);
 }
 
