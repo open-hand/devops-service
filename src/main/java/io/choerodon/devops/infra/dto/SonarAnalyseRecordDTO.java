@@ -31,11 +31,6 @@ public class SonarAnalyseRecordDTO extends AuditDomain {
     public static final String FIELD_PROJECT_ID = "projectId";
     public static final String FIELD_APP_SERVICE_ID = "appServiceId";
     public static final String FIELD_ANALYSED_AT = "analysedAt";
-    public static final String FIELD_BUG = "bug";
-    public static final String FIELD_CODE_SMELL = "codeSmell";
-    public static final String FIELD_VULNERABILITY = "vulnerability";
-    public static final String FIELD_SQALE_INDEX = "sqaleIndex";
-    public static final String FIELD_QUALITY_GATE_DETAILS = "qualityGateDetails";
     public static final String FIELD_SCORE = "score";
     private static final long serialVersionUID = -23514771653325539L;
     @Id
@@ -55,21 +50,6 @@ public class SonarAnalyseRecordDTO extends AuditDomain {
     @ApiModelProperty(value = "扫描时间", required = true)
     @NotNull
     private Date analysedAt;
-
-    @ApiModelProperty(value = "bug数")
-    private Long bug;
-
-    @ApiModelProperty(value = "代码异味数")
-    private Long codeSmell;
-
-    @ApiModelProperty(value = "漏洞数")
-    private Long vulnerability;
-
-    @ApiModelProperty(value = "技术债务")
-    private Long sqaleIndex;
-
-    @ApiModelProperty(value = "质量门详情")
-    private String qualityGateDetails;
 
     @ApiModelProperty(value = "评分")
     private Long score;
