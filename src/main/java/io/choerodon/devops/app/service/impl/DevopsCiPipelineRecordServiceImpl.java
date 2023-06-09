@@ -102,8 +102,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     protected static final String HOST = "host";
 
-    protected static final String SONAR_KEY = "%s-%s:%s";
-
     private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private final DevopsCiJobRecordService devopsCiJobRecordService;
     private final DevopsCiStageService devopsCiStageService;
@@ -694,7 +692,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             for (DevopsCiJobRecordVO devopsCiJobRecordVO : latestedsCiJobRecordVOS) {// 添加chart版本信息
                 fillChartInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
                 // 添加Sonar扫描信息
-                fillSonarInfo(projectId, appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillSonarInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
 
                 //如果是构建类型 填充jar下载地址，镜像地址，扫描结果
                 fillJarInfo(projectId, appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
@@ -931,10 +929,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    public static String getSonarKey(String appServiceCode, String projectDevopsComponentCode, String organiztionCode) {
-        return String.format(SONAR_KEY, organiztionCode, projectDevopsComponentCode, appServiceCode);
-    }
-
     private static String caculateSqaleIndex(Long sqaleIndex) {
         double day = sqaleIndex == null ? 0 : TypeUtil.objTodouble(sqaleIndex) / 480;
         double hour = sqaleIndex == null ? 0 : TypeUtil.objTodouble(sqaleIndex) / 60;
@@ -947,7 +941,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    private void fillSonarInfo(Long projectId, Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+    private void fillSonarInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
         DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(appServiceId, gitlabPipelineId, devopsCiJobRecordVO.getName());
         if (devopsCiPipelineSonarDTO != null && devopsCiPipelineSonarDTO.getRecordId() != null) {
 
