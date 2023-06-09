@@ -29,7 +29,6 @@ import io.choerodon.devops.app.task.DevopsCommandRunner;
 import io.choerodon.devops.infra.config.SonarConfigProperties;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.enums.SonarQubeType;
 import io.choerodon.devops.infra.enums.sonar.IssueFacetEnum;
 import io.choerodon.devops.infra.enums.sonar.IssueTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.SeverityEnum;
@@ -272,23 +271,6 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         sonarAnalyseRecordDTO.setProjectId(projectId);
         sonarAnalyseRecordDTO.setAnalysedAt(webhookPayload.getAnalysedAt());
         sonarAnalyseRecordDTO.setCommitSha(webhookPayload.getRevision());
-        for (Measure measure : measures) {
-            if (SonarQubeType.BUGS.getType().equals(measure.getMetric())) {
-                sonarAnalyseRecordDTO.setBug(Long.parseLong(measure.getValue()));
-            }
-            if (SonarQubeType.CODE_SMELLS.getType().equals(measure.getMetric())) {
-                sonarAnalyseRecordDTO.setCodeSmell(Long.parseLong(measure.getValue()));
-            }
-            if (SonarQubeType.VULNERABILITIES.getType().equals(measure.getMetric())) {
-                sonarAnalyseRecordDTO.setVulnerability(Long.parseLong(measure.getValue()));
-            }
-            if (SonarQubeType.SQALE_INDEX.getType().equals(measure.getMetric())) {
-                sonarAnalyseRecordDTO.setSqaleIndex(Long.parseLong(measure.getValue()));
-            }
-            if (SonarQubeType.QUALITY_GATE_DETAILS.getType().equals(measure.getMetric())) {
-                sonarAnalyseRecordDTO.setQualityGateDetails(measure.getValue());
-            }
-        }
         MapperUtil.resultJudgedInsertSelective(sonarAnalyseRecordMapper, sonarAnalyseRecordDTO, DEVOPS_SAVE_SONAR_ANALYSE_RECORD_FAILED);
 
         List<SonarAnalyseMeasureDTO> sonarAnalyseMeasureDTOS = measures
