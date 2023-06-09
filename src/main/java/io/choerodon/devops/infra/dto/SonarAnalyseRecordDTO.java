@@ -36,21 +36,16 @@ public class SonarAnalyseRecordDTO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
-
     @ApiModelProperty(value = "项目Id", required = true)
     @NotNull
     private Long projectId;
-
     @ApiModelProperty(value = "应用服务id", required = true)
     @NotNull
     private Long appServiceId;
-
     private String commitSha;
-
     @ApiModelProperty(value = "扫描时间", required = true)
     @NotNull
     private Date analysedAt;
-
     @ApiModelProperty(value = "评分")
     private Long score;
 
@@ -92,46 +87,6 @@ public class SonarAnalyseRecordDTO extends AuditDomain {
 
     public void setAnalysedAt(Date analysedAt) {
         this.analysedAt = analysedAt;
-    }
-
-    public Long getBug() {
-        return bug;
-    }
-
-    public void setBug(Long bug) {
-        this.bug = bug;
-    }
-
-    public Long getCodeSmell() {
-        return codeSmell;
-    }
-
-    public void setCodeSmell(Long codeSmell) {
-        this.codeSmell = codeSmell;
-    }
-
-    public Long getVulnerability() {
-        return vulnerability;
-    }
-
-    public void setVulnerability(Long vulnerability) {
-        this.vulnerability = vulnerability;
-    }
-
-    public Long getSqaleIndex() {
-        return sqaleIndex;
-    }
-
-    public void setSqaleIndex(Long sqaleIndex) {
-        this.sqaleIndex = sqaleIndex;
-    }
-
-    public String getQualityGateDetails() {
-        return qualityGateDetails;
-    }
-
-    public void setQualityGateDetails(String qualityGateDetails) {
-        this.qualityGateDetails = qualityGateDetails;
     }
 
     public Long getScore() {
