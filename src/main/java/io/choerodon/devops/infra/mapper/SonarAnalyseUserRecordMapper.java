@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dto.SonarAnalyseUserRecordDTO;
+import io.choerodon.devops.infra.dto.SonarAnalyseUserIssueAuthorDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -13,8 +13,8 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author hao.wang@zknow.com
  * @since 2023-06-06 15:44:31
  */
-public interface SonarAnalyseUserRecordMapper extends BaseMapper<SonarAnalyseUserRecordDTO> {
+public interface SonarAnalyseUserRecordMapper extends BaseMapper<SonarAnalyseUserIssueAuthorDTO> {
     void batchSave(@Param("recordId") Long recordId,
-                   @Param("sonarAnalyseUserRecordDTOList") Collection<SonarAnalyseUserRecordDTO> sonarAnalyseUserRecordDTOList);
+                   @Param("sonarAnalyseUserRecordDTOList") Collection<SonarAnalyseUserIssueAuthorDTO> sonarAnalyseUserIssueAuthorDTOList);
 }
 

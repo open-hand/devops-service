@@ -1,15 +1,15 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_sonar_analyse_author_count.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_sonar_analyse_issue_author.groovy') {
     changeSet(author: 'wanghao', id: '2023-05-31-create-table') {
-        createTable(tableName: "devops_sonar_analyse_author_count", remarks: '代码扫描记录表') {
+        createTable(tableName: "devops_sonar_analyse_issue_author", remarks: '代码扫描记录表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
             column(name: "record_id", type: "BIGINT UNSIGNED", remarks: "devops_sonar_analyse_record.id") {
                 constraints(nullable: false)
             }
-            column(name: 'author', type: 'VARCHAR(64)', remarks: '应用服务id') {
+            column(name: 'author', type: 'VARCHAR(64)', remarks: '用户邮箱') {
                 constraints(nullable: false)
             }
             column(name: 'bug', type: 'BIGINT UNSIGNED', remarks: 'bug数', defaultValue: "0")
@@ -23,7 +23,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_sonar_analyse_author_count.groovy
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'devops_sonar_analyse_author_count',
-                constraintName: 'devops_sonar_analyse_author_count_u1', columnNames: 'record_id,user_email')
+        addUniqueConstraint(tableName: 'devops_sonar_analyse_issue_author',
+                constraintName: 'devops_sonar_analyse_issue_author_u1', columnNames: 'record_id,author')
     }
 }

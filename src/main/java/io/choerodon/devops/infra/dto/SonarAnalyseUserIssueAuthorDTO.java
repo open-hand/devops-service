@@ -25,8 +25,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @ModifyAudit
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-@Table(name = "devops_sonar_analyse_author_count")
-public class SonarAnalyseUserRecordDTO extends AuditDomain {
+@Table(name = "devops_sonar_analyse_issue_author")
+public class SonarAnalyseUserIssueAuthorDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
     public static final String FIELD_RECORD_ID = "recordId";
     public static final String FIELD_USER_EMAIL = "userEmail";

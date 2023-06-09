@@ -4,7 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.infra.dto.SonarAnalyseUserRecordDTO;
+import io.choerodon.devops.infra.dto.SonarAnalyseIssueSeverityDTO;
+import io.choerodon.devops.infra.dto.SonarAnalyseUserIssueAuthorDTO;
 
 /**
  * 〈功能简述〉
@@ -21,9 +22,18 @@ public class WebhookPayload {
 
     private Map<String, String> properties;
 
-    private Map<String, SonarAnalyseUserRecordDTO> userMap;
+    List<SonarAnalyseIssueSeverityDTO> sonarAnalyseIssueSeverityList;
+    private Map<String, SonarAnalyseUserIssueAuthorDTO> userMap;
 
     private List<Measure> measures;
+
+    public List<SonarAnalyseIssueSeverityDTO> getSonarAnalyseIssueSeverityList() {
+        return sonarAnalyseIssueSeverityList;
+    }
+
+    public void setSonarAnalyseIssueSeverityList(List<SonarAnalyseIssueSeverityDTO> sonarAnalyseIssueSeverityList) {
+        this.sonarAnalyseIssueSeverityList = sonarAnalyseIssueSeverityList;
+    }
 
     public String getRevision() {
         return revision;
@@ -33,11 +43,11 @@ public class WebhookPayload {
         this.revision = revision;
     }
 
-    public Map<String, SonarAnalyseUserRecordDTO> getUserMap() {
+    public Map<String, SonarAnalyseUserIssueAuthorDTO> getUserMap() {
         return userMap;
     }
 
-    public void setUserMap(Map<String, SonarAnalyseUserRecordDTO> userMap) {
+    public void setUserMap(Map<String, SonarAnalyseUserIssueAuthorDTO> userMap) {
         this.userMap = userMap;
     }
 

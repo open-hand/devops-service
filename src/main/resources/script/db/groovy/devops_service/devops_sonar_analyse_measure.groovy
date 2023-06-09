@@ -10,7 +10,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_sonar_analyse_measure.groovy') {
                 constraints(nullable: false)
             }
             column(name: 'metric', type: 'VARCHAR(64)', remarks: '键')
-            column(name: 'value', type: 'VARCHAR(4000)', remarks: '值')
+            column(name: 'metric_value', type: 'VARCHAR(4000)', remarks: '值')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
