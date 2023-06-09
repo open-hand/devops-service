@@ -115,12 +115,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
     }
     changeSet(author: 'wanghao', id: '2023-06-09-update-data') {
         sql("""
-        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-base" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-base"
-        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-nodejs-v14.19.0" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.1-nodejs-v14.19.0"
-        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-golang1.18" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-golang1.17"
-        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-jdk8u282-b08" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-jdk8u282-b08"
-        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-dotnet-sdk-6.0" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-dotnet-sdk-6.0"
-        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-python3.10" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-python3.10"
+        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-base" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-base";
+        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-nodejs-v14.19.0" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.1-nodejs-v14.19.0";
+        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-golang1.18" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-golang1.17";
+        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-jdk8u282-b08" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-jdk8u282-b08";
+        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-dotnet-sdk-6.0" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-dotnet-sdk-6.0";
+        UPDATE devops_ci_job SET image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.1.0-python3.10" WHERE image = "registry.cn-shanghai.aliyuncs.com/c7n/cibase:1.0.0-python3.10";
         """)
     }
 }
