@@ -151,6 +151,7 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
 
         Map<String, String> queryContentMap = new HashMap<>();
         queryContentMap.put("component", key);
+        queryContentMap.put("statuses", "OPEN");
         if (devopsCiSonarQualityGateVO != null) {
             queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,code_smells,sqale_index,sqale_debt_ratio");
         } else {
