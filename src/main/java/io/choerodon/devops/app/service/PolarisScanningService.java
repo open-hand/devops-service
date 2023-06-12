@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import java.util.Map;
+
 import io.choerodon.devops.api.vo.ClusterPolarisEnvDetailsVO;
 import io.choerodon.devops.api.vo.DevopsPolarisRecordRespVO;
 import io.choerodon.devops.api.vo.DevopsPolarisRecordVO;
@@ -109,4 +112,6 @@ public interface PolarisScanningService {
      * @param scopeId clusterId或者envId
      */
     void deleteAllByScopeAndScopeId(PolarisScopeType scope, Long scopeId);
+
+    Map<Long, Double> listProjectScores(List<Long> actualPids);
 }

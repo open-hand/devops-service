@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,6 +73,18 @@ public class VulnScanRecordServiceImpl implements VulnScanRecordService {
         }
 
         return vulnTargetVOS;
+    }
+
+    @Override
+    public Map<Long, Double> listProjectScores(List<Long> actualPids) {
+        List<VulnScanRecordDTO> vulnScanRecordDTOS = vulnScanRecordMapper.listProjectScores(actualPids);
+        if (CollectionUtils.isEmpty(vulnScanRecordDTOS)) {
+            return new HashMap<>();
+        }
+        return vulnScanRecordDTOS
+                .stream()
+                .collect(Collectors.groupingBy(VulnScanRecordDTO::getProjectId,
+                        Collectors.averagingDouble(VulnScanRecordDTO::getScore)));
     }
 }
 

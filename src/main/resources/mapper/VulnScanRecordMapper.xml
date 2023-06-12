@@ -3,5 +3,17 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.VulnScanRecordMapper">
 
 
+    <select id="listProjectScores" resultType="io.choerodon.devops.infra.dto.VulnScanRecordDTO">
+        SELECT dsar.project_id,dsar.score
+        FROM devops_vuln_scan_record dsar
+        INNER JOIN (
+        SELECT MAX(id) as id
+        FROM devops_vuln_scan_record
+        WHERE project_id in
+        <foreach collection="pids" item="pid" open="(" separator="," close=")">
+            #{pid}
+        </foreach>
+        GROUP BY app_service_id) temp ON dsar.id = temp.id
+    </select>
 </mapper>
 
