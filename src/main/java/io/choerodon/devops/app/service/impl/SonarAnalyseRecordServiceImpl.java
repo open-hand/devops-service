@@ -181,6 +181,8 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                             sonarAnalyseUserIssueAuthorDTO = new SonarAnalyseUserIssueAuthorDTO();
                             sonarAnalyseUserIssueAuthorDTO.setAuthor(bugValue.getVal());
                             sonarAnalyseUserIssueAuthorDTO.setBug(bugValue.getCount().longValue());
+                            sonarAnalyseUserIssueAuthorDTO.setCodeSmell(0L);
+                            sonarAnalyseUserIssueAuthorDTO.setVulnerability(0L);
                             userMap.put(bugValue.getVal(), sonarAnalyseUserIssueAuthorDTO);
                         } else {
                             sonarAnalyseUserIssueAuthorDTO.setBug(bugValue.getCount().longValue());
@@ -203,6 +205,8 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                             sonarAnalyseUserIssueAuthorDTO = new SonarAnalyseUserIssueAuthorDTO();
                             sonarAnalyseUserIssueAuthorDTO.setAuthor(vulnValue.getVal());
                             sonarAnalyseUserIssueAuthorDTO.setVulnerability(vulnValue.getCount().longValue());
+                            sonarAnalyseUserIssueAuthorDTO.setCodeSmell(0L);
+                            sonarAnalyseUserIssueAuthorDTO.setBug(0L);
                             userMap.put(vulnValue.getVal(), sonarAnalyseUserIssueAuthorDTO);
                         } else {
                             sonarAnalyseUserIssueAuthorDTO.setVulnerability(vulnValue.getCount().longValue());
@@ -225,6 +229,8 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                             sonarAnalyseUserIssueAuthorDTO = new SonarAnalyseUserIssueAuthorDTO();
                             sonarAnalyseUserIssueAuthorDTO.setAuthor(codeSmellValue.getVal());
                             sonarAnalyseUserIssueAuthorDTO.setCodeSmell(codeSmellValue.getCount().longValue());
+                            sonarAnalyseUserIssueAuthorDTO.setBug(0L);
+                            sonarAnalyseUserIssueAuthorDTO.setVulnerability(0L);
                             userMap.put(codeSmellValue.getVal(), sonarAnalyseUserIssueAuthorDTO);
                         } else {
                             sonarAnalyseUserIssueAuthorDTO.setCodeSmell(codeSmellValue.getCount().longValue());
