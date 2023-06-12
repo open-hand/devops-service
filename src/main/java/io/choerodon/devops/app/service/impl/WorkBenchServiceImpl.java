@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.ApprovalVO;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
@@ -31,6 +32,7 @@ import io.choerodon.devops.infra.enums.ApprovalTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
+import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -66,6 +68,10 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     private ProjectDashboardCfgService projectDashboardCfgService;
     @Autowired
     private SonarAnalyseRecordService sonarAnalyseRecordService;
+    @Autowired
+    private VulnScanRecordService vulnScanRecordService;
+    @Autowired
+    private PolarisScanningService polarisScanningService;
 
 
     private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
@@ -115,16 +121,39 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         if (CollectionUtils.isEmpty(projectDTOS)) {
             return new Page<>();
         }
+        Map<Long, ProjectDTO> projectMap = projectDTOS.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
         List<Long> managedIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toList());
         ProjectDashboardCfgVO projectDashboardCfgVO = projectDashboardCfgService.queryByOrganizationId(organizationId);
         List<Long> projectIds = projectDashboardCfgVO.getProjectIds();
 
         List<Long> actualPids = projectIds.stream().filter(p -> managedIds.contains(p)).collect(Collectors.toList());
 
-        // 查询项目的代码得分
-        Map<Long, Double> longDoubleMap = sonarAnalyseRecordService.listProjectScores(actualPids);
+        Page<Long> page = PageInfoUtil.doPageFromList(actualPids, pageRequest);
+        List<Long> pageIds = page.getContent();
 
-        return null;
+        // 查询项目的代码得分
+        Map<Long, Double> codeScoreMap = sonarAnalyseRecordService.listProjectScores(pageIds);
+        Map<Long, Double> vulnScoreMap = vulnScanRecordService.listProjectScores(pageIds);
+        Map<Long, Double> k8sScoreMap = polarisScanningService.listProjectScores(pageIds);
+
+        List<ProjectMeasureVO> projectMeasureVOList = new ArrayList<>();
+        for (Long actualPid : pageIds) {
+            ProjectDTO projectDTO = projectMap.get(actualPid);
+            Double codeScore = codeScoreMap.get(actualPid);
+            Double vulnScore = vulnScoreMap.get(actualPid);
+            Double k8sScore = k8sScoreMap.get(actualPid);
+            ProjectMeasureVO projectMeasureVO = new ProjectMeasureVO();
+            projectMeasureVO.setId(actualPid);
+            projectMeasureVO.setName(projectDTO.getName());
+            projectMeasureVO.setCodeScore(codeScore);
+            projectMeasureVO.setVulnScore(vulnScore);
+            projectMeasureVO.setK8sScore(k8sScore);
+            projectMeasureVOList.add(projectMeasureVO);
+        }
+
+        return new Page<>(projectMeasureVOList,
+                new PageInfo(pageRequest.getPage(), pageRequest.getSize()),
+                actualPids.size());
     }
 
 

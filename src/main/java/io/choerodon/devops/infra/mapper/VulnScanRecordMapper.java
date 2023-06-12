@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.VulnScanRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -11,5 +15,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface VulnScanRecordMapper extends BaseMapper<VulnScanRecordDTO> {
 
+    List<VulnScanRecordDTO> listProjectScores(@Param("pids") List<Long> pids);
 }
 

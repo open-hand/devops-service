@@ -8,9 +8,28 @@ package io.choerodon.devops.api.vo.dashboard;
  * @since 2023/6/12 16:10
  */
 public class ProjectMeasureVO {
+
+    private long id;
+    private String name;
     private double codeScore;
     private double vulnScore;
     private double k8sScore;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public double getCodeScore() {
         return codeScore;

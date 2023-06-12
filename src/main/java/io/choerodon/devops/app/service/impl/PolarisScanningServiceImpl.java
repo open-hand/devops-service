@@ -28,6 +28,7 @@ import io.choerodon.devops.api.vo.polaris.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.dashboard.ProjectScoreDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -1008,6 +1009,15 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             deleteAssociatedData(devopsPolarisRecordDTO.getId());
             devopsPolarisRecordMapper.deleteByPrimaryKey(devopsPolarisRecordDTO.getId());
         }
+    }
+
+    @Override
+    public Map<Long, Double> listProjectScores(List<Long> actualPids) {
+        List<ProjectScoreDTO> devopsPolarisRecordDTOS = devopsPolarisRecordMapper.listProjectScores(actualPids);
+        if (CollectionUtils.isEmpty(devopsPolarisRecordDTOS)) {
+            return new HashMap<>();
+        }
+        return devopsPolarisRecordDTOS.stream().collect(Collectors.groupingBy(ProjectScoreDTO::getProjectId, Collectors.averagingDouble(ProjectScoreDTO::getScore)));
     }
 
     private void deleteDevopsPolarisCategoryResultId(Long recordId) {
