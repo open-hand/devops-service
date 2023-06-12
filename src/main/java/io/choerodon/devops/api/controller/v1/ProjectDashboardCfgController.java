@@ -34,7 +34,7 @@ public class ProjectDashboardCfgController {
     public ResponseEntity<ProjectDashboardCfgVO> queryByOrganizationIdId(
             @ApiParam(value = "租户ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId) {
-        return ResponseEntity.ok(projectDashboardCfgService.queryByOrganizationIdId(organizationId));
+        return ResponseEntity.ok(projectDashboardCfgService.queryByOrganizationId(organizationId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.dto.ProjectDashboardCfgDTO;
  */
 public interface ProjectDashboardCfgService {
 
-    ProjectDashboardCfgVO queryByOrganizationIdId(Long organizationId);
+    ProjectDashboardCfgVO queryByOrganizationId(Long organizationId);
 
     ProjectDashboardCfgVO queryDefaultConfig(Long organizationId);
 

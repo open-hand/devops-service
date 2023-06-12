@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import io.choerodon.devops.api.vo.sonar.WebhookPayload;
@@ -18,5 +20,7 @@ public interface SonarAnalyseRecordService {
     void saveAnalyseData(WebhookPayload webhookPayload);
 
     SonarAnalyseRecordDTO queryById(Long recordId);
+
+    Map<Long, Double> listProjectScores(List<Long> actualPids);
 }
 

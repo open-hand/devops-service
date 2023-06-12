@@ -42,7 +42,7 @@ public class ProjectDashboardCfgServiceImpl implements ProjectDashboardCfgServic
     private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
-    public ProjectDashboardCfgVO queryByOrganizationIdId(Long organizationId) {
+    public ProjectDashboardCfgVO queryByOrganizationId(Long organizationId) {
         ProjectDashboardCfgDTO projectDashboardCfgDTO = baseQueryByOrgId(organizationId);
         if (projectDashboardCfgDTO == null) {
             return queryDefaultConfig(organizationId);

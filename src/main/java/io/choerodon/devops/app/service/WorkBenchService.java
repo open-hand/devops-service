@@ -6,6 +6,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.ApprovalVO;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
+import io.choerodon.devops.api.vo.dashboard.ProjectMeasureVO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -20,4 +21,6 @@ public interface WorkBenchService {
     List<LatestAppServiceVO> listLatestAppService(Long organizationId, Long projectId);
 
     Page<CommitFormRecordVO> listLatestCommits(Long organizationId, Long projectId, PageRequest pageRequest);
+
+    Page<ProjectMeasureVO> listProjectMeasure(Long organizationId, PageRequest pageRequest);
 }
