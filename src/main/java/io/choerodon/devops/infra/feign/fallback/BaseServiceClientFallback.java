@@ -131,6 +131,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<String> listManagedProjects(Long organizationId) {
+        throw new CommonException("devops.query.project");
+    }
+
+    @Override
     public ResponseEntity<List<IamUserDTO>> queryUserByProjectId(Long projectId) {
         throw new CommonException("devops.query.user.by.project.id");
     }

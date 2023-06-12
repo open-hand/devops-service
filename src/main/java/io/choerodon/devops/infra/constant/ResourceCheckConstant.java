@@ -74,4 +74,6 @@ public class ResourceCheckConstant {
 
     // ingress
     public static final String DEVOPS_INGRESS_ID_IS_NULL = "devops.ingress.id.is.null";
+
+    public static final String DEVOPS_ID_IS_NULL = "devops.id.is.null";
 }

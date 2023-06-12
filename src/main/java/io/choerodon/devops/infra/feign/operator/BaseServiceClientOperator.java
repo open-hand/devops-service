@@ -124,6 +124,11 @@ public class BaseServiceClientOperator {
         return baseServiceClient.listOwnedProjects(organizationId, userId).getBody();
     }
 
+    public List<ProjectDTO> listManagedProjects(Long organizationId) {
+        return ResponseUtils.getResponse(baseServiceClient.listManagedProjects(organizationId), new TypeReference<List<ProjectDTO>>() {
+        });
+    }
+
 
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String code, String params) {
         PageRequest customPageRequest = new PageRequest(0, 0);
