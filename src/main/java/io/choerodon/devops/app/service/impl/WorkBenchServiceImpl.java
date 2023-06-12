@@ -19,10 +19,9 @@ import io.choerodon.devops.api.vo.ApprovalVO;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.api.vo.UserAttrVO;
-import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.app.service.DevopsGitlabCommitService;
-import io.choerodon.devops.app.service.UserAttrService;
-import io.choerodon.devops.app.service.WorkBenchService;
+import io.choerodon.devops.api.vo.dashboard.ProjectDashboardCfgVO;
+import io.choerodon.devops.api.vo.dashboard.ProjectMeasureVO;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -63,6 +62,10 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     private PipelineAuditRecordMapper pipelineAuditRecordMapper;
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
+    @Autowired
+    private ProjectDashboardCfgService projectDashboardCfgService;
+    @Autowired
+    private SonarAnalyseRecordService sonarAnalyseRecordService;
 
 
     private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
@@ -104,6 +107,24 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         } else {
             return listLatestCommits(projectDTOList, pageRequest);
         }
+    }
+
+    @Override
+    public Page<ProjectMeasureVO> listProjectMeasure(Long organizationId, PageRequest pageRequest) {
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listManagedProjects(organizationId);
+        if (CollectionUtils.isEmpty(projectDTOS)) {
+            return new Page<>();
+        }
+        List<Long> managedIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toList());
+        ProjectDashboardCfgVO projectDashboardCfgVO = projectDashboardCfgService.queryByOrganizationId(organizationId);
+        List<Long> projectIds = projectDashboardCfgVO.getProjectIds();
+
+        List<Long> actualPids = projectIds.stream().filter(p -> managedIds.contains(p)).collect(Collectors.toList());
+
+        // 查询项目的代码得分
+        Map<Long, Double> longDoubleMap = sonarAnalyseRecordService.listProjectScores(actualPids);
+
+        return null;
     }
 
 

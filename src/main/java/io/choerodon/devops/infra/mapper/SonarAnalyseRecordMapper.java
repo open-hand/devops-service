@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.SonarAnalyseRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -10,5 +14,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @since 2023-06-06 15:44:31
  */
 public interface SonarAnalyseRecordMapper extends BaseMapper<SonarAnalyseRecordDTO> {
+    List<SonarAnalyseRecordDTO> listProjectLatestRecord(@Param("pids") List<Long> pids);
 }
 

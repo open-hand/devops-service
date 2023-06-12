@@ -1,22 +1,20 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
-import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ApprovalVO;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
+import io.choerodon.devops.api.vo.dashboard.ProjectMeasureVO;
 import io.choerodon.devops.app.service.WorkBenchService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -65,5 +63,15 @@ public class WorkBenchController {
             @RequestParam(value = "project_id", required = false) Long projectId,
             @ApiIgnore PageRequest pageRequest) {
         return ResponseEntity.ok(workBenchService.listLatestCommits(organizationId, projectId, pageRequest));
+    }
+
+    @Permission(permissionLogin = true, level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/project_measure")
+    @ApiOperation("项目质量评分")
+    public ResponseEntity<Page<ProjectMeasureVO>> listProjectMeasure(
+            @ApiParam(value = "组织id", required = true)
+            @PathVariable("organization_id") Long organizationId,
+            @ApiIgnore PageRequest pageRequest) {
+        return ResponseEntity.ok(workBenchService.listProjectMeasure(organizationId, pageRequest));
     }
 }

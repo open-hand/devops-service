@@ -310,6 +310,18 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         return sonarAnalyseRecordMapper.selectByPrimaryKey(recordId);
     }
 
+    @Override
+    public Map<Long, Double> listProjectScores(List<Long> actualPids) {
+        List<SonarAnalyseRecordDTO> sonarAnalyseRecordDTOS = sonarAnalyseRecordMapper.listProjectLatestRecord(actualPids);
+        if (CollectionUtils.isEmpty(sonarAnalyseRecordDTOS)) {
+            return new HashMap<>();
+        }
+        return sonarAnalyseRecordDTOS
+                .stream()
+                .collect(Collectors.groupingBy(SonarAnalyseRecordDTO::getProjectId,
+                        Collectors.averagingDouble(SonarAnalyseRecordDTO::getScore)));
+    }
+
 
     private boolean validSignature(String payload, HttpServletRequest request) {
         String receivedSignature = request.getHeader("X-Sonar-Webhook-HMAC-SHA256");

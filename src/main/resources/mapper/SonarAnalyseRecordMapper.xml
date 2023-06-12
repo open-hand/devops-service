@@ -2,5 +2,17 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.choerodon.devops.infra.mapper.SonarAnalyseRecordMapper">
 
+    <select id="listProjectLatestRecord" resultType="io.choerodon.devops.infra.dto.SonarAnalyseRecordDTO">
+        SELECT dsar.project_id,dsar.score
+        FROM devops_sonar_analyse_record dsar
+        INNER JOIN (
+        SELECT MAX(id) as id
+        FROM devops_sonar_analyse_record
+        WHERE project_id in
+        <foreach collection="pids" item="pid" open="(" separator="," close=")">
+            #{pid}
+        </foreach>
+        GROUP BY app_service_id) temp ON dsar.id = temp.id
+    </select>
 </mapper>
 
