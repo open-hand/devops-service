@@ -126,7 +126,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         ProjectDashboardCfgVO projectDashboardCfgVO = projectDashboardCfgService.queryByOrganizationId(organizationId);
         List<Long> projectIds = projectDashboardCfgVO.getProjectIds();
 
-        List<Long> actualPids = projectIds.stream().filter(p -> managedIds.contains(p)).collect(Collectors.toList());
+        List<Long> actualPids = projectIds.stream().filter(managedIds::contains).collect(Collectors.toList());
 
         Page<Long> page = PageInfoUtil.doPageFromList(actualPids, pageRequest);
         List<Long> pageIds = page.getContent();

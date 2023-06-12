@@ -16,7 +16,7 @@
         SELECT MAX(id) as id,dc.project_id
         FROM devops_polaris_record dpr2
         inner join devops_cluster dc on dc.id = dpr2.scope_id
-        WHERE dpr2.scope='cluster' and dc.project_id in
+        WHERE dpr2.scope='cluster' and dpr2.status='finished' and dc.project_id in
         <foreach collection="pids" item="pid" open="(" separator="," close=")">
             #{pid}
         </foreach>
