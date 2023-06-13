@@ -16,7 +16,8 @@
         dsam.metric,
         dsam.metric_value
         from devops_sonar_analyse_measure dsam
-        inner join (select max(id) as id from devops_sonar_analyse_record where project_id = 1 group by app_service_id)
+        inner join (select max(id) as id from devops_sonar_analyse_record where project_id = #{projectId} group by
+        app_service_id)
         temp on temp.id = dsam.record_id
         <if test="metricTypes != null">
             where dsam.metric in
