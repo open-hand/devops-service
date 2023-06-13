@@ -80,6 +80,26 @@ public class AppServiceDTO extends AuditDomain {
     @Transient
     @ApiModelProperty("外置仓库配置信息")
     private AppExternalConfigDTO appExternalConfigDTO;
+    @Transient
+    private Double codeScore;
+    @Transient
+    private Double vulnScore;
+
+    public Double getCodeScore() {
+        return codeScore;
+    }
+
+    public void setCodeScore(Double codeScore) {
+        this.codeScore = codeScore;
+    }
+
+    public Double getVulnScore() {
+        return vulnScore;
+    }
+
+    public void setVulnScore(Double vulnScore) {
+        this.vulnScore = vulnScore;
+    }
 
     public AppExternalConfigDTO getAppExternalConfigDTO() {
         return appExternalConfigDTO;

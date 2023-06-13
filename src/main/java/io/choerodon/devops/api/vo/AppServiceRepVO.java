@@ -146,6 +146,26 @@ public class AppServiceRepVO {
     @Encrypt
     private Long helmConfigId;
 
+    private Double codeScore;
+
+    private Double vulnScore;
+
+    public Double getCodeScore() {
+        return codeScore;
+    }
+
+    public void setCodeScore(Double codeScore) {
+        this.codeScore = codeScore;
+    }
+
+    public Double getVulnScore() {
+        return vulnScore;
+    }
+
+    public void setVulnScore(Double vulnScore) {
+        this.vulnScore = vulnScore;
+    }
+
     public Long getHelmConfigId() {
         return helmConfigId;
     }

@@ -1,5 +1,10 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -10,11 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -297,7 +297,15 @@ public class AppServiceController {
             @RequestParam(value = "active", required = false) Boolean isActive,
             @ApiParam(value = "服务是否存在版本")
             @RequestParam(value = "has_version", required = false) Boolean hasVersion,
-            @ApiParam(value = "是否包含外部应用服务") @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal, @ApiParam(value = "服务类型") @RequestParam(value = "type", required = false) String type, @ApiParam(value = "是否校验团队成员权限") @RequestParam(value = "checkMember", required = false, defaultValue = "false") Boolean checkMember, @ApiParam(value = "是否分页") @RequestParam(value = "doPage", required = false) Boolean doPage, @ApiParam(value = "分页参数") @ApiIgnore PageRequest pageable, @ApiParam(value = "查询参数") @RequestBody(required = false) SearchVO searchVO) {
+            @ApiParam(value = "是否包含外部应用服务")
+            @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal,
+            @ApiParam(value = "服务类型")
+            @RequestParam(value = "type", required = false) String type,
+            @ApiParam(value = "是否校验团队成员权限")
+            @RequestParam(value = "checkMember", required = false, defaultValue = "false") Boolean checkMember,
+            @ApiParam(value = "是否分页") @RequestParam(value = "doPage", required = false) Boolean doPage,
+            @ApiParam(value = "分页参数") @ApiIgnore PageRequest pageable,
+            @ApiParam(value = "查询参数") @RequestBody(required = false) SearchVO searchVO) {
         return ResponseEntity.ok(applicationServiceService.pageByOptions(projectId, isActive, hasVersion, type, doPage, pageable, searchVO, checkMember, includeExternal, null));
     }
 
