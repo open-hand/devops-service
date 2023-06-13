@@ -5,7 +5,7 @@
     <insert id="batchSave">
         INSERT INTO devops_sonar_analyse_issue_author (record_id, author, bug, vulnerability, code_smell)
         VALUES
-        <foreach collection="sonarAnalyseUserIssueAuthorDTOList" item="item" separator=",">
+        <foreach collection="sonarAnalyseIssueAuthorDTOList" item="item" separator=",">
             (#{recordId},
             #{item.author},
             #{item.bug},
@@ -13,5 +13,10 @@
             #{item.codeSmell})
         </foreach>
     </insert>
+    <select id="listMemberIssue" resultType="io.choerodon.devops.api.vo.SonarAnalyseIssueAuthorVO">
+        select dsaia.*
+        from devops_sonar_analyse_issue_author dsaia
+        where dsaia.record_id = (select max(id) from devops_sonar_analyse_record where app_service_id = #{appServiceId})
+    </select>
 </mapper>
 

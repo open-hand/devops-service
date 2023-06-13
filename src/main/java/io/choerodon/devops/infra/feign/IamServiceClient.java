@@ -141,4 +141,7 @@ public interface IamServiceClient {
     ResponseEntity<Boolean> platformAdministratorOrAuditor(@RequestParam(value = "user_id") Long userId);
 
 
+    @PostMapping(value = "/choerodon/v1/users/emails")
+    ResponseEntity<String> listUsersByEmails(@RequestBody List<String> emails);
+
 }

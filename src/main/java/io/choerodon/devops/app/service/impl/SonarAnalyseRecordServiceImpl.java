@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
@@ -20,7 +21,9 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.SonarAnalyseIssueAuthorVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -29,17 +32,21 @@ import io.choerodon.devops.app.task.DevopsCommandRunner;
 import io.choerodon.devops.infra.config.SonarConfigProperties;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.SonarQubeType;
 import io.choerodon.devops.infra.enums.sonar.IssueFacetEnum;
 import io.choerodon.devops.infra.enums.sonar.IssueTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.SeverityEnum;
 import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.SonarAnalyseRecordMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
 import io.choerodon.devops.infra.util.SonarUtil;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 代码扫描记录表(SonarAnalyseRecord)应用服务
@@ -72,6 +79,8 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
 
     @Autowired
     private TransactionalProducer transactionalProducer;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     private static List<Facet> getFacet(String key, String type, SonarClient sonarClient) {
         Map<String, String> map = new HashMap<>();
@@ -170,7 +179,7 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         List<Facet> bugFacets = getFacet(key, IssueTypeEnum.BUG.value(), sonarClient);
         List<Facet> vulnFacets = getFacet(key, IssueTypeEnum.VULNERABILITY.value(), sonarClient);
         List<Facet> codeSmellFacets = getFacet(key, IssueTypeEnum.CODE_SMELL.value(), sonarClient);
-        Map<String, SonarAnalyseUserIssueAuthorDTO> userMap = new HashMap<>();
+        Map<String, SonarAnalyseIssueAuthorDTO> userMap = new HashMap<>();
         List<SonarAnalyseIssueSeverityDTO> sonarAnalyseIssueSeverityDTOList = new ArrayList<>();
 
         for (Facet bugFacet : bugFacets) {
@@ -178,16 +187,16 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                 List<Value> bugValues = bugFacet.getValues();
                 if (!CollectionUtils.isEmpty(bugValues)) {
                     for (Value bugValue : bugValues) {
-                        SonarAnalyseUserIssueAuthorDTO sonarAnalyseUserIssueAuthorDTO = userMap.get(bugValue.getVal());
-                        if (sonarAnalyseUserIssueAuthorDTO == null) {
-                            sonarAnalyseUserIssueAuthorDTO = new SonarAnalyseUserIssueAuthorDTO();
-                            sonarAnalyseUserIssueAuthorDTO.setAuthor(bugValue.getVal());
-                            sonarAnalyseUserIssueAuthorDTO.setBug(bugValue.getCount().longValue());
-                            sonarAnalyseUserIssueAuthorDTO.setCodeSmell(0L);
-                            sonarAnalyseUserIssueAuthorDTO.setVulnerability(0L);
-                            userMap.put(bugValue.getVal(), sonarAnalyseUserIssueAuthorDTO);
+                        SonarAnalyseIssueAuthorDTO sonarAnalyseIssueAuthorDTO = userMap.get(bugValue.getVal());
+                        if (sonarAnalyseIssueAuthorDTO == null) {
+                            sonarAnalyseIssueAuthorDTO = new SonarAnalyseIssueAuthorDTO();
+                            sonarAnalyseIssueAuthorDTO.setAuthor(bugValue.getVal());
+                            sonarAnalyseIssueAuthorDTO.setBug(bugValue.getCount().longValue());
+                            sonarAnalyseIssueAuthorDTO.setCodeSmell(0L);
+                            sonarAnalyseIssueAuthorDTO.setVulnerability(0L);
+                            userMap.put(bugValue.getVal(), sonarAnalyseIssueAuthorDTO);
                         } else {
-                            sonarAnalyseUserIssueAuthorDTO.setBug(bugValue.getCount().longValue());
+                            sonarAnalyseIssueAuthorDTO.setBug(bugValue.getCount().longValue());
                         }
                     }
                 }
@@ -202,16 +211,16 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                 List<Value> vulnValues = vulnFacet.getValues();
                 if (!CollectionUtils.isEmpty(vulnValues)) {
                     for (Value vulnValue : vulnValues) {
-                        SonarAnalyseUserIssueAuthorDTO sonarAnalyseUserIssueAuthorDTO = userMap.get(vulnValue.getVal());
-                        if (sonarAnalyseUserIssueAuthorDTO == null) {
-                            sonarAnalyseUserIssueAuthorDTO = new SonarAnalyseUserIssueAuthorDTO();
-                            sonarAnalyseUserIssueAuthorDTO.setAuthor(vulnValue.getVal());
-                            sonarAnalyseUserIssueAuthorDTO.setVulnerability(vulnValue.getCount().longValue());
-                            sonarAnalyseUserIssueAuthorDTO.setCodeSmell(0L);
-                            sonarAnalyseUserIssueAuthorDTO.setBug(0L);
-                            userMap.put(vulnValue.getVal(), sonarAnalyseUserIssueAuthorDTO);
+                        SonarAnalyseIssueAuthorDTO sonarAnalyseIssueAuthorDTO = userMap.get(vulnValue.getVal());
+                        if (sonarAnalyseIssueAuthorDTO == null) {
+                            sonarAnalyseIssueAuthorDTO = new SonarAnalyseIssueAuthorDTO();
+                            sonarAnalyseIssueAuthorDTO.setAuthor(vulnValue.getVal());
+                            sonarAnalyseIssueAuthorDTO.setVulnerability(vulnValue.getCount().longValue());
+                            sonarAnalyseIssueAuthorDTO.setCodeSmell(0L);
+                            sonarAnalyseIssueAuthorDTO.setBug(0L);
+                            userMap.put(vulnValue.getVal(), sonarAnalyseIssueAuthorDTO);
                         } else {
-                            sonarAnalyseUserIssueAuthorDTO.setVulnerability(vulnValue.getCount().longValue());
+                            sonarAnalyseIssueAuthorDTO.setVulnerability(vulnValue.getCount().longValue());
                         }
                     }
                 }
@@ -226,16 +235,16 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                 List<Value> codeSmellValues = codeSmellFacet.getValues();
                 if (!CollectionUtils.isEmpty(codeSmellValues)) {
                     for (Value codeSmellValue : codeSmellValues) {
-                        SonarAnalyseUserIssueAuthorDTO sonarAnalyseUserIssueAuthorDTO = userMap.get(codeSmellValue.getVal());
-                        if (sonarAnalyseUserIssueAuthorDTO == null) {
-                            sonarAnalyseUserIssueAuthorDTO = new SonarAnalyseUserIssueAuthorDTO();
-                            sonarAnalyseUserIssueAuthorDTO.setAuthor(codeSmellValue.getVal());
-                            sonarAnalyseUserIssueAuthorDTO.setCodeSmell(codeSmellValue.getCount().longValue());
-                            sonarAnalyseUserIssueAuthorDTO.setBug(0L);
-                            sonarAnalyseUserIssueAuthorDTO.setVulnerability(0L);
-                            userMap.put(codeSmellValue.getVal(), sonarAnalyseUserIssueAuthorDTO);
+                        SonarAnalyseIssueAuthorDTO sonarAnalyseIssueAuthorDTO = userMap.get(codeSmellValue.getVal());
+                        if (sonarAnalyseIssueAuthorDTO == null) {
+                            sonarAnalyseIssueAuthorDTO = new SonarAnalyseIssueAuthorDTO();
+                            sonarAnalyseIssueAuthorDTO.setAuthor(codeSmellValue.getVal());
+                            sonarAnalyseIssueAuthorDTO.setCodeSmell(codeSmellValue.getCount().longValue());
+                            sonarAnalyseIssueAuthorDTO.setBug(0L);
+                            sonarAnalyseIssueAuthorDTO.setVulnerability(0L);
+                            userMap.put(codeSmellValue.getVal(), sonarAnalyseIssueAuthorDTO);
                         } else {
-                            sonarAnalyseUserIssueAuthorDTO.setCodeSmell(codeSmellValue.getCount().longValue());
+                            sonarAnalyseIssueAuthorDTO.setCodeSmell(codeSmellValue.getCount().longValue());
                         }
                     }
                 }
@@ -265,7 +274,7 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         //
         Map<String, String> properties = webhookPayload.getProperties();
         List<Measure> measures = webhookPayload.getMeasures();
-        Map<String, SonarAnalyseUserIssueAuthorDTO> userMap = webhookPayload.getUserMap();
+        Map<String, SonarAnalyseIssueAuthorDTO> userMap = webhookPayload.getUserMap();
 
         long gitlabPipelineId = Long.parseLong(properties.get("sonar.analysis.gitlabPipelineId"));
         String gitlabJobName = properties.get("sonar.analysis.gitlabJobName");
@@ -360,6 +369,28 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
             }
         });
         return sonarOverviewVO;
+    }
+
+    @Override
+    public Page<SonarAnalyseIssueAuthorVO> listMemberIssue(Long projectId, Long appServiceId, PageRequest pageRequest) {
+        Page<SonarAnalyseIssueAuthorVO> page = PageHelper.doPage(pageRequest, () -> sonarAnalyseUserIssueAuthorService.listMemberIssue(appServiceId));
+        List<SonarAnalyseIssueAuthorVO> content = page.getContent();
+        if (CollectionUtils.isEmpty(content)) {
+            return page;
+        }
+        List<String> userEmails = content.stream().map(SonarAnalyseIssueAuthorVO::getAuthor).collect(Collectors.toList());
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByEmails(userEmails);
+        if (!CollectionUtils.isEmpty(iamUserDTOS)) {
+            Map<String, IamUserDTO> userMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getEmail, Function.identity()));
+
+            for (SonarAnalyseIssueAuthorVO sonarAnalyseIssueAuthorVO : content) {
+                IamUserDTO iamUserDTO = userMap.get(sonarAnalyseIssueAuthorVO.getAuthor());
+                sonarAnalyseIssueAuthorVO.setEmail(iamUserDTO.getEmail());
+                sonarAnalyseIssueAuthorVO.setRealName(iamUserDTO.getRealName());
+                sonarAnalyseIssueAuthorVO.setImageUrl(iamUserDTO.getImageUrl());
+            }
+        }
+        return page;
     }
 
 
