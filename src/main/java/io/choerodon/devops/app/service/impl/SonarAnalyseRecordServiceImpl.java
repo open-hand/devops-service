@@ -385,9 +385,11 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
 
             for (SonarAnalyseIssueAuthorVO sonarAnalyseIssueAuthorVO : content) {
                 IamUserDTO iamUserDTO = userMap.get(sonarAnalyseIssueAuthorVO.getAuthor());
-                sonarAnalyseIssueAuthorVO.setEmail(iamUserDTO.getEmail());
-                sonarAnalyseIssueAuthorVO.setRealName(iamUserDTO.getRealName());
-                sonarAnalyseIssueAuthorVO.setImageUrl(iamUserDTO.getImageUrl());
+                if (iamUserDTO != null) {
+                    sonarAnalyseIssueAuthorVO.setEmail(iamUserDTO.getEmail());
+                    sonarAnalyseIssueAuthorVO.setRealName(iamUserDTO.getRealName());
+                    sonarAnalyseIssueAuthorVO.setImageUrl(iamUserDTO.getImageUrl());
+                }
             }
         }
         return page;
