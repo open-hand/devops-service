@@ -9,17 +9,17 @@ package io.choerodon.devops.api.vo.dashboard;
  */
 public class ProjectMeasureVO {
 
-    private long id;
+    private Long id;
     private String name;
-    private double codeScore;
-    private double vulnScore;
-    private double k8sScore;
+    private Double codeScore;
+    private Double vulnScore;
+    private Double k8sScore;
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -31,27 +31,27 @@ public class ProjectMeasureVO {
         this.name = name;
     }
 
-    public double getCodeScore() {
+    public Double getCodeScore() {
         return codeScore;
     }
 
-    public void setCodeScore(double codeScore) {
+    public void setCodeScore(Double codeScore) {
         this.codeScore = codeScore;
     }
 
-    public double getVulnScore() {
+    public Double getVulnScore() {
         return vulnScore;
     }
 
-    public void setVulnScore(double vulnScore) {
+    public void setVulnScore(Double vulnScore) {
         this.vulnScore = vulnScore;
     }
 
-    public double getK8sScore() {
+    public Double getK8sScore() {
         return k8sScore;
     }
 
-    public void setK8sScore(double k8sScore) {
+    public void setK8sScore(Double k8sScore) {
         this.k8sScore = k8sScore;
     }
 }

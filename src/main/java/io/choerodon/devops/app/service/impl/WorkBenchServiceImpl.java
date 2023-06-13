@@ -14,14 +14,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.ApprovalVO;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.api.vo.UserAttrVO;
-import io.choerodon.devops.api.vo.dashboard.ProjectDashboardCfgVO;
 import io.choerodon.devops.api.vo.dashboard.ProjectMeasureVO;
+import io.choerodon.devops.api.vo.dashboard.SearchVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
@@ -32,7 +31,6 @@ import io.choerodon.devops.infra.enums.ApprovalTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
-import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -116,44 +114,27 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     }
 
     @Override
-    public Page<ProjectMeasureVO> listProjectMeasure(Long organizationId, PageRequest pageRequest) {
-        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listManagedProjects(organizationId);
-        if (CollectionUtils.isEmpty(projectDTOS)) {
+    public Page<ProjectMeasureVO> listProjectMeasure(Long organizationId, PageRequest pageRequest, SearchVO searchVO) {
+        Page<ProjectMeasureVO> projectPage = baseServiceClientOperator.pagingManagedProjects(organizationId, pageRequest, searchVO);
+        if (CollectionUtils.isEmpty(projectPage.getContent())) {
             return new Page<>();
         }
-        Map<Long, ProjectDTO> projectMap = projectDTOS.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
-        List<Long> managedIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toList());
-        ProjectDashboardCfgVO projectDashboardCfgVO = projectDashboardCfgService.queryByOrganizationId(organizationId);
-        List<Long> projectIds = projectDashboardCfgVO.getProjectIds();
-
-        List<Long> actualPids = projectIds.stream().filter(managedIds::contains).collect(Collectors.toList());
-
-        Page<Long> page = PageInfoUtil.doPageFromList(actualPids, pageRequest);
-        List<Long> pageIds = page.getContent();
+        List<ProjectMeasureVO> projects = projectPage.getContent();
+        List<Long> pids = projects.stream().map(ProjectMeasureVO::getId).collect(Collectors.toList());
 
         // 查询项目的代码得分
-        Map<Long, Double> codeScoreMap = sonarAnalyseRecordService.listProjectScores(pageIds);
-        Map<Long, Double> vulnScoreMap = vulnScanRecordService.listProjectScores(pageIds);
-        Map<Long, Double> k8sScoreMap = polarisScanningService.listProjectScores(pageIds);
+        Map<Long, Double> codeScoreMap = sonarAnalyseRecordService.listProjectScores(pids);
+        Map<Long, Double> vulnScoreMap = vulnScanRecordService.listProjectScores(pids);
+        Map<Long, Double> k8sScoreMap = polarisScanningService.listProjectScores(pids);
 
-        List<ProjectMeasureVO> projectMeasureVOList = new ArrayList<>();
-        for (Long actualPid : pageIds) {
-            ProjectDTO projectDTO = projectMap.get(actualPid);
-            Double codeScore = codeScoreMap.get(actualPid);
-            Double vulnScore = vulnScoreMap.get(actualPid);
-            Double k8sScore = k8sScoreMap.get(actualPid);
-            ProjectMeasureVO projectMeasureVO = new ProjectMeasureVO();
-            projectMeasureVO.setId(actualPid);
-            projectMeasureVO.setName(projectDTO.getName());
-            projectMeasureVO.setCodeScore(codeScore);
-            projectMeasureVO.setVulnScore(vulnScore);
-            projectMeasureVO.setK8sScore(k8sScore);
-            projectMeasureVOList.add(projectMeasureVO);
+        for (ProjectMeasureVO projectMeasureVO : projects) {
+            long pid = projectMeasureVO.getId();
+            projectMeasureVO.setCodeScore(codeScoreMap.get(pid));
+            projectMeasureVO.setVulnScore(vulnScoreMap.get(pid));
+            projectMeasureVO.setK8sScore(k8sScoreMap.get(pid));
         }
 
-        return new Page<>(projectMeasureVOList,
-                new PageInfo(pageRequest.getPage(), pageRequest.getSize()),
-                actualPids.size());
+        return projectPage;
     }
 
 

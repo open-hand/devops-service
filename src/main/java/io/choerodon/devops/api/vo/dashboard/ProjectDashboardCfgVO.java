@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo.dashboard;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -21,8 +19,6 @@ public class ProjectDashboardCfgVO {
     private Long bugWeight;
     @ApiModelProperty(value = "漏洞权重", required = true)
     private Long vulnerabilityWeight;
-
-    private List<Long> projectIds;
 
     public Long getId() {
         return id;
@@ -72,11 +68,4 @@ public class ProjectDashboardCfgVO {
         this.vulnerabilityWeight = vulnerabilityWeight;
     }
 
-    public List<Long> getProjectIds() {
-        return projectIds;
-    }
-
-    public void setProjectIds(List<Long> projectIds) {
-        this.projectIds = projectIds;
-    }
 }

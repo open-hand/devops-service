@@ -28,6 +28,8 @@ import io.choerodon.devops.api.vo.ExternalTenantVO;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.api.vo.dashboard.ProjectMeasureVO;
+import io.choerodon.devops.api.vo.dashboard.SearchVO;
 import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.enums.LabelType;
@@ -124,9 +126,13 @@ public class BaseServiceClientOperator {
         return baseServiceClient.listOwnedProjects(organizationId, userId).getBody();
     }
 
-    public List<ProjectDTO> listManagedProjects(Long organizationId) {
-        return ResponseUtils.getResponse(baseServiceClient.listManagedProjects(organizationId), new TypeReference<List<ProjectDTO>>() {
-        });
+    public Page<ProjectMeasureVO> pagingManagedProjects(Long organizationId, PageRequest pageRequest, SearchVO searchVO) {
+        return ResponseUtils.getResponse(baseServiceClient.pagingManagedProjects(organizationId,
+                        pageRequest.getPage(),
+                        pageRequest.getSize(),
+                        searchVO),
+                new TypeReference<Page<ProjectMeasureVO>>() {
+                });
     }
 
 
@@ -588,4 +594,5 @@ public class BaseServiceClientOperator {
             return responseEntity.getBody();
         }
     }
+
 }
