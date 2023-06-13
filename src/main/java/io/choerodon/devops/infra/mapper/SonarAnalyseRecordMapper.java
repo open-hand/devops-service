@@ -15,5 +15,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface SonarAnalyseRecordMapper extends BaseMapper<SonarAnalyseRecordDTO> {
     List<SonarAnalyseRecordDTO> listProjectLatestRecord(@Param("pids") List<Long> pids);
+
 }
 

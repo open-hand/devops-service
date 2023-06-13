@@ -929,17 +929,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    private static String caculateSqaleIndex(Long sqaleIndex) {
-        double day = sqaleIndex == null ? 0 : TypeUtil.objTodouble(sqaleIndex) / 480;
-        double hour = sqaleIndex == null ? 0 : TypeUtil.objTodouble(sqaleIndex) / 60;
-        if (day >= 1) {
-            return String.format("%sd", Math.round(day));
-        } else if (hour >= 1) {
-            return String.format("%sh", Math.round(hour));
-        } else {
-            return String.format("%s%s", Math.round(TypeUtil.objTodouble(sqaleIndex == null ? 0 : sqaleIndex)), sqaleIndex == null ? "" : "min");
-        }
-    }
 
     private void fillSonarInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
         DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(appServiceId, gitlabPipelineId, devopsCiJobRecordVO.getName());
@@ -956,7 +945,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     sonarContents.add(new SonarContentVO(sonarAnalyseMeasureDTO.getMetric(), sonarAnalyseMeasureDTO.getMetricValue()));
                 }
                 if (SonarQubeType.SQALE_INDEX.getType().equals(sonarAnalyseMeasureDTO.getMetric())) {
-                    sonarContents.add(new SonarContentVO(sonarAnalyseMeasureDTO.getMetric(), caculateSqaleIndex(Long.parseLong(sonarAnalyseMeasureDTO.getMetricValue()))));
+                    sonarContents.add(new SonarContentVO(sonarAnalyseMeasureDTO.getMetric(), SonarUtil.caculateSqaleIndex(Long.parseLong(sonarAnalyseMeasureDTO.getMetricValue()))));
                 }
                 if (SonarQubeType.QUALITY_GATE_DETAILS.getType().equals(sonarAnalyseMeasureDTO.getMetric())) {
                     QualityGateResult qualityGateResult = JsonHelper.unmarshalByJackson(sonarAnalyseMeasureDTO.getMetricValue(), QualityGateResult.class);

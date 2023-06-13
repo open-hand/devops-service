@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
+import io.choerodon.devops.api.vo.sonar.SonarOverviewVO;
 import io.choerodon.devops.api.vo.sonar.WebhookPayload;
 import io.choerodon.devops.infra.dto.SonarAnalyseRecordDTO;
 
@@ -22,5 +23,7 @@ public interface SonarAnalyseRecordService {
     SonarAnalyseRecordDTO queryById(Long recordId);
 
     Map<Long, Double> listProjectScores(List<Long> actualPids);
+
+    SonarOverviewVO querySonarOverview(Long projectId);
 }
 

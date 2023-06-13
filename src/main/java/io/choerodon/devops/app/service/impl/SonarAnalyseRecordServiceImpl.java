@@ -29,6 +29,7 @@ import io.choerodon.devops.app.task.DevopsCommandRunner;
 import io.choerodon.devops.infra.config.SonarConfigProperties;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.SonarQubeType;
 import io.choerodon.devops.infra.enums.sonar.IssueFacetEnum;
 import io.choerodon.devops.infra.enums.sonar.IssueTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.SeverityEnum;
@@ -38,6 +39,7 @@ import io.choerodon.devops.infra.mapper.SonarAnalyseRecordMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
+import io.choerodon.devops.infra.util.SonarUtil;
 
 /**
  * 代码扫描记录表(SonarAnalyseRecord)应用服务
@@ -153,9 +155,9 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
         queryContentMap.put("component", key);
         queryContentMap.put("statuses", "OPEN");
         if (devopsCiSonarQualityGateVO != null) {
-            queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,code_smells,sqale_index,sqale_debt_ratio");
+            queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,code_smells,sqale_index,sqale_debt_ratio,duplicated_lines");
         } else {
-            queryContentMap.put("metricKeys", "bugs,vulnerabilities,code_smells,sqale_index,sqale_debt_ratio");
+            queryContentMap.put("metricKeys", "bugs,vulnerabilities,code_smells,sqale_index,sqale_debt_ratio,duplicated_lines");
         }
 
         //根据project-key查询sonarqube项目内容
@@ -320,6 +322,44 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
                 .stream()
                 .collect(Collectors.groupingBy(SonarAnalyseRecordDTO::getProjectId,
                         Collectors.averagingDouble(SonarAnalyseRecordDTO::getScore)));
+    }
+
+    @Override
+    public SonarOverviewVO querySonarOverview(Long projectId) {
+        SonarOverviewVO sonarOverviewVO = new SonarOverviewVO();
+
+        List<String> metricTypes = new ArrayList<>();
+        metricTypes.add(SonarQubeType.BUGS.getType());
+        metricTypes.add(SonarQubeType.VULNERABILITIES.getType());
+        metricTypes.add(SonarQubeType.CODE_SMELLS.getType());
+        metricTypes.add(SonarQubeType.DUPLICATED_LINES.getType());
+        metricTypes.add(SonarQubeType.SQALE_INDEX.getType());
+        List<SonarAnalyseMeasureDTO> sonarAnalyseMeasureDTOS = sonarAnalyseMeasureService.listAppLatestMeasures(projectId, metricTypes);
+        if (CollectionUtils.isEmpty(sonarAnalyseMeasureDTOS)) {
+            return sonarOverviewVO;
+        }
+        Map<String, Long> measureMap = sonarAnalyseMeasureDTOS
+                .stream()
+                .collect(Collectors.groupingBy(SonarAnalyseMeasureDTO::getMetric,
+                        Collectors.summingLong(i -> Long.parseLong(i.getMetricValue()))));
+        measureMap.forEach((k, v) -> {
+            if (SonarQubeType.BUGS.getType().equals(k)) {
+                sonarOverviewVO.setBugs(v);
+            }
+            if (SonarQubeType.VULNERABILITIES.getType().equals(k)) {
+                sonarOverviewVO.setVulnerabilities(v);
+            }
+            if (SonarQubeType.CODE_SMELLS.getType().equals(k)) {
+                sonarOverviewVO.setCodeSmells(v);
+            }
+            if (SonarQubeType.DUPLICATED_LINES.getType().equals(k)) {
+                sonarOverviewVO.setDuplicatedLines(v);
+            }
+            if (SonarQubeType.SQALE_INDEX.getType().equals(k)) {
+                sonarOverviewVO.setDebt(SonarUtil.caculateSqaleIndex(v));
+            }
+        });
+        return sonarOverviewVO;
     }
 
 

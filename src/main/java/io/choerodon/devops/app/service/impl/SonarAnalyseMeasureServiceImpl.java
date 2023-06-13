@@ -37,5 +37,10 @@ public class SonarAnalyseMeasureServiceImpl implements SonarAnalyseMeasureServic
         record.setRecordId(recordId);
         return sonarAnalyseMeasureMapper.select(record);
     }
+
+    @Override
+    public List<SonarAnalyseMeasureDTO> listAppLatestMeasures(Long projectId, List<String> metricTypes) {
+        return sonarAnalyseMeasureMapper.listAppLatestMeasures(projectId, metricTypes);
+    }
 }
 
