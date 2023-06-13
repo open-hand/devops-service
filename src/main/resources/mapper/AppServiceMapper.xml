@@ -19,8 +19,14 @@
         da.last_update_date,
         da.error_message,
         da.group_id,
-        da.artifact_id
+        da.artifact_id,
+        dsar.score as code_score,
+        dvsr.score as vuln_score
         FROM devops_app_service da
+        left join devops_sonar_analyse_record dsar on dsar.id = (SELECT max(id) FROM devops_sonar_analyse_record WHERE
+        app_service_id = da.id)
+        left join devops_vuln_scan_record dvsr on dvsr.id = (SELECT max(id) FROM devops_vuln_scan_record WHERE
+        app_service_id = da.id)
         WHERE da.project_id = #{projectId}
         <if test="!includeExternal">
             AND da.external_config_id IS NULL
