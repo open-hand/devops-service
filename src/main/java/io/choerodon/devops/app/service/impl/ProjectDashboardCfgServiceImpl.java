@@ -1,23 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.dashboard.ProjectDashboardCfgVO;
 import io.choerodon.devops.app.service.ProjectDashboardCfgService;
-import io.choerodon.devops.app.service.ProjectDashboardCfgTargetService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.ProjectDashboardCfgDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.ProjectDashboardCfgMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -35,11 +27,7 @@ public class ProjectDashboardCfgServiceImpl implements ProjectDashboardCfgServic
 
     @Autowired
     private ProjectDashboardCfgMapper projectDashboardCfgMapper;
-    @Autowired
-    private ProjectDashboardCfgTargetService projectDashboardCfgTargetService;
 
-    @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
     public ProjectDashboardCfgVO queryByOrganizationId(Long organizationId) {
@@ -47,9 +35,7 @@ public class ProjectDashboardCfgServiceImpl implements ProjectDashboardCfgServic
         if (projectDashboardCfgDTO == null) {
             return queryDefaultConfig(organizationId);
         } else {
-            ProjectDashboardCfgVO projectDashboardCfgVO = ConvertUtils.convertObject(projectDashboardCfgDTO, ProjectDashboardCfgVO.class);
-            projectDashboardCfgVO.setProjectIds(projectDashboardCfgTargetService.listProjectIdsByCfgId(projectDashboardCfgDTO.getId()));
-            return projectDashboardCfgVO;
+            return ConvertUtils.convertObject(projectDashboardCfgDTO, ProjectDashboardCfgVO.class);
         }
     }
 
@@ -60,13 +46,6 @@ public class ProjectDashboardCfgServiceImpl implements ProjectDashboardCfgServic
         projectDashboardCfgVO.setBugWeight(45L);
         projectDashboardCfgVO.setVulnerabilityWeight(45L);
         projectDashboardCfgVO.setCodeSmellWeight(10L);
-        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listManagedProjects(organizationId);
-        if (!CollectionUtils.isEmpty(projectDTOS)) {
-            List<Long> projectIds = projectDTOS.stream().map(ProjectDTO::getId).collect(Collectors.toList());
-            projectDashboardCfgVO.setProjectIds(projectIds);
-        } else {
-            projectDashboardCfgVO.setProjectIds(new ArrayList<>());
-        }
         return projectDashboardCfgVO;
     }
 
@@ -94,9 +73,6 @@ public class ProjectDashboardCfgServiceImpl implements ProjectDashboardCfgServic
             projectDashboardCfgDTO.setCodeSmellWeight(projectDashboardCfgVO.getCodeSmellWeight());
             projectDashboardCfgMapper.updateByPrimaryKeySelective(projectDashboardCfgDTO);
         }
-        // 更新项目范围
-        projectDashboardCfgTargetService.deleteByCfgId(projectDashboardCfgDTO.getId());
-        projectDashboardCfgTargetService.batchSave(projectDashboardCfgDTO.getId(), projectDashboardCfgVO.getProjectIds());
         return projectDashboardCfgDTO;
     }
 

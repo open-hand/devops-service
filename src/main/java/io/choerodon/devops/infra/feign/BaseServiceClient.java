@@ -14,6 +14,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.api.vo.dashboard.SearchVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
 import io.choerodon.swagger.annotation.Permission;
@@ -164,8 +165,11 @@ public interface BaseServiceClient {
     ResponseEntity<List<ProjectDTO>> listOwnedProjects(@PathVariable("organization_id") Long organizationId,
                                                        @PathVariable("user_id") Long userId);
 
-    @GetMapping("/choerodon/v1/organizations/{organization_id}/users/managed_projects")
-    ResponseEntity<String> listManagedProjects(@PathVariable(name = "organization_id") Long organizationId);
+    @PostMapping("/choerodon/v1/organizations/{organization_id}/users/managed_projects")
+    ResponseEntity<String> pagingManagedProjects(@PathVariable(name = "organization_id") Long organizationId,
+                                                 @RequestParam("page") int page,
+                                                 @RequestParam("size") int size,
+                                                 @RequestBody SearchVO searchVO);
 
     /**
      * 查询项目下的用户

@@ -15,6 +15,7 @@ import io.choerodon.devops.api.vo.ApprovalVO;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.api.vo.dashboard.ProjectMeasureVO;
+import io.choerodon.devops.api.vo.dashboard.SearchVO;
 import io.choerodon.devops.app.service.WorkBenchService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -66,12 +67,14 @@ public class WorkBenchController {
     }
 
     @Permission(permissionLogin = true, level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/project_measure")
+    @PostMapping("/project_measure")
     @ApiOperation("项目质量评分")
     public ResponseEntity<Page<ProjectMeasureVO>> listProjectMeasure(
             @ApiParam(value = "组织id", required = true)
             @PathVariable("organization_id") Long organizationId,
-            @ApiIgnore PageRequest pageRequest) {
-        return ResponseEntity.ok(workBenchService.listProjectMeasure(organizationId, pageRequest));
+            @ApiIgnore
+            PageRequest pageRequest,
+            @RequestBody SearchVO searchVO) {
+        return ResponseEntity.ok(workBenchService.listProjectMeasure(organizationId, pageRequest, searchVO));
     }
 }
