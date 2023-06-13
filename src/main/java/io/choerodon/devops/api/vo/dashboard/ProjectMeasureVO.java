@@ -11,11 +11,11 @@ public class ProjectMeasureVO {
 
     private Long id;
     private String name;
-    private Double codeScore;
-    private Double vulnScore;
-    private Double k8sScore;
+    private String codeScore;
+    private String vulnScore;
+    private String k8sScore;
 
-    private Double score;
+    private String score;
 
     public Long getId() {
         return id;
@@ -33,35 +33,35 @@ public class ProjectMeasureVO {
         this.name = name;
     }
 
-    public Double getCodeScore() {
+    public String getCodeScore() {
         return codeScore;
     }
 
-    public void setCodeScore(Double codeScore) {
+    public void setCodeScore(String codeScore) {
         this.codeScore = codeScore;
     }
 
-    public Double getVulnScore() {
+    public String getVulnScore() {
         return vulnScore;
     }
 
-    public void setVulnScore(Double vulnScore) {
+    public void setVulnScore(String vulnScore) {
         this.vulnScore = vulnScore;
     }
 
-    public Double getK8sScore() {
+    public String getK8sScore() {
         return k8sScore;
     }
 
-    public void setK8sScore(Double k8sScore) {
+    public void setK8sScore(String k8sScore) {
         this.k8sScore = k8sScore;
     }
 
-    public Double getScore() {
+    public String getScore() {
         return score;
     }
 
-    public void setScore(Double score) {
+    public void setScore(String score) {
         this.score = score;
     }
 }
