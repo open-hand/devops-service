@@ -595,4 +595,8 @@ public class BaseServiceClientOperator {
         }
     }
 
+    public List<IamUserDTO> listUsersByEmails(List<String> userEmails) {
+        return ResponseUtils.getResponse(iamServiceClient.listUsersByEmails(userEmails), new TypeReference<List<IamUserDTO>>() {
+        });
+    }
 }

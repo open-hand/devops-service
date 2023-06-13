@@ -1,8 +1,10 @@
 package io.choerodon.devops.app.service;
 
 import java.util.Collection;
+import java.util.List;
 
-import io.choerodon.devops.infra.dto.SonarAnalyseUserIssueAuthorDTO;
+import io.choerodon.devops.api.vo.SonarAnalyseIssueAuthorVO;
+import io.choerodon.devops.infra.dto.SonarAnalyseIssueAuthorDTO;
 
 /**
  * 代码扫描记录表(SonarAnalyseUserRecord)应用服务
@@ -12,8 +14,10 @@ import io.choerodon.devops.infra.dto.SonarAnalyseUserIssueAuthorDTO;
  */
 public interface SonarAnalyseUserIssueAuthorService {
 
-    void baseCreate(SonarAnalyseUserIssueAuthorDTO sonarAnalyseUserIssueAuthorDTO);
+    void baseCreate(SonarAnalyseIssueAuthorDTO sonarAnalyseIssueAuthorDTO);
 
-    void batchSave(Long recordId, Collection<SonarAnalyseUserIssueAuthorDTO> sonarAnalyseUserIssueAuthorDTOList);
+    void batchSave(Long recordId, Collection<SonarAnalyseIssueAuthorDTO> sonarAnalyseIssueAuthorDTOList);
+
+    List<SonarAnalyseIssueAuthorVO> listMemberIssue(Long appServiceId);
 }
 

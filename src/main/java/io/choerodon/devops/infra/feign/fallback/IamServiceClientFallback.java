@@ -1,10 +1,8 @@
 package io.choerodon.devops.infra.feign.fallback;
 
 import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_ORGANIZATION_GET;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_ORGANIZATION_ROLE_ID_GET;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.validation.Valid;
 
@@ -15,10 +13,9 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ExternalTenantVO;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
-import io.choerodon.devops.api.vo.ResourceLimitVO;
-import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.infra.dto.iam.*;
-import io.choerodon.devops.infra.feign.BaseServiceClient;
+import io.choerodon.devops.infra.dto.iam.ClientVO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 
 /**
@@ -107,6 +104,11 @@ public class IamServiceClientFallback implements IamServiceClient {
     @Override
     public ResponseEntity<Boolean> platformAdministratorOrAuditor(Long userId) {
         throw new CommonException("devops.check.user.site.access");
+    }
+
+    @Override
+    public ResponseEntity<String> listUsersByEmails(List<String> emails) {
+        throw new CommonException("devops.query.users");
     }
 
 }
