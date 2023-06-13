@@ -43,9 +43,9 @@ public class ProjectDashboardCfgServiceImpl implements ProjectDashboardCfgServic
     public ProjectDashboardCfgVO queryDefaultConfig(Long organizationId) {
         ProjectDashboardCfgVO projectDashboardCfgVO = new ProjectDashboardCfgVO();
         projectDashboardCfgVO.setPassScore(80.0);
-        projectDashboardCfgVO.setBugWeight(45L);
-        projectDashboardCfgVO.setVulnerabilityWeight(45L);
-        projectDashboardCfgVO.setCodeSmellWeight(10L);
+        projectDashboardCfgVO.setCodeWeight(45L);
+        projectDashboardCfgVO.setVulnWeight(45L);
+        projectDashboardCfgVO.setK8sWeight(10L);
         return projectDashboardCfgVO;
     }
 
@@ -68,16 +68,16 @@ public class ProjectDashboardCfgServiceImpl implements ProjectDashboardCfgServic
             MapperUtil.resultJudgedInsertSelective(projectDashboardCfgMapper, projectDashboardCfgDTO, DEVOPS_SAVE_DASHBOARD_CFG_FAILED);
         } else {
             projectDashboardCfgDTO.setPassScore(projectDashboardCfgVO.getPassScore());
-            projectDashboardCfgDTO.setVulnerabilityWeight(projectDashboardCfgVO.getVulnerabilityWeight());
-            projectDashboardCfgDTO.setBugWeight(projectDashboardCfgVO.getBugWeight());
-            projectDashboardCfgDTO.setCodeSmellWeight(projectDashboardCfgVO.getCodeSmellWeight());
+            projectDashboardCfgDTO.setVulnWeight(projectDashboardCfgVO.getVulnWeight());
+            projectDashboardCfgDTO.setK8sWeight(projectDashboardCfgVO.getK8sWeight());
+            projectDashboardCfgDTO.setCodeWeight(projectDashboardCfgVO.getCodeWeight());
             projectDashboardCfgMapper.updateByPrimaryKeySelective(projectDashboardCfgDTO);
         }
         return projectDashboardCfgDTO;
     }
 
     private void checkProp(ProjectDashboardCfgVO projectDashboardCfgVO) {
-        if (projectDashboardCfgVO.getBugWeight() + projectDashboardCfgVO.getVulnerabilityWeight() + projectDashboardCfgVO.getCodeSmellWeight() != 100) {
+        if (projectDashboardCfgVO.getVulnWeight() + projectDashboardCfgVO.getCodeWeight() + projectDashboardCfgVO.getK8sWeight() != 100) {
             throw new CommonException("devops.weight.invalid");
         }
     }

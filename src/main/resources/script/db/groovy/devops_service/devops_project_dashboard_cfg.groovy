@@ -12,13 +12,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project_dashboard_cfg.groovy') {
             column(name: 'pass_score', type: 'FLOAT', remarks: '合格分数') {
                 constraints(nullable: false)
             }
-            column(name: "code_smell_weight", type: "BIGINT UNSIGNED", remarks: '代码检查权重') {
+            column(name: "code_weight", type: "BIGINT UNSIGNED", remarks: '代码权重') {
                 constraints(nullable: false)
             }
-            column(name: "bug_weight", type: "BIGINT UNSIGNED", remarks: '缺陷权重') {
+            column(name: "vuln_weight", type: "BIGINT UNSIGNED", remarks: '漏洞权重') {
                 constraints(nullable: false)
             }
-            column(name: "vulnerability_weight", type: "BIGINT UNSIGNED", remarks: '漏洞权重') {
+            column(name: "k8s_weight", type: "BIGINT UNSIGNED", remarks: 'k8s权重') {
                 constraints(nullable: false)
             }
 

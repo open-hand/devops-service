@@ -27,12 +27,6 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_project_dashboard_cfg")
 public class ProjectDashboardCfgDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
-    public static final String FIELD_TENANT_ID = "tenantId";
-    public static final String FIELD_PASS_SCORE = "passScore";
-    public static final String FIELD_CODE_SMELL_WEIGHT = "codeSmellWeight";
-    public static final String FIELD_BUG_WEIGHT = "bugWeight";
-    public static final String FIELD_VULNERABILITY_WEIGHT = "vulnerabilityWeight";
-    private static final long serialVersionUID = -62368571445576823L;
     @Id
     @GeneratedValue
     private Long id;
@@ -45,17 +39,17 @@ public class ProjectDashboardCfgDTO extends AuditDomain {
     @NotNull
     private Double passScore;
 
-    @ApiModelProperty(value = "代码检查权重", required = true)
+    @ApiModelProperty(value = "代码权重", required = true)
     @NotNull
-    private Long codeSmellWeight;
-
-    @ApiModelProperty(value = "缺陷权重", required = true)
-    @NotNull
-    private Long bugWeight;
+    private Long codeWeight;
 
     @ApiModelProperty(value = "漏洞权重", required = true)
     @NotNull
-    private Long vulnerabilityWeight;
+    private Long vulnWeight;
+
+    @ApiModelProperty(value = "漏洞权重", required = true)
+    @NotNull
+    private Long k8sWeight;
 
 
     public Long getId() {
@@ -82,29 +76,28 @@ public class ProjectDashboardCfgDTO extends AuditDomain {
         this.passScore = passScore;
     }
 
-    public Long getCodeSmellWeight() {
-        return codeSmellWeight;
+    public Long getCodeWeight() {
+        return codeWeight;
     }
 
-    public void setCodeSmellWeight(Long codeSmellWeight) {
-        this.codeSmellWeight = codeSmellWeight;
+    public void setCodeWeight(Long codeWeight) {
+        this.codeWeight = codeWeight;
     }
 
-    public Long getBugWeight() {
-        return bugWeight;
+    public Long getVulnWeight() {
+        return vulnWeight;
     }
 
-    public void setBugWeight(Long bugWeight) {
-        this.bugWeight = bugWeight;
+    public void setVulnWeight(Long vulnWeight) {
+        this.vulnWeight = vulnWeight;
     }
 
-    public Long getVulnerabilityWeight() {
-        return vulnerabilityWeight;
+    public Long getK8sWeight() {
+        return k8sWeight;
     }
 
-    public void setVulnerabilityWeight(Long vulnerabilityWeight) {
-        this.vulnerabilityWeight = vulnerabilityWeight;
+    public void setK8sWeight(Long k8sWeight) {
+        this.k8sWeight = k8sWeight;
     }
-
 }
 
