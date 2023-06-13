@@ -135,9 +135,9 @@ public class WorkBenchServiceImpl implements WorkBenchService {
             Double codeScore = codeScoreMap.get(pid);
             Double vulnScore = vulnScoreMap.get(pid);
             Double k8sScore = k8sScoreMap.get(pid);
-            projectMeasureVO.setCodeScore(codeScore);
-            projectMeasureVO.setVulnScore(vulnScore);
-            projectMeasureVO.setK8sScore(k8sScore);
+            projectMeasureVO.setCodeScore(String.format("%.2f", codeScore));
+            projectMeasureVO.setVulnScore(String.format("%.2f", vulnScore));
+            projectMeasureVO.setK8sScore(String.format("%.2f", k8sScore));
             double totalWeight = 0;
             if (codeScore != null) {
                 totalWeight += projectDashboardCfgVO.getCodeWeight();
@@ -158,7 +158,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
             if (k8sScore != null) {
                 score += k8sScore * projectDashboardCfgVO.getK8sWeight() / totalWeight;
             }
-            projectMeasureVO.setScore(score);
+            projectMeasureVO.setScore(String.format("%.2f", score));
         }
 
         return projectPage;
