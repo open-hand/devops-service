@@ -19,6 +19,7 @@ import io.choerodon.devops.api.vo.ApprovalVO;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.api.vo.UserAttrVO;
+import io.choerodon.devops.api.vo.dashboard.ProjectDashboardCfgVO;
 import io.choerodon.devops.api.vo.dashboard.ProjectMeasureVO;
 import io.choerodon.devops.api.vo.dashboard.SearchVO;
 import io.choerodon.devops.app.service.*;
@@ -127,11 +128,37 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         Map<Long, Double> vulnScoreMap = vulnScanRecordService.listProjectScores(pids);
         Map<Long, Double> k8sScoreMap = polarisScanningService.listProjectScores(pids);
 
+        ProjectDashboardCfgVO projectDashboardCfgVO = projectDashboardCfgService.queryByOrganizationId(organizationId);
+
         for (ProjectMeasureVO projectMeasureVO : projects) {
             long pid = projectMeasureVO.getId();
-            projectMeasureVO.setCodeScore(codeScoreMap.get(pid));
-            projectMeasureVO.setVulnScore(vulnScoreMap.get(pid));
-            projectMeasureVO.setK8sScore(k8sScoreMap.get(pid));
+            Double codeScore = codeScoreMap.get(pid);
+            Double vulnScore = vulnScoreMap.get(pid);
+            Double k8sScore = k8sScoreMap.get(pid);
+            projectMeasureVO.setCodeScore(codeScore);
+            projectMeasureVO.setVulnScore(vulnScore);
+            projectMeasureVO.setK8sScore(k8sScore);
+            double totalWeight = 0;
+            if (codeScore != null) {
+                totalWeight += projectDashboardCfgVO.getCodeWeight();
+            }
+            if (vulnScore != null) {
+                totalWeight += projectDashboardCfgVO.getVulnWeight();
+            }
+            if (k8sScore != null) {
+                totalWeight += projectDashboardCfgVO.getK8sWeight();
+            }
+            double score = 0;
+            if (codeScore != null) {
+                score += codeScore * projectDashboardCfgVO.getCodeWeight() / totalWeight;
+            }
+            if (vulnScore != null) {
+                score += vulnScore * projectDashboardCfgVO.getVulnWeight() / totalWeight;
+            }
+            if (k8sScore != null) {
+                score += k8sScore * projectDashboardCfgVO.getK8sWeight() / totalWeight;
+            }
+            projectMeasureVO.setScore(score);
         }
 
         return projectPage;

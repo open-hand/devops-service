@@ -13,12 +13,12 @@ public class ProjectDashboardCfgVO {
     private Long tenantId;
     @ApiModelProperty(value = "合格分数", required = true)
     private Double passScore;
-    @ApiModelProperty(value = "代码检查权重", required = true)
-    private Long codeSmellWeight;
-    @ApiModelProperty(value = "缺陷权重", required = true)
-    private Long bugWeight;
+    @ApiModelProperty(value = "代码权重", required = true)
+    private Long codeWeight;
+    @ApiModelProperty(value = "k8s权重", required = true)
+    private Long k8sWeight;
     @ApiModelProperty(value = "漏洞权重", required = true)
-    private Long vulnerabilityWeight;
+    private Long vulnWeight;
 
     public Long getId() {
         return id;
@@ -44,28 +44,27 @@ public class ProjectDashboardCfgVO {
         this.passScore = passScore;
     }
 
-    public Long getCodeSmellWeight() {
-        return codeSmellWeight;
+    public Long getCodeWeight() {
+        return codeWeight;
     }
 
-    public void setCodeSmellWeight(Long codeSmellWeight) {
-        this.codeSmellWeight = codeSmellWeight;
+    public void setCodeWeight(Long codeWeight) {
+        this.codeWeight = codeWeight;
     }
 
-    public Long getBugWeight() {
-        return bugWeight;
+    public Long getK8sWeight() {
+        return k8sWeight;
     }
 
-    public void setBugWeight(Long bugWeight) {
-        this.bugWeight = bugWeight;
+    public void setK8sWeight(Long k8sWeight) {
+        this.k8sWeight = k8sWeight;
     }
 
-    public Long getVulnerabilityWeight() {
-        return vulnerabilityWeight;
+    public Long getVulnWeight() {
+        return vulnWeight;
     }
 
-    public void setVulnerabilityWeight(Long vulnerabilityWeight) {
-        this.vulnerabilityWeight = vulnerabilityWeight;
+    public void setVulnWeight(Long vulnWeight) {
+        this.vulnWeight = vulnWeight;
     }
-
 }

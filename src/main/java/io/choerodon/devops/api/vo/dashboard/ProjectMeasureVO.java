@@ -15,6 +15,8 @@ public class ProjectMeasureVO {
     private Double vulnScore;
     private Double k8sScore;
 
+    private Double score;
+
     public Long getId() {
         return id;
     }
@@ -53,5 +55,13 @@ public class ProjectMeasureVO {
 
     public void setK8sScore(Double k8sScore) {
         this.k8sScore = k8sScore;
+    }
+
+    public Double getScore() {
+        return score;
+    }
+
+    public void setScore(Double score) {
+        this.score = score;
     }
 }
