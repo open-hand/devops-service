@@ -16,5 +16,8 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface SonarAnalyseMeasureMapper extends BaseMapper<SonarAnalyseMeasureDTO> {
     void batchSave(@Param("recordId") Long recordId,
                    @Param("sonarAnalyseMeasureDTOS") List<SonarAnalyseMeasureDTO> sonarAnalyseMeasureDTOS);
+
+    List<SonarAnalyseMeasureDTO> listAppLatestMeasures(@Param("projectId") Long projectId,
+                                                       @Param("metricTypes") List<String> metricTypes);
 }
 

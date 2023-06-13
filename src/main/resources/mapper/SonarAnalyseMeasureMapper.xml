@@ -9,5 +9,21 @@
             (#{recordId},#{item.metric},#{item.metricValue})
         </foreach>
     </insert>
+    <select id="listAppLatestMeasures" resultType="io.choerodon.devops.infra.dto.SonarAnalyseMeasureDTO">
+        select
+        dsam.id,
+        dsam.record_id,
+        dsam.metric,
+        dsam.metric_value
+        from devops_sonar_analyse_measure dsam
+        inner join (select max(id) as id from devops_sonar_analyse_record where project_id = 1 group by app_service_id)
+        temp on temp.id = dsam.record_id
+        <if test="metricTypes != null">
+            where dsam.metric in
+            <foreach collection="metricTypes" item="metric" open="(" separator="," close=")">
+                #{metric}
+            </foreach>
+        </if>
+    </select>
 </mapper>
 

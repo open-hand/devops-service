@@ -15,5 +15,7 @@ public interface SonarAnalyseMeasureService {
     void batchSave(Long recordId, List<SonarAnalyseMeasureDTO> sonarAnalyseMeasureDTOS);
 
     List<SonarAnalyseMeasureDTO> listByRecordId(Long recordId);
+
+    List<SonarAnalyseMeasureDTO> listAppLatestMeasures(Long projectId, List<String> metricTypes);
 }
 
