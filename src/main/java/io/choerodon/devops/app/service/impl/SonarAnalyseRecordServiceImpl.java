@@ -373,7 +373,7 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
 
     @Override
     public Page<SonarAnalyseIssueAuthorVO> listMemberIssue(Long projectId, Long appServiceId, PageRequest pageRequest) {
-        Page<SonarAnalyseIssueAuthorVO> page = PageHelper.doPage(pageRequest, () -> sonarAnalyseUserIssueAuthorService.listMemberIssue(appServiceId));
+        Page<SonarAnalyseIssueAuthorVO> page = PageHelper.doPageAndSort(pageRequest, () -> sonarAnalyseUserIssueAuthorService.listMemberIssue(appServiceId));
         List<SonarAnalyseIssueAuthorVO> content = page.getContent();
         if (CollectionUtils.isEmpty(content)) {
             return page;
