@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
@@ -43,7 +42,6 @@ public class DevopsProjectQualityController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "app_service_id") Long appServiceId,
-            @ApiIgnore
             PageRequest pageRequest) {
         return ResponseEntity.ok(sonarAnalyseRecordService.listMemberIssue(projectId, appServiceId, pageRequest));
     }
