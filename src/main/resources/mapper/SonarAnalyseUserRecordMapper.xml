@@ -18,5 +18,23 @@
         from devops_sonar_analyse_issue_author dsaia
         where dsaia.record_id = (select max(id) from devops_sonar_analyse_record where app_service_id = #{appServiceId})
     </select>
+    <select id="listMemberBugRank" resultType="io.choerodon.devops.api.vo.SonarAnalyseIssueAuthorRankVO">
+        select dsaia.author, dsaia.bug as number
+        from devops_sonar_analyse_issue_author dsaia
+        where dsaia.record_id = (select max(id) from devops_sonar_analyse_record where app_service_id = #{appServiceId})
+        order by dsaia.bug desc
+    </select>
+    <select id="listMemberVulnRank" resultType="io.choerodon.devops.api.vo.SonarAnalyseIssueAuthorRankVO">
+        select dsaia.author, dsaia.vulnerability as number
+        from devops_sonar_analyse_issue_author dsaia
+        where dsaia.record_id = (select max(id) from devops_sonar_analyse_record where app_service_id = #{appServiceId})
+        order by dsaia.vulnerability desc
+    </select>
+    <select id="listMemberCodeSmellRank" resultType="io.choerodon.devops.api.vo.SonarAnalyseIssueAuthorRankVO">
+        select dsaia.author, dsaia.code_smell as number
+        from devops_sonar_analyse_issue_author dsaia
+        where dsaia.record_id = (select max(id) from devops_sonar_analyse_record where app_service_id = #{appServiceId})
+        order by dsaia.code_smell desc
+    </select>
 </mapper>
 
