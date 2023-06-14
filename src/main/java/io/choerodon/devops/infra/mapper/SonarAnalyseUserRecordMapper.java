@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.api.vo.SonarAnalyseIssueAuthorRankVO;
 import io.choerodon.devops.api.vo.SonarAnalyseIssueAuthorVO;
 import io.choerodon.devops.infra.dto.SonarAnalyseIssueAuthorDTO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -20,5 +21,11 @@ public interface SonarAnalyseUserRecordMapper extends BaseMapper<SonarAnalyseIss
                    @Param("sonarAnalyseUserIssueAuthorDTOList") Collection<SonarAnalyseIssueAuthorDTO> sonarAnalyseIssueAuthorDTOList);
 
     List<SonarAnalyseIssueAuthorVO> listMemberIssue(@Param("appServiceId") Long appServiceId);
+
+    List<SonarAnalyseIssueAuthorRankVO> listMemberBugRank(@Param("appServiceId") Long appServiceId);
+
+    List<SonarAnalyseIssueAuthorRankVO> listMemberVulnRank(@Param("appServiceId") Long appServiceId);
+
+    List<SonarAnalyseIssueAuthorRankVO> listMemberCodeSmellRank(@Param("appServiceId") Long appServiceId);
 }
 

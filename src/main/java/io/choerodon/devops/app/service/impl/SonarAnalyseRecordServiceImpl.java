@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,9 +20,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.SonarAnalyseIssueAuthorVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -32,7 +29,6 @@ import io.choerodon.devops.app.task.DevopsCommandRunner;
 import io.choerodon.devops.infra.config.SonarConfigProperties;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.SonarQubeType;
 import io.choerodon.devops.infra.enums.sonar.IssueFacetEnum;
 import io.choerodon.devops.infra.enums.sonar.IssueTypeEnum;
@@ -45,8 +41,6 @@ import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
 import io.choerodon.devops.infra.util.SonarUtil;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 代码扫描记录表(SonarAnalyseRecord)应用服务
@@ -369,30 +363,6 @@ public class SonarAnalyseRecordServiceImpl implements SonarAnalyseRecordService 
             }
         });
         return sonarOverviewVO;
-    }
-
-    @Override
-    public Page<SonarAnalyseIssueAuthorVO> listMemberIssue(Long projectId, Long appServiceId, PageRequest pageRequest) {
-        Page<SonarAnalyseIssueAuthorVO> page = PageHelper.doPageAndSort(pageRequest, () -> sonarAnalyseUserIssueAuthorService.listMemberIssue(appServiceId));
-        List<SonarAnalyseIssueAuthorVO> content = page.getContent();
-        if (CollectionUtils.isEmpty(content)) {
-            return page;
-        }
-        List<String> userEmails = content.stream().map(SonarAnalyseIssueAuthorVO::getAuthor).collect(Collectors.toList());
-        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByEmails(userEmails);
-        if (!CollectionUtils.isEmpty(iamUserDTOS)) {
-            Map<String, IamUserDTO> userMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getEmail, Function.identity()));
-
-            for (SonarAnalyseIssueAuthorVO sonarAnalyseIssueAuthorVO : content) {
-                IamUserDTO iamUserDTO = userMap.get(sonarAnalyseIssueAuthorVO.getAuthor());
-                if (iamUserDTO != null) {
-                    sonarAnalyseIssueAuthorVO.setEmail(iamUserDTO.getEmail());
-                    sonarAnalyseIssueAuthorVO.setRealName(iamUserDTO.getRealName());
-                    sonarAnalyseIssueAuthorVO.setImageUrl(iamUserDTO.getImageUrl());
-                }
-            }
-        }
-        return page;
     }
 
 
