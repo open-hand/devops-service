@@ -207,6 +207,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = clusterConnectionHandler.handDevopsEnvGitRepository(
+                devopsEnvironmentDTO,
                 devopsEnvironmentDTO.getProjectId(),
                 devopsEnvironmentDTO.getCode(),
                 devopsEnvironmentDTO.getId(),
@@ -725,7 +726,9 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     public void operatePvBySaga(PersistentVolumePayload persistentVolumePayload) {
         try {
             // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String path = clusterConnectionHandler.handDevopsEnvGitRepository(persistentVolumePayload.getDevopsEnvironmentDTO().getProjectId(),
+            String path = clusterConnectionHandler.handDevopsEnvGitRepository(
+                    persistentVolumePayload.getDevopsEnvironmentDTO(),
+                    persistentVolumePayload.getDevopsEnvironmentDTO().getProjectId(),
                     persistentVolumePayload.getDevopsEnvironmentDTO().getCode(),
                     persistentVolumePayload.getDevopsEnvironmentDTO().getId(),
                     persistentVolumePayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
@@ -769,13 +772,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .filter(s -> !StringUtils.isEmpty(s))
                 .map(s -> JsonHelper.unmarshalByJackson(s, new TypeReference<Map<String, String>>() {
                 }))
-                .forEach(l -> l.forEach((k, v)->{
+                .forEach(l -> l.forEach((k, v) -> {
                     DevopsPvLabelVO devopsPvLabelVO = new DevopsPvLabelVO();
                     devopsPvLabelVO.setKey(k);
                     devopsPvLabelVO.setValue(v);
-                  if (!labels.contains(devopsPvLabelVO)){
-                      labels.add(devopsPvLabelVO);
-                  }
+                    if (!labels.contains(devopsPvLabelVO)) {
+                        labels.add(devopsPvLabelVO);
+                    }
                 }));
         return labels;
     }

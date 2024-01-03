@@ -21,8 +21,6 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 import org.apache.commons.lang.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -83,6 +81,9 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.Pair;
 
 
 /**
@@ -311,7 +312,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
         Page<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
-                envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
+                        envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
         Set<Long> marketInstanceCommandVersionIds = new HashSet<>();
         Set<Long> appServiceIds = new HashSet<>();
@@ -1179,6 +1180,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String filePath = null;
         if (instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
             filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                    instanceSagaPayload.getDevopsEnvironmentDTO(),
                     instanceSagaPayload.getProjectId(),
                     instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
                     instanceSagaPayload.getDevopsEnvironmentDTO().getId(),
@@ -1253,6 +1255,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String filePath = null;
         if (instanceSagaPayload.getMarketInstanceCreationRequestVO().getCommandType().equals(UPDATE)) {
             filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                    instanceSagaPayload.getDevopsEnvironmentDTO(),
                     instanceSagaPayload.getProjectId(),
                     instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
                     instanceSagaPayload.getDevopsEnvironmentDTO().getId(),
@@ -1690,6 +1693,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = clusterConnectionHandler.handDevopsEnvGitRepository(
+                devopsEnvironmentDTO,
                 devopsEnvironmentDTO.getProjectId(),
                 devopsEnvironmentDTO.getCode(),
                 devopsEnvironmentDTO.getId(),
