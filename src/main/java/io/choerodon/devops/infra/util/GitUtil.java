@@ -37,6 +37,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitConfigVO;
 import io.choerodon.devops.api.vo.GitEnvConfigVO;
 import io.choerodon.devops.api.vo.GitlabRepositoryInfo;
+import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.app.service.DevopsClusterResourceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
@@ -80,6 +81,8 @@ public class GitUtil {
     private String gitlabInternalsshUrl;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private AgentCommandService agentCommandService;
 
     public String getSshUrl() {
         if (org.apache.commons.lang3.StringUtils.isNotBlank(gitlabInternalsshUrl)) {
@@ -771,6 +774,8 @@ public class GitUtil {
                 true,
                 GitUserNameUtil.getAdminId()
         );
+        // 通知agent进行重启
+        ApplicationContextHelper.getContext().getBean(AgentCommandService.class).sendRestartAgent(devopsEnvironmentDTO.getClusterId());
     }
 
 

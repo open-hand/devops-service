@@ -110,4 +110,6 @@ public interface AgentCommandService {
      * @param configVO  配置信息
      */
     void sendChartMuseumAuthentication(Long clusterId, ConfigVO configVO);
+
+    void sendRestartAgent(Long clusterId);
 }

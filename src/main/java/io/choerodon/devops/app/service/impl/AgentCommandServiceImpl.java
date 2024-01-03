@@ -7,9 +7,6 @@ import javax.annotation.Nullable;
 
 import com.google.gson.Gson;
 import io.codearte.props2yaml.Props2YAML;
-import org.hzero.websocket.constant.ClientWebSocketConstant;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.hzero.websocket.vo.MsgVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +41,10 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.*;
 
+import org.hzero.websocket.constant.ClientWebSocketConstant;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.hzero.websocket.vo.MsgVO;
+
 
 /**
  * Created by younger on 2018/4/18.
@@ -65,7 +66,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String OPERATE_POD_COUNT = "operate_pod_count";
     private static final String OPERATE_DOCKER_REGISTRY_SECRET = "operate_docker_registry_secret";
     private static final String CLUSTER_AGENT = "choerodon-cluster-agent-";
-
+    private static final String RESTART_AGENT = "restart_agent";
 
     private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
     private static final Gson gson = new Gson();
@@ -445,5 +446,13 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setPayload(JsonHelper.marshalByJackson(configVO));
         sendToWebSocket(clusterId, msg);
         LOGGER.debug("Finished to sendChartMuseumAuthentication. cluster id {}", clusterId);
+    }
+
+    @Override
+    public void sendRestartAgent(Long clusterId) {
+        AgentMsgVO msg = new AgentMsgVO();
+        msg.setType(RESTART_AGENT);
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
+        sendToWebSocket(clusterId, msg);
     }
 }
