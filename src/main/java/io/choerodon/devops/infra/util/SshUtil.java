@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -351,12 +352,16 @@ public class SshUtil {
         try {
             session = ssh.startSession();
             String[] strings = value.split("\n");
-            String values = "";
+            StringBuilder valuesBuilder = new StringBuilder();
             for (String s : strings) {
-                if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
-                    values = s;
+                if (!ObjectUtils.isEmpty(s) && !s.contains("#") && s.contains("docker")) {
+                    if (valuesBuilder.length() > 0) {
+                        valuesBuilder.append("&&");
+                    }
+                    valuesBuilder.append(s);
                 }
             }
+            String values = valuesBuilder.toString();
             LOGGER.info("docker run values is {}", values);
             if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
                 throw new CommonException("error.instruction");
